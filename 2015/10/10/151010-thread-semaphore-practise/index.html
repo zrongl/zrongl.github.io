@@ -1,0 +1,626 @@
+<!doctype html>
+
+
+
+  
+
+
+<html class="theme-next mist use-motion">
+<head>
+  <meta charset="UTF-8"/>
+<meta http-equiv="X-UA-Compatible" content="IE=edge,chrome=1" />
+<meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1"/>
+
+
+
+<meta http-equiv="Cache-Control" content="no-transform" />
+<meta http-equiv="Cache-Control" content="no-siteapp" />
+
+
+
+
+
+
+
+
+
+
+
+
+  
+  
+  <link href="/vendors/fancybox/source/jquery.fancybox.css?v=2.1.5" rel="stylesheet" type="text/css" />
+
+
+
+
+  
+  
+  
+  
+
+  
+    
+    
+  
+
+  
+
+  
+
+  
+
+  
+
+  
+    
+    
+    <link href="//fonts.googleapis.com/css?family=Lato:300,300italic,400,400italic,700,700italic&subset=latin,latin-ext" rel="stylesheet" type="text/css">
+  
+
+
+
+
+
+
+<link href="/vendors/font-awesome/css/font-awesome.min.css?v=4.4.0" rel="stylesheet" type="text/css" />
+
+<link href="/css/main.css?v=5.0.2" rel="stylesheet" type="text/css" />
+
+
+  <meta name="keywords" content="Hexo, NexT" />
+
+
+
+
+
+
+
+
+  <link rel="shortcut icon" type="image/x-icon" href="/favicon.ico?v=5.0.2" />
+
+
+
+
+
+
+<meta name="description" content="斯坦福公开课《编程范式》中利用线程和信号量模拟了一个冰淇淋店运行情况，通过这个训练可以更深刻地理解如何通过信号量去同步线程">
+<meta property="og:type" content="article">
+<meta property="og:title" content="利用线程和信号量模拟冰淇淋商店运营情况">
+<meta property="og:url" content="http://zrongl.github.io/2015/10/10/151010-thread-semaphore-practise/index.html">
+<meta property="og:site_name" content="Zrongl">
+<meta property="og:description" content="斯坦福公开课《编程范式》中利用线程和信号量模拟了一个冰淇淋店运行情况，通过这个训练可以更深刻地理解如何通过信号量去同步线程">
+<meta property="og:image" content="http://zrongl.github.io/2015/10/10/151010-thread-semaphore-practise/151010-thread-semaphore-practise-00.png">
+<meta property="og:updated_time" content="2016-10-09T10:32:22.000Z">
+<meta name="twitter:card" content="summary">
+<meta name="twitter:title" content="利用线程和信号量模拟冰淇淋商店运营情况">
+<meta name="twitter:description" content="斯坦福公开课《编程范式》中利用线程和信号量模拟了一个冰淇淋店运行情况，通过这个训练可以更深刻地理解如何通过信号量去同步线程">
+<meta name="twitter:image" content="http://zrongl.github.io/2015/10/10/151010-thread-semaphore-practise/151010-thread-semaphore-practise-00.png">
+
+
+
+<script type="text/javascript" id="hexo.configuration">
+  var NexT = window.NexT || {};
+  var CONFIG = {
+    scheme: 'Mist',
+    sidebar: {"position":"left","display":"post"},
+    fancybox: true,
+    motion: true,
+    duoshuo: {
+      userId: '0',
+      author: '博主'
+    }
+  };
+</script>
+
+
+
+
+  <link rel="canonical" href="http://zrongl.github.io/2015/10/10/151010-thread-semaphore-practise/"/>
+
+
+  <title> 利用线程和信号量模拟冰淇淋商店运营情况 | Zrongl </title>
+</head>
+
+<body itemscope itemtype="//schema.org/WebPage" lang="zh-tw">
+
+  
+
+
+
+
+
+
+
+
+
+
+  
+  
+    
+  
+
+  <div class="container one-collumn sidebar-position-left page-post-detail ">
+    <div class="headband"></div>
+
+    <header id="header" class="header" itemscope itemtype="//schema.org/WPHeader">
+      <div class="header-inner"><div class="site-meta ">
+  
+
+  <div class="custom-logo-site-title">
+    <a href="/"  class="brand" rel="start">
+      <span class="logo-line-before"><i></i></span>
+      <span class="site-title">Zrongl</span>
+      <span class="logo-line-after"><i></i></span>
+    </a>
+  </div>
+  <p class="site-subtitle"></p>
+</div>
+
+<div class="site-nav-toggle">
+  <button>
+    <span class="btn-bar"></span>
+    <span class="btn-bar"></span>
+    <span class="btn-bar"></span>
+  </button>
+</div>
+
+<nav class="site-nav">
+  
+
+  
+    <ul id="menu" class="menu">
+      
+        
+        <li class="menu-item menu-item-home">
+          <a href="/" rel="section">
+            
+              <i class="menu-item-icon fa fa-fw fa-home"></i> <br />
+            
+            首頁
+          </a>
+        </li>
+      
+        
+        <li class="menu-item menu-item-archives">
+          <a href="/archives" rel="section">
+            
+              <i class="menu-item-icon fa fa-fw fa-archive"></i> <br />
+            
+            歸檔
+          </a>
+        </li>
+      
+        
+        <li class="menu-item menu-item-tags">
+          <a href="/tags" rel="section">
+            
+              <i class="menu-item-icon fa fa-fw fa-tags"></i> <br />
+            
+            標籤
+          </a>
+        </li>
+      
+
+      
+    </ul>
+  
+
+  
+</nav>
+
+ </div>
+    </header>
+
+    <main id="main" class="main">
+      <div class="main-inner">
+        <div class="content-wrap">
+          <div id="content" class="content">
+            
+
+  <div id="posts" class="posts-expand">
+    
+
+  
+  
+
+  
+  
+  
+
+  <article class="post post-type-normal " itemscope itemtype="//schema.org/Article">
+
+    
+      <header class="post-header">
+
+        
+        
+          <h1 class="post-title" itemprop="name headline">
+            
+            
+              
+                利用线程和信号量模拟冰淇淋商店运营情况
+              
+            
+          </h1>
+        
+
+        <div class="post-meta">
+          <span class="post-time">
+            <span class="post-meta-item-icon">
+              <i class="fa fa-calendar-o"></i>
+            </span>
+            <span class="post-meta-item-text">發表於</span>
+            <time itemprop="dateCreated" datetime="2015-10-10T00:00:00+08:00" content="2015-10-10">
+              2015-10-10
+            </time>
+          </span>
+
+          
+            <span class="post-category" >
+              &nbsp; | &nbsp;
+              <span class="post-meta-item-icon">
+                <i class="fa fa-folder-o"></i>
+              </span>
+              <span class="post-meta-item-text">分類於</span>
+              
+                <span itemprop="about" itemscope itemtype="https://schema.org/Thing">
+                  <a href="/categories/Linux/" itemprop="url" rel="index">
+                    <span itemprop="name">Linux</span>
+                  </a>
+                </span>
+
+                
+                
+
+              
+            </span>
+          
+
+          
+            
+          
+
+          
+
+          
+          
+
+          
+        </div>
+      </header>
+    
+
+
+    <div class="post-body" itemprop="articleBody">
+
+      
+      
+
+      
+        <blockquote>
+<p>本文源于Stanford大学公开课《编程范式》第18讲中讲解的一个通过线程和信号量去模拟一个冰淇淋店的运营情况，我觉得很有意思，所以就着重的摘录实现了一下。</p>
+</blockquote>
+<h3 id="模型的角色分类"><a href="#模型的角色分类" class="headerlink" title="模型的角色分类"></a>模型的角色分类</h3><p>维持这个冰淇淋店运营模型的角色分为四类：</p>
+<ul>
+<li><strong>管理员：</strong>负责检验操作员制作的冰淇淋是否合格，并给操作员一反馈，如果检验合格操作员把冰淇淋交给顾客；如果不合格操作员重新制作冰淇淋然后再找管理员检验，直到合格为止。假如：3个顾客没人请求了2个冰淇淋，管理员必须检验合格6个冰淇淋才算完成了自己的目标。<em>假设：管理员只有一位，所以操作员们请求检验时存在竞争关系。</em></li>
+<li><strong>操作员：</strong>负责接受顾客的请求，然后去制作冰淇淋然后找管理员去检验制作的冰淇淋是否合格，如果合格则将冰淇淋交给顾客；如果不合格则重新制作冰淇淋再次去找管理员检验，直到制作出合格的冰淇淋为止。<em>假设：操作员的数量跟顾客请求的冰淇淋数量相同，在请求检验的时候操作员之间会竞争一个管理员。</em></li>
+<li><strong>顾客：</strong>通过一个随机函数得到每个顾客需要的冰淇淋的数量，然后分派给几个操作员去制作这些冰淇淋，然后等待这几个操作员制作出合格的冰淇淋后，最后再去收银员那里去付款。<em>假设：顾客的数量是固定的，顾客负责分派任务给操作员，需要几个冰淇淋就要起几个操作员线程去制作冰淇淋，等到这几个操作员给出合格的冰淇淋后，最后顾客拿着冰淇淋去找收银员付款，付款的过程顾客之间需要排队，先找到收银员的先结账，保持先进先出的原则。</em></li>
+<li><strong>收银员：</strong>负责按照顺序给顾客结账。<em>假设：收银员只有一个，所以顾客在付款的时候需要先竞争到收银员，先来的先结账后来的后结账。</em></li>
+</ul>
+<p>关系图如下：</p>
+<img src="/2015/10/10/151010-thread-semaphore-practise/151010-thread-semaphore-practise-00.png" alt="冰淇淋店各角色关系图" title="冰淇淋店各角色关系图">
+<h3 id="分析角色竞争关系建立数据结构"><a href="#分析角色竞争关系建立数据结构" class="headerlink" title="分析角色竞争关系建立数据结构"></a>分析角色竞争关系建立数据结构</h3><p>通过上面的描述我们知道了管理员与收银员只有一位，操作员会竞争管理员拿到进行检验的资格；顾客需要竞争收银员进行付款，但是顾客之间是先到先付款的关系，所以需要维持一个信号量数组来维持这个队列。</p>
+<p>为了维持操作员对管理员的竞争关系，建立如下结构体以及其初始化函数：</p>
+<figure class="highlight plain"><table><tr><td class="gutter"><pre><div class="line">1</div><div class="line">2</div><div class="line">3</div><div class="line">4</div><div class="line">5</div><div class="line">6</div><div class="line">7</div><div class="line">8</div><div class="line">9</div><div class="line">10</div><div class="line">11</div><div class="line">12</div><div class="line">13</div><div class="line">14</div><div class="line">15</div></pre></td><td class="code"><pre><div class="line">// 同步管理员检查的结构体</div><div class="line">typedef struct &#123;</div><div class="line">    bool     passed;    // 操作员制作的冰淇淋是否合格的反馈标识</div><div class="line">    signal_t request;   // 操作员发起检验信号量</div><div class="line">    signal_t finish;    // 管理员检验完成信号量</div><div class="line">    signal_t lock;      // 管理员资源竞争信号量</div><div class="line">&#125;inspect_s, *inspect_p;</div><div class="line"></div><div class="line">void inspectNew(inspect_p inspect)</div><div class="line">&#123;</div><div class="line">    inspect-&gt;passed = false;</div><div class="line">    inspect-&gt;request = malloc(sizeof(signal_s));</div><div class="line">    inspect-&gt;finish = malloc(sizeof(signal_s));</div><div class="line">    inspect-&gt;lock = malloc(sizeof(signal_s));</div><div class="line">&#125;</div></pre></td></tr></table></figure>
+<p>为了维持顾客对收银员的竞争关系，并保证顾客先到先付款的队列关系，建立如下结构体以及其初始化函数：</p>
+<figure class="highlight plain"><table><tr><td class="gutter"><pre><div class="line">1</div><div class="line">2</div><div class="line">3</div><div class="line">4</div><div class="line">5</div><div class="line">6</div><div class="line">7</div><div class="line">8</div><div class="line">9</div><div class="line">10</div><div class="line">11</div><div class="line">12</div><div class="line">13</div><div class="line">14</div><div class="line">15</div><div class="line">16</div><div class="line">17</div></pre></td><td class="code"><pre><div class="line">// 同步收银员收银的结构体</div><div class="line">typedef struct&#123;</div><div class="line">    int      number;    // 当前结账顾客的队列编号</div><div class="line">    signal_t request;   // 顾客发起结账信号量</div><div class="line">    signal_t customers[kCountOfCustomers]; // 每一个顾客维持一个信号量保证顺序</div><div class="line">    signal_t lock;      // 收银员竞争信号量</div><div class="line">&#125;payment_s, *payment_p;</div><div class="line"></div><div class="line">void paymentNew(payment_p payment)</div><div class="line">&#123;</div><div class="line">    payment-&gt;number = 0;</div><div class="line">    payment-&gt;request = malloc(sizeof(signal_s));</div><div class="line">    payment-&gt;lock = malloc(sizeof(signal_s));</div><div class="line">    for (int i = 0; i &lt; kCountOfCustomers; i++) &#123;</div><div class="line">        payment-&gt;customers[i] = malloc(sizeof(signal_s));</div><div class="line">    &#125;</div><div class="line">&#125;</div></pre></td></tr></table></figure>
+<p>为了使得输出信息后台输出更加完善易懂，我们定义了一下结构体，传递给顾客线程：</p>
+<figure class="highlight plain"><table><tr><td class="gutter"><pre><div class="line">1</div><div class="line">2</div><div class="line">3</div><div class="line">4</div><div class="line">5</div></pre></td><td class="code"><pre><div class="line">// 传递给customer线程的参数</div><div class="line">typedef struct &#123;</div><div class="line">    int customerIndex;          // 顾客编号</div><div class="line">    int numberOfRequestCreams;  // 该顾客请求冰淇淋数量</div><div class="line">&#125;customer_s, *customer_p;</div></pre></td></tr></table></figure>
+<p>为了使得信号量调试方便我们对信号量进行了简单的封装：</p>
+<figure class="highlight plain"><table><tr><td class="gutter"><pre><div class="line">1</div><div class="line">2</div><div class="line">3</div><div class="line">4</div><div class="line">5</div><div class="line">6</div><div class="line">7</div><div class="line">8</div><div class="line">9</div></pre></td><td class="code"><pre><div class="line">typedef struct&#123;</div><div class="line">    sem_t *sem;     // 信号量</div><div class="line">    char *name;     // 名称标识</div><div class="line">    int value;      // 当前信号量的值</div><div class="line">&#125;signal_s, *signal_t;</div><div class="line"></div><div class="line">void initSignal(signal_t signal, char *name, int value); // open_sem</div><div class="line">void waitSignal(signal_t signal);   // wait_sem</div><div class="line">void postSignal(signal_t signal);   // post_sem</div></pre></td></tr></table></figure>
+<h4 id="分析角色职责建立任务线程"><a href="#分析角色职责建立任务线程" class="headerlink" title="分析角色职责建立任务线程"></a>分析角色职责建立任务线程</h4><ul>
+<li>根据上面描述创建管理员线程：</li>
+</ul>
+<figure class="highlight plain"><table><tr><td class="gutter"><pre><div class="line">1</div><div class="line">2</div><div class="line">3</div><div class="line">4</div><div class="line">5</div><div class="line">6</div><div class="line">7</div><div class="line">8</div><div class="line">9</div><div class="line">10</div><div class="line">11</div><div class="line">12</div><div class="line">13</div><div class="line">14</div><div class="line">15</div><div class="line">16</div><div class="line">17</div><div class="line">18</div><div class="line">19</div><div class="line">20</div><div class="line">21</div><div class="line">22</div><div class="line">23</div><div class="line">24</div><div class="line">25</div><div class="line">26</div><div class="line">27</div></pre></td><td class="code"><pre><div class="line">// 管理员线程</div><div class="line">void *managerTask(void *creams)</div><div class="line">&#123;</div><div class="line">    int totalCreams = (*(int *)creams); // 冰淇淋总数</div><div class="line">    printf(&quot;管理员需要检验合格%d个冰淇淋\n&quot; ,totalCreams);</div><div class="line">    int numRefused = 0;     // 不合格的数量</div><div class="line">    int numApproved = 0;    // 合格的数量</div><div class="line">    int numInspect = 0;     // 检验的总次数</div><div class="line">    </div><div class="line">    while (numApproved &lt; totalCreams) &#123;</div><div class="line">        waitSignal(inspect.request);    // 等待操作员发起检验请求</div><div class="line">        numInspect++;</div><div class="line">        printf(&quot;管理员正在检验第%d个冰淇淋\n&quot; ,numInspect);</div><div class="line">        inspect.passed = x_random(1);   // 0-1随机数决定是否合格</div><div class="line">        </div><div class="line">        if (inspect.passed)&#123;</div><div class="line">            numApproved++;</div><div class="line">            printf(&quot;%d个冰淇淋通过了检验\n&quot;, numApproved);</div><div class="line">        &#125;else&#123;</div><div class="line">            numRefused ++;</div><div class="line">            printf(&quot;%d个冰淇淋未通过检验\n&quot;, numRefused);</div><div class="line">        &#125;</div><div class="line">        postSignal(inspect.finish);     // 告诉操作员检验完成</div><div class="line">    &#125;</div><div class="line">    </div><div class="line">    return NULL;</div><div class="line">&#125;</div></pre></td></tr></table></figure>
+<ul>
+<li>根据上面描述创建操作员任务线程：</li>
+</ul>
+<figure class="highlight plain"><table><tr><td class="gutter"><pre><div class="line">1</div><div class="line">2</div><div class="line">3</div><div class="line">4</div><div class="line">5</div><div class="line">6</div><div class="line">7</div><div class="line">8</div><div class="line">9</div><div class="line">10</div><div class="line">11</div><div class="line">12</div><div class="line">13</div><div class="line">14</div><div class="line">15</div><div class="line">16</div><div class="line">17</div><div class="line">18</div><div class="line">19</div></pre></td><td class="code"><pre><div class="line">// 操作员线程</div><div class="line">void *clerkTask(void *sem)</div><div class="line">&#123;</div><div class="line">    bool passed = false;    // 检验是否合格的标识</div><div class="line">    while (!passed) &#123;       // 知道合格为止</div><div class="line">        makeCream();</div><div class="line">        waitSignal(inspect.lock);   // 竞争管理员资源</div><div class="line"></div><div class="line">        postSignal(inspect.request);// 发起检验请求</div><div class="line">        waitSignal(inspect.finish); // 等待检验结束</div><div class="line">        passed = inspect.passed;    // 记录检验结果</div><div class="line">        </div><div class="line">        postSignal(inspect.lock);   // 释放管理员资源</div><div class="line">    &#125;</div><div class="line">    </div><div class="line">    postSignal(sem);                // 将合格的冰淇淋交给顾客</div><div class="line">    </div><div class="line">    return NULL;</div><div class="line">&#125;</div></pre></td></tr></table></figure>
+<ul>
+<li>根据以上描述创建顾客任务线程：</li>
+</ul>
+<figure class="highlight plain"><table><tr><td class="gutter"><pre><div class="line">1</div><div class="line">2</div><div class="line">3</div><div class="line">4</div><div class="line">5</div><div class="line">6</div><div class="line">7</div><div class="line">8</div><div class="line">9</div><div class="line">10</div><div class="line">11</div><div class="line">12</div><div class="line">13</div><div class="line">14</div><div class="line">15</div><div class="line">16</div><div class="line">17</div><div class="line">18</div><div class="line">19</div><div class="line">20</div><div class="line">21</div><div class="line">22</div><div class="line">23</div><div class="line">24</div><div class="line">25</div><div class="line">26</div><div class="line">27</div><div class="line">28</div><div class="line">29</div><div class="line">30</div><div class="line">31</div><div class="line">32</div><div class="line">33</div><div class="line">34</div><div class="line">35</div><div class="line">36</div><div class="line">37</div><div class="line">38</div><div class="line">39</div></pre></td><td class="code"><pre><div class="line">// 顾客线程</div><div class="line">void *customerTask(void *customer)</div><div class="line">&#123;</div><div class="line">    customer_s customerInfo = *(customer_p)customer;// 接受管理员信息</div><div class="line">    int numberOfNeedCreams = customerInfo.numberOfRequestCreams;</div><div class="line">    signal_s    clerkDone[numberOfNeedCreams];      // 创建信号量数组等待合格的冰淇淋</div><div class="line">    pthread_t   clerk[numberOfNeedCreams];          // 创建操作员线程数组去制作冰淇淋</div><div class="line">    for (int i = 0; i &lt; numberOfNeedCreams; i ++) &#123;</div><div class="line">        char *name = malloc(sizeof(char *));        // 信号量命名</div><div class="line">        sprintf(name, &quot;clerk_done_%d&quot;, i);</div><div class="line">        initSignal(&amp;clerkDone[i], name, 0);</div><div class="line">        </div><div class="line">        // 执行操作员线程并将信号量传递过去 等操作员获取到合格的冰淇淋后 通过该信号量通知顾客</div><div class="line">        pthread_create(&amp;clerk[i], NULL, clerkTask, &amp;clerkDone[i]);</div><div class="line">        free(name);</div><div class="line">    &#125;</div><div class="line">   </div><div class="line">    // 等待所有的操作员都拿到合格的冰淇淋</div><div class="line">    for (int i = 0; i &lt; numberOfNeedCreams; i ++) &#123;</div><div class="line">        waitSignal(&amp;clerkDone[i]);</div><div class="line">    &#125;</div><div class="line">    </div><div class="line">    walkToCashier(customerInfo);    // 去排队付款</div><div class="line">    waitSignal(payment.lock);       // 竞争收银员资源</div><div class="line">    int place = payment.number ++;  // 记录当前正在付款的顾客队列好</div><div class="line">    </div><div class="line">    postSignal(payment.request);    // 请求付款</div><div class="line">    waitSignal(payment.customers[place]); // 等待收银员找钱</div><div class="line">    </div><div class="line">    postSignal(payment.lock);       // 释放收银员资源</div><div class="line">    </div><div class="line">    // 释放内存</div><div class="line">    free(customer);</div><div class="line">    for (int i = 0; i &lt; numberOfNeedCreams; i ++) &#123;</div><div class="line">        pthread_join(clerk[i], NULL);</div><div class="line">    &#125;</div><div class="line">    </div><div class="line">    return NULL;</div><div class="line">&#125;</div></pre></td></tr></table></figure>
+<ul>
+<li>根据以上描述创建收银员任务线程：</li>
+</ul>
+<figure class="highlight plain"><table><tr><td class="gutter"><pre><div class="line">1</div><div class="line">2</div><div class="line">3</div><div class="line">4</div><div class="line">5</div><div class="line">6</div><div class="line">7</div><div class="line">8</div><div class="line">9</div><div class="line">10</div><div class="line">11</div></pre></td><td class="code"><pre><div class="line">// 收银员线程</div><div class="line">void *cashierTask()</div><div class="line">&#123;</div><div class="line">    for (int i = 0; i &lt; kCountOfCustomers; i ++) &#123;</div><div class="line">        waitSignal(payment.request);      // 等待付款请求</div><div class="line">        collectMoney(i);                  // 找钱</div><div class="line">        postSignal(payment.customers[i]); // 结账结束通知顾客</div><div class="line">    &#125;</div><div class="line">    </div><div class="line">    return NULL;</div><div class="line">&#125;</div></pre></td></tr></table></figure>
+<ul>
+<li>最后在main函数中我们要启动管理员线程、收银员线程和顾客线程：</li>
+</ul>
+<figure class="highlight plain"><table><tr><td class="gutter"><pre><div class="line">1</div><div class="line">2</div><div class="line">3</div><div class="line">4</div><div class="line">5</div><div class="line">6</div><div class="line">7</div><div class="line">8</div><div class="line">9</div><div class="line">10</div><div class="line">11</div><div class="line">12</div><div class="line">13</div><div class="line">14</div><div class="line">15</div><div class="line">16</div><div class="line">17</div><div class="line">18</div><div class="line">19</div><div class="line">20</div><div class="line">21</div><div class="line">22</div><div class="line">23</div><div class="line">24</div><div class="line">25</div><div class="line">26</div><div class="line">27</div><div class="line">28</div><div class="line">29</div><div class="line">30</div><div class="line">31</div><div class="line">32</div><div class="line">33</div><div class="line">34</div><div class="line">35</div><div class="line">36</div><div class="line">37</div><div class="line">38</div><div class="line">39</div><div class="line">40</div><div class="line">41</div><div class="line">42</div><div class="line">43</div><div class="line">44</div><div class="line">45</div><div class="line">46</div><div class="line">47</div><div class="line">48</div><div class="line">49</div><div class="line">50</div></pre></td><td class="code"><pre><div class="line">int main(int argc, const char * argv[])</div><div class="line">&#123;</div><div class="line">    srand((unsigned) time(0));  // 随机因子</div><div class="line">    </div><div class="line">    // 初始化全局数据</div><div class="line">    inspectNew(&amp;inspect);</div><div class="line">    initSignal(inspect.request, &quot;clerk_request&quot;, 0);</div><div class="line">    initSignal(inspect.finish, &quot;clerk_finish&quot;, 0);</div><div class="line">    initSignal(inspect.lock, &quot;clerk_lock&quot;, 1);</div><div class="line">    paymentNew(&amp;payment);</div><div class="line">    initSignal(payment.request, &quot;customer_request&quot;, 0);</div><div class="line">    for (int i = 0; i &lt; kCountOfCustomers; i ++) &#123;</div><div class="line">        char *name = malloc(sizeof(char *));</div><div class="line">        sprintf(name, &quot;customer_%d&quot;, i);</div><div class="line">        initSignal(payment.customers[i] ,name, 0);</div><div class="line">        free(name);</div><div class="line">    &#125;</div><div class="line">    initSignal(payment.lock ,&quot;customer_lock&quot;, 1);</div><div class="line">    </div><div class="line">    // 调起顾客线程</div><div class="line">    int totalCreams = 0;</div><div class="line">    pthread_t customer[kCountOfCustomers];</div><div class="line">    </div><div class="line">    for (int i = 0; i &lt; kCountOfCustomers; i ++) &#123;</div><div class="line">        customer_p customerInfo = malloc(sizeof(customer_s));</div><div class="line">        customerInfo-&gt;customerIndex = i;</div><div class="line">        customerInfo-&gt;numberOfRequestCreams = x_random(kMaxCreamsPerCustomer) + 1;</div><div class="line">        </div><div class="line">        printf(&quot;第%d号顾客请求了%d个冰淇淋\n&quot;, i, customerInfo-&gt;numberOfRequestCreams);</div><div class="line">        pthread_create(&amp;customer[i], NULL, customerTask, customerInfo);</div><div class="line">        </div><div class="line">        totalCreams += customerInfo-&gt;numberOfRequestCreams;</div><div class="line">    &#125;</div><div class="line">    </div><div class="line">    // 调起管理员和收银员线程</div><div class="line">    pthread_t manager;</div><div class="line">    pthread_t cashier;</div><div class="line">    </div><div class="line">    pthread_create(&amp;manager, NULL, managerTask, &amp;totalCreams);</div><div class="line">    pthread_create(&amp;cashier, NULL, cashierTask, NULL);</div><div class="line">    </div><div class="line">    // 等待线程结束回收内存</div><div class="line">    for (int i = 0; i &lt; kCountOfCustomers; i ++) &#123;</div><div class="line">        pthread_join(customer[i], NULL);</div><div class="line">    &#125;</div><div class="line">    pthread_join(manager, NULL);</div><div class="line">    pthread_join(cashier, NULL);</div><div class="line">    </div><div class="line">    return 0;</div><div class="line">&#125;</div></pre></td></tr></table></figure>
+<h4 id="编译运行输出结果"><a href="#编译运行输出结果" class="headerlink" title="编译运行输出结果"></a>编译运行输出结果</h4><figure class="highlight plain"><table><tr><td class="gutter"><pre><div class="line">1</div><div class="line">2</div><div class="line">3</div><div class="line">4</div><div class="line">5</div><div class="line">6</div><div class="line">7</div><div class="line">8</div><div class="line">9</div><div class="line">10</div><div class="line">11</div><div class="line">12</div><div class="line">13</div><div class="line">14</div><div class="line">15</div><div class="line">16</div><div class="line">17</div><div class="line">18</div><div class="line">19</div><div class="line">20</div><div class="line">21</div><div class="line">22</div><div class="line">23</div><div class="line">24</div><div class="line">25</div><div class="line">26</div><div class="line">27</div><div class="line">28</div><div class="line">29</div><div class="line">30</div><div class="line">31</div><div class="line">32</div><div class="line">33</div><div class="line">34</div></pre></td><td class="code"><pre><div class="line">第0号顾客请求了1个冰淇淋</div><div class="line">操作员正在制作第1冰淇淋</div><div class="line">第1号顾客请求了1个冰淇淋</div><div class="line">操作员正在制作第2冰淇淋</div><div class="line">第2号顾客请求了3个冰淇淋</div><div class="line">管理员需要检验合格5个冰淇淋</div><div class="line">管理员正在检验第1个冰淇淋</div><div class="line">操作员正在制作第3冰淇淋</div><div class="line">操作员正在制作第4冰淇淋</div><div class="line">操作员正在制作第5冰淇淋</div><div class="line">1个冰淇淋通过了检验</div><div class="line">第0号顾客的1个冰淇淋已经做好了,可以去找收银员付款了</div><div class="line">管理员正在检验第2个冰淇淋</div><div class="line">第0号顾客付款完毕</div><div class="line">1个冰淇淋未通过检验</div><div class="line">操作员正在制作第6冰淇淋</div><div class="line">管理员正在检验第3个冰淇淋</div><div class="line">2个冰淇淋未通过检验</div><div class="line">操作员正在制作第7冰淇淋</div><div class="line">管理员正在检验第4个冰淇淋</div><div class="line">3个冰淇淋未通过检验</div><div class="line">操作员正在制作第8冰淇淋</div><div class="line">管理员正在检验第5个冰淇淋</div><div class="line">2个冰淇淋通过了检验</div><div class="line">管理员正在检验第6个冰淇淋</div><div class="line">3个冰淇淋通过了检验</div><div class="line">第1号顾客的1个冰淇淋已经做好了,可以去找收银员付款了</div><div class="line">管理员正在检验第7个冰淇淋</div><div class="line">第1号顾客付款完毕</div><div class="line">4个冰淇淋通过了检验</div><div class="line">管理员正在检验第8个冰淇淋</div><div class="line">5个冰淇淋通过了检验</div><div class="line">第2号顾客的3个冰淇淋已经做好了,可以去找收银员付款了</div><div class="line">第2号顾客付款完毕</div></pre></td></tr></table></figure>
+<blockquote>
+<p><strong>写在后面：</strong><br>程序中可能还存在需要完善的地方，比如：我们可以给操作员多传一个参数，明确这是第几号顾客的冰淇淋；还有就是为了控制顾客排队结账而在<code>struct payment</code>结构体中为每一个顾客声明了一个信号量<code>signal_t customers[...]</code>，但是在收银员线程中却是用<code>for</code>循环去依次发信号的；我们还可以在每个角色任务线程中加入的函数(如<code>makeCream()</code>，<code>walkToCasher()</code>…)中通过绘图代码去绘制一些图画或动画，这样能够更加直观的展现冰淇淋店的运营情况，这些待完善的部分就交给大家去完成吧。</p>
+</blockquote>
+<h3 id="项目地址"><a href="#项目地址" class="headerlink" title="项目地址"></a><a href="https://github.com/zrongl/IceCreamShop" target="_blank" rel="external">项目地址</a></h3>
+      
+    </div>
+
+    <div>
+      
+        
+
+      
+    </div>
+
+    <div>
+      
+        
+
+      
+    </div>
+
+    <footer class="post-footer">
+      
+
+      
+        <div class="post-nav">
+          <div class="post-nav-next post-nav-item">
+            
+              <a href="/2015/09/09/150909-ios-app-performance/" rel="next" title="iOS应用性能调优">
+                <i class="fa fa-chevron-left"></i> iOS应用性能调优
+              </a>
+            
+          </div>
+
+          <div class="post-nav-prev post-nav-item">
+            
+              <a href="/2015/10/25/151025-c4/" rel="prev" title="编译器项目c4的学习(原创)">
+                编译器项目c4的学习(原创) <i class="fa fa-chevron-right"></i>
+              </a>
+            
+          </div>
+        </div>
+      
+
+      
+      
+    </footer>
+  </article>
+
+
+
+    <div class="post-spread">
+      
+    </div>
+  </div>
+
+
+          </div>
+          
+
+
+          
+  <div class="comments" id="comments">
+    
+  </div>
+
+
+        </div>
+        
+          
+  
+  <div class="sidebar-toggle">
+    <div class="sidebar-toggle-line-wrap">
+      <span class="sidebar-toggle-line sidebar-toggle-line-first"></span>
+      <span class="sidebar-toggle-line sidebar-toggle-line-middle"></span>
+      <span class="sidebar-toggle-line sidebar-toggle-line-last"></span>
+    </div>
+  </div>
+
+  <aside id="sidebar" class="sidebar">
+    <div class="sidebar-inner">
+
+      
+
+      
+        <ul class="sidebar-nav motion-element">
+          <li class="sidebar-nav-toc sidebar-nav-active" data-target="post-toc-wrap" >
+            文章目錄
+          </li>
+          <li class="sidebar-nav-overview" data-target="site-overview">
+            本站概覽
+          </li>
+        </ul>
+      
+
+      <section class="site-overview sidebar-panel ">
+        <div class="site-author motion-element" itemprop="author" itemscope itemtype="//schema.org/Person">
+          <img class="site-author-image" itemprop="image"
+               src="/images/avatar.gif"
+               alt="ronglei" />
+          <p class="site-author-name" itemprop="name">ronglei</p>
+          <p class="site-description motion-element" itemprop="description"></p>
+        </div>
+        <nav class="site-state motion-element">
+          <div class="site-state-item site-state-posts">
+            <a href="/archives">
+              <span class="site-state-item-count">21</span>
+              <span class="site-state-item-name">文章</span>
+            </a>
+          </div>
+
+          
+            <div class="site-state-item site-state-categories">
+              
+                <span class="site-state-item-count">8</span>
+                <span class="site-state-item-name">分類</span>
+              
+            </div>
+          
+
+          
+            <div class="site-state-item site-state-tags">
+              <a href="/tags">
+                <span class="site-state-item-count">5</span>
+                <span class="site-state-item-name">標籤</span>
+              </a>
+            </div>
+          
+
+        </nav>
+
+        
+
+        <div class="links-of-author motion-element">
+          
+        </div>
+
+        
+        
+
+        
+        
+
+      </section>
+
+      
+        <section class="post-toc-wrap motion-element sidebar-panel sidebar-panel-active">
+          <div class="post-toc">
+            
+              
+            
+            
+              <div class="post-toc-content"><ol class="nav"><li class="nav-item nav-level-3"><a class="nav-link" href="#模型的角色分类"><span class="nav-number">1.</span> <span class="nav-text">模型的角色分类</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#分析角色竞争关系建立数据结构"><span class="nav-number">2.</span> <span class="nav-text">分析角色竞争关系建立数据结构</span></a><ol class="nav-child"><li class="nav-item nav-level-4"><a class="nav-link" href="#分析角色职责建立任务线程"><span class="nav-number">2.1.</span> <span class="nav-text">分析角色职责建立任务线程</span></a></li><li class="nav-item nav-level-4"><a class="nav-link" href="#编译运行输出结果"><span class="nav-number">2.2.</span> <span class="nav-text">编译运行输出结果</span></a></li></ol></li><li class="nav-item nav-level-3"><a class="nav-link" href="#项目地址"><span class="nav-number">3.</span> <span class="nav-text">项目地址</span></a></li></ol></div>
+            
+          </div>
+        </section>
+      
+
+    </div>
+  </aside>
+
+
+        
+      </div>
+    </main>
+
+    <footer id="footer" class="footer">
+      <div class="footer-inner">
+        <div class="copyright" >
+  
+  &copy; 
+  <span itemprop="copyrightYear">2016</span>
+  <span class="with-love">
+    <i class="fa fa-heart"></i>
+  </span>
+  <span class="author" itemprop="copyrightHolder">ronglei</span>
+</div>
+
+<div class="powered-by">
+  由 <a class="theme-link" href="https://hexo.io">Hexo</a> 強力驅動
+</div>
+
+<div class="theme-info">
+  主題 -
+  <a class="theme-link" href="https://github.com/iissnan/hexo-theme-next">
+    NexT.Mist
+  </a>
+</div>
+
+        
+
+        
+      </div>
+    </footer>
+
+    <div class="back-to-top">
+      <i class="fa fa-arrow-up"></i>
+    </div>
+  </div>
+
+  
+
+<script type="text/javascript">
+  if (Object.prototype.toString.call(window.Promise) !== '[object Function]') {
+    window.Promise = null;
+  }
+</script>
+
+
+
+
+
+
+
+
+
+  
+
+
+
+  
+  <script type="text/javascript" src="/vendors/jquery/index.js?v=2.1.3"></script>
+
+  
+  <script type="text/javascript" src="/vendors/fastclick/lib/fastclick.min.js?v=1.0.6"></script>
+
+  
+  <script type="text/javascript" src="/vendors/jquery_lazyload/jquery.lazyload.js?v=1.9.7"></script>
+
+  
+  <script type="text/javascript" src="/vendors/velocity/velocity.min.js?v=1.2.1"></script>
+
+  
+  <script type="text/javascript" src="/vendors/velocity/velocity.ui.min.js?v=1.2.1"></script>
+
+  
+  <script type="text/javascript" src="/vendors/fancybox/source/jquery.fancybox.pack.js?v=2.1.5"></script>
+
+
+  
+
+
+  <script type="text/javascript" src="/js/src/utils.js?v=5.0.2"></script>
+
+  <script type="text/javascript" src="/js/src/motion.js?v=5.0.2"></script>
+
+
+
+  
+  
+
+  
+  <script type="text/javascript" src="/js/src/scrollspy.js?v=5.0.2"></script>
+<script type="text/javascript" src="/js/src/post-details.js?v=5.0.2"></script>
+
+
+
+  
+
+
+  <script type="text/javascript" src="/js/src/bootstrap.js?v=5.0.2"></script>
+
+
+
+  
+
+
+
+  
+
+
+
+
+  
+  
+
+  
+
+  
+
+  
+
+</body>
+</html>

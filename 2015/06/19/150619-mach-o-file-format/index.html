@@ -1,0 +1,667 @@
+<!doctype html>
+
+
+
+  
+
+
+<html class="theme-next mist use-motion">
+<head>
+  <meta charset="UTF-8"/>
+<meta http-equiv="X-UA-Compatible" content="IE=edge,chrome=1" />
+<meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1"/>
+
+
+
+<meta http-equiv="Cache-Control" content="no-transform" />
+<meta http-equiv="Cache-Control" content="no-siteapp" />
+
+
+
+
+
+
+
+
+
+
+
+
+  
+  
+  <link href="/vendors/fancybox/source/jquery.fancybox.css?v=2.1.5" rel="stylesheet" type="text/css" />
+
+
+
+
+  
+  
+  
+  
+
+  
+    
+    
+  
+
+  
+
+  
+
+  
+
+  
+
+  
+    
+    
+    <link href="//fonts.googleapis.com/css?family=Lato:300,300italic,400,400italic,700,700italic&subset=latin,latin-ext" rel="stylesheet" type="text/css">
+  
+
+
+
+
+
+
+<link href="/vendors/font-awesome/css/font-awesome.min.css?v=4.4.0" rel="stylesheet" type="text/css" />
+
+<link href="/css/main.css?v=5.0.2" rel="stylesheet" type="text/css" />
+
+
+  <meta name="keywords" content="Hexo, NexT" />
+
+
+
+
+
+
+
+
+  <link rel="shortcut icon" type="image/x-icon" href="/favicon.ico?v=5.0.2" />
+
+
+
+
+
+
+<meta name="description" content="介绍MacOSX平台下Mach-O(Mach object)文件格式，类似于Windows平台下的PE文件格式或Linux平台下的ELF文件格式，了解Mach-O文件格式是深入理解Objective-C的runtime加载运行的机制的基础">
+<meta property="og:type" content="article">
+<meta property="og:title" content="Mach-O文件格式与otool工具的使用(原创)">
+<meta property="og:url" content="http://zrongl.github.io/2015/06/19/150619-mach-o-file-format/index.html">
+<meta property="og:site_name" content="Zrongl">
+<meta property="og:description" content="介绍MacOSX平台下Mach-O(Mach object)文件格式，类似于Windows平台下的PE文件格式或Linux平台下的ELF文件格式，了解Mach-O文件格式是深入理解Objective-C的runtime加载运行的机制的基础">
+<meta property="og:image" content="http://zrongl.github.io/2015/06/19/150619-mach-o-file-format/150619-mach-o-file-format-00.png">
+<meta property="og:updated_time" content="2016-10-09T10:03:01.000Z">
+<meta name="twitter:card" content="summary">
+<meta name="twitter:title" content="Mach-O文件格式与otool工具的使用(原创)">
+<meta name="twitter:description" content="介绍MacOSX平台下Mach-O(Mach object)文件格式，类似于Windows平台下的PE文件格式或Linux平台下的ELF文件格式，了解Mach-O文件格式是深入理解Objective-C的runtime加载运行的机制的基础">
+<meta name="twitter:image" content="http://zrongl.github.io/2015/06/19/150619-mach-o-file-format/150619-mach-o-file-format-00.png">
+
+
+
+<script type="text/javascript" id="hexo.configuration">
+  var NexT = window.NexT || {};
+  var CONFIG = {
+    scheme: 'Mist',
+    sidebar: {"position":"left","display":"post"},
+    fancybox: true,
+    motion: true,
+    duoshuo: {
+      userId: '0',
+      author: '博主'
+    }
+  };
+</script>
+
+
+
+
+  <link rel="canonical" href="http://zrongl.github.io/2015/06/19/150619-mach-o-file-format/"/>
+
+
+  <title> Mach-O文件格式与otool工具的使用(原创) | Zrongl </title>
+</head>
+
+<body itemscope itemtype="//schema.org/WebPage" lang="zh-tw">
+
+  
+
+
+
+
+
+
+
+
+
+
+  
+  
+    
+  
+
+  <div class="container one-collumn sidebar-position-left page-post-detail ">
+    <div class="headband"></div>
+
+    <header id="header" class="header" itemscope itemtype="//schema.org/WPHeader">
+      <div class="header-inner"><div class="site-meta ">
+  
+
+  <div class="custom-logo-site-title">
+    <a href="/"  class="brand" rel="start">
+      <span class="logo-line-before"><i></i></span>
+      <span class="site-title">Zrongl</span>
+      <span class="logo-line-after"><i></i></span>
+    </a>
+  </div>
+  <p class="site-subtitle"></p>
+</div>
+
+<div class="site-nav-toggle">
+  <button>
+    <span class="btn-bar"></span>
+    <span class="btn-bar"></span>
+    <span class="btn-bar"></span>
+  </button>
+</div>
+
+<nav class="site-nav">
+  
+
+  
+    <ul id="menu" class="menu">
+      
+        
+        <li class="menu-item menu-item-home">
+          <a href="/" rel="section">
+            
+              <i class="menu-item-icon fa fa-fw fa-home"></i> <br />
+            
+            首頁
+          </a>
+        </li>
+      
+        
+        <li class="menu-item menu-item-archives">
+          <a href="/archives" rel="section">
+            
+              <i class="menu-item-icon fa fa-fw fa-archive"></i> <br />
+            
+            歸檔
+          </a>
+        </li>
+      
+        
+        <li class="menu-item menu-item-tags">
+          <a href="/tags" rel="section">
+            
+              <i class="menu-item-icon fa fa-fw fa-tags"></i> <br />
+            
+            標籤
+          </a>
+        </li>
+      
+
+      
+    </ul>
+  
+
+  
+</nav>
+
+ </div>
+    </header>
+
+    <main id="main" class="main">
+      <div class="main-inner">
+        <div class="content-wrap">
+          <div id="content" class="content">
+            
+
+  <div id="posts" class="posts-expand">
+    
+
+  
+  
+
+  
+  
+  
+
+  <article class="post post-type-normal " itemscope itemtype="//schema.org/Article">
+
+    
+      <header class="post-header">
+
+        
+        
+          <h1 class="post-title" itemprop="name headline">
+            
+            
+              
+                Mach-O文件格式与otool工具的使用(原创)
+              
+            
+          </h1>
+        
+
+        <div class="post-meta">
+          <span class="post-time">
+            <span class="post-meta-item-icon">
+              <i class="fa fa-calendar-o"></i>
+            </span>
+            <span class="post-meta-item-text">發表於</span>
+            <time itemprop="dateCreated" datetime="2015-06-19T00:00:00+08:00" content="2015-06-19">
+              2015-06-19
+            </time>
+          </span>
+
+          
+            <span class="post-category" >
+              &nbsp; | &nbsp;
+              <span class="post-meta-item-icon">
+                <i class="fa fa-folder-o"></i>
+              </span>
+              <span class="post-meta-item-text">分類於</span>
+              
+                <span itemprop="about" itemscope itemtype="https://schema.org/Thing">
+                  <a href="/categories/translation/" itemprop="url" rel="index">
+                    <span itemprop="name">translation</span>
+                  </a>
+                </span>
+
+                
+                
+
+              
+            </span>
+          
+
+          
+            
+          
+
+          
+
+          
+          
+
+          
+        </div>
+      </header>
+    
+
+
+    <div class="post-body" itemprop="articleBody">
+
+      
+      
+
+      
+        <h3 id="Basic-Structure"><a href="#Basic-Structure" class="headerlink" title="Basic Structure"></a>Basic Structure</h3><p>一个Mach-O文件包含三个主要的区域(region)：<br></p>
+<ul>
+<li>在每一个Mach-O文件的开始都有一个header结构(header structure)来标示这是一个Mach-O文件。这个header同时还包含着其他一些信息：文件类型信息，目标架构信息和一写影响文件其他部分内容的flags标示。</li>
+<li><p>紧跟着header的是一系列大小可变的加载命令(load commands)，用于标示文件的布局和联动特征。两个加载命令之间的信息一般有一下几种含义:</p>
+</li>
+<li><p>文件在虚拟内存中的初始布局</p>
+</li>
+<li>用于动态链接的符号列表(symbol talbe)的位置</li>
+<li>程序主线程初始的执行状态</li>
+<li>共享库的名称，这些库包括主执行文件导入的符号定义</li>
+</ul>
+<ul>
+<li>load commands下面是一个或多个的数据段(segments)。每一个segment都包含零个或更多的sections。segemnt的每一个section包含特定类型的代码和数据。每一个segment定义了一片虚拟内存区域，也就是动态链接器将映射到的进程地址空间。segment和section的数量及其布局是由load commands和文件类型决定的。<br><br>最后一个segment是链接编辑段(link edit segment)，它与用户级挂钩。该segment包含链接编辑信息表(tables of link edit information)，如：符号表(symbol table)，字符表(string table)等等，动态加载器会根据这些表将可执行文件或Mach-O包和与他依赖的库进行链接。</li>
+</ul>
+<img src="/2015/06/19/150619-mach-o-file-format/150619-mach-o-file-format-00.png" alt="Mach-O文件结构布局" title="Mach-O文件结构布局">
+<p>当使用DWARF进行调试的时候，调试信息存储在image对应的dSYM文件中，并且被uuid_command 结构所定义。<br></p>
+<p>每个Mach-O文件都包含着与一个架构相对应的代码和数据。头结构指定了被内核所确认的特定的结构，例如：在基于PowerPC架构的Mac计算机中的代码就不能在基于Intel架构的Mac计算机上运行。但是你可以利用<a href="https://developer.apple.com/library/mac/documentation/DeveloperTools/Conceptual/MachORuntime/#//apple_ref/doc/uid/20001298-154889" target="_blank" rel="external">Universal Binaries and 32-bit/64-bit PowerPC Binaries.</a>中所定义的格式将多个Mack-O文件组合进一个二进制文件中。<br></p>
+<p><strong>注意：由包含一个以上架构的对象文件组成的二进制文件并不是Mach-O文件，它是指对多个Mach-O文件进行了压缩。</strong></p>
+<p>segment和section通常是通过名称进行访问的，segment的名称由两个底杠加上大写字母组成(如：<strong>TEXT)；section的名称由两个底杠加上小写字母组成(如：</strong>text)。这些命名规则都是约定俗成的。</p>
+<h3 id="Header-Structure"><a href="#Header-Structure" class="headerlink" title="Header Structure"></a>Header Structure</h3><p>通过otool -h hw.out命令可以显示出Mach-O文件的Mach header信息，其结构如下：</p>
+<figure class="highlight plain"><table><tr><td class="gutter"><pre><div class="line">1</div><div class="line">2</div><div class="line">3</div><div class="line">4</div><div class="line">5</div></pre></td><td class="code"><pre><div class="line">localhost:binspect ronglei$ xcrun otool -h hw.out </div><div class="line">hw.out:</div><div class="line">Mach header</div><div class="line">      magic cputype cpusubtype  caps    filetype ncmds sizeofcmds      flags</div><div class="line"> 0xfeedfacf 16777223          3  0x80           2    16       1296 0x00200085</div></pre></td></tr></table></figure>
+<figure class="highlight plain"><table><tr><td class="gutter"><pre><div class="line">1</div><div class="line">2</div><div class="line">3</div><div class="line">4</div><div class="line">5</div><div class="line">6</div><div class="line">7</div><div class="line">8</div><div class="line">9</div><div class="line">10</div></pre></td><td class="code"><pre><div class="line">struct mach_header &#123;</div><div class="line">	uint32_t	magic;</div><div class="line">	cpu_type_t	cputype;</div><div class="line">	cpu_subtype_t	cpusubtype;</div><div class="line">	uint32_t	filetype;</div><div class="line">	uint32_t	ncmds;</div><div class="line">	uint32_t	sizeofcmds;</div><div class="line">	uint32_t	flags;</div><div class="line">	uint32_t	reserved;</div><div class="line">&#125;;</div></pre></td></tr></table></figure>
+<ul>
+<li>magic是一个常量，详见：/usr/include/mach-o/loader.h</li>
+</ul>
+<figure class="highlight plain"><table><tr><td class="gutter"><pre><div class="line">1</div><div class="line">2</div><div class="line">3</div><div class="line">4</div><div class="line">5</div><div class="line">6</div></pre></td><td class="code"><pre><div class="line">/ Constant for the magic field of the mach_header (32-bit architectures) /</div><div class="line">#define MH_MAGIC 0xfeedface	/ the mach magic number /</div><div class="line">#define MH_CIGAM 0xcefaedfe	/ NXSwapInt(MH_MAGIC) /</div><div class="line">/ Constant for the magic field of the mach_header_64 (64-bit architectures) /</div><div class="line">#define MH_MAGIC_64 0xfeedfacf / the 64-bit mach magic number /</div><div class="line">#define MH_CIGAM_64 0xcffaedfe / NXSwapInt(MH_MAGIC_64) /</div></pre></td></tr></table></figure>
+<ul>
+<li>cputypeCPU标示，代码执行所需的CPU的类型</li>
+<li>cpusubtypemachine标示，详见：/usr/include/mach/machine.h</li>
+</ul>
+<figure class="highlight plain"><table><tr><td class="gutter"><pre><div class="line">1</div><div class="line">2</div><div class="line">3</div><div class="line">4</div><div class="line">5</div><div class="line">6</div><div class="line">7</div><div class="line">8</div><div class="line">9</div><div class="line">10</div></pre></td><td class="code"><pre><div class="line">#define	CPU_TYPE_MC680x0    ((cpu_type_t) 6)</div><div class="line">#define CPU_TYPE_X86	  ((cpu_type_t) 7)</div><div class="line">#define CPU_TYPE_I386	  CPU_TYPE_X86		/ compatibility /</div><div class="line">#define CPU_TYPE_X86_64  (CPU_TYPE_X86 | CPU_ARCH_ABI64)</div><div class="line">......</div><div class="line">#define CPU_SUBTYPE_X86_ALL		((cpu_subtype_t)3)</div><div class="line">#define CPU_SUBTYPE_X86_64_ALL	((cpu_subtype_t)3)</div><div class="line">#define CPU_SUBTYPE_X86_ARCH1		((cpu_subtype_t)4)</div><div class="line">#define CPU_SUBTYPE_X86_64_H		((cpu_subtype_t)8)	/ Haswell feature subset /</div><div class="line">......</div></pre></td></tr></table></figure>
+<ul>
+<li>filetype标示文件类型，参见：/usr/include/mach-o/loader.h</li>
+</ul>
+<figure class="highlight plain"><table><tr><td class="gutter"><pre><div class="line">1</div><div class="line">2</div><div class="line">3</div><div class="line">4</div><div class="line">5</div><div class="line">6</div></pre></td><td class="code"><pre><div class="line">#define	MH_OBJECT  0x1 / relocatable object file /</div><div class="line">#define MH_EXECUTE  0x2 / demand paged executable file /</div><div class="line">#define MH_DYLIB    0x6 / dynamically bound shared library /</div><div class="line">#define MH_DYLINKER 0x7 / dynamic link editor /</div><div class="line">#define MH_BUNDLE   0x8 / dynamically bound bundle file /</div><div class="line">......</div></pre></td></tr></table></figure>
+<ul>
+<li>ncmds和sizeofcmds分别标示load commands的数量和所有load commands命令的size</li>
+</ul>
+<h3 id="Load-Commands"><a href="#Load-Commands" class="headerlink" title="Load Commands"></a>Load Commands</h3><p>Load Commands不仅定义了文件的逻辑结构，还定义了文件在虚拟内存中的布局。他们是Mach-O文件的核心从上面输出的mac header信息中我看看到我们的Mach-O文件总共有16个load commads：</p>
+<p>在终端通过otool -l hw.out 命令可以查看Mach-O文件中所有Load Commands。<br></p>
+<figure class="highlight plain"><table><tr><td class="gutter"><pre><div class="line">1</div><div class="line">2</div><div class="line">3</div><div class="line">4</div><div class="line">5</div><div class="line">6</div><div class="line">7</div><div class="line">8</div><div class="line">9</div><div class="line">10</div><div class="line">11</div><div class="line">12</div><div class="line">13</div><div class="line">14</div><div class="line">15</div><div class="line">16</div><div class="line">17</div><div class="line">18</div><div class="line">19</div><div class="line">20</div><div class="line">21</div><div class="line">22</div><div class="line">23</div><div class="line">24</div><div class="line">25</div><div class="line">26</div><div class="line">27</div><div class="line">28</div><div class="line">29</div><div class="line">30</div><div class="line">31</div><div class="line">32</div><div class="line">33</div><div class="line">34</div><div class="line">35</div><div class="line">36</div><div class="line">37</div><div class="line">38</div><div class="line">39</div><div class="line">40</div><div class="line">41</div><div class="line">42</div><div class="line">43</div><div class="line">44</div><div class="line">45</div><div class="line">46</div><div class="line">47</div><div class="line">48</div><div class="line">49</div><div class="line">50</div><div class="line">51</div><div class="line">52</div><div class="line">53</div><div class="line">54</div><div class="line">55</div><div class="line">56</div><div class="line">57</div><div class="line">58</div><div class="line">59</div><div class="line">60</div><div class="line">61</div><div class="line">62</div><div class="line">63</div><div class="line">64</div><div class="line">65</div><div class="line">66</div><div class="line">67</div><div class="line">68</div><div class="line">69</div><div class="line">70</div><div class="line">71</div><div class="line">72</div><div class="line">73</div><div class="line">74</div><div class="line">75</div><div class="line">76</div><div class="line">77</div><div class="line">78</div><div class="line">79</div><div class="line">80</div><div class="line">81</div><div class="line">82</div><div class="line">83</div><div class="line">84</div><div class="line">85</div><div class="line">86</div><div class="line">87</div><div class="line">88</div><div class="line">89</div><div class="line">90</div><div class="line">91</div><div class="line">92</div><div class="line">93</div><div class="line">94</div><div class="line">95</div><div class="line">96</div><div class="line">97</div><div class="line">98</div><div class="line">99</div><div class="line">100</div><div class="line">101</div><div class="line">102</div><div class="line">103</div><div class="line">104</div><div class="line">105</div><div class="line">106</div><div class="line">107</div><div class="line">108</div><div class="line">109</div><div class="line">110</div><div class="line">111</div><div class="line">112</div><div class="line">113</div><div class="line">114</div><div class="line">115</div><div class="line">116</div><div class="line">117</div><div class="line">118</div><div class="line">119</div><div class="line">120</div><div class="line">121</div><div class="line">122</div><div class="line">123</div><div class="line">124</div><div class="line">125</div><div class="line">126</div><div class="line">127</div><div class="line">128</div><div class="line">129</div><div class="line">130</div><div class="line">131</div><div class="line">132</div><div class="line">133</div><div class="line">134</div><div class="line">135</div><div class="line">136</div><div class="line">137</div><div class="line">138</div><div class="line">139</div><div class="line">140</div><div class="line">141</div><div class="line">142</div><div class="line">143</div><div class="line">144</div><div class="line">145</div><div class="line">146</div><div class="line">147</div><div class="line">148</div><div class="line">149</div><div class="line">150</div><div class="line">151</div><div class="line">152</div><div class="line">153</div><div class="line">154</div><div class="line">155</div><div class="line">156</div><div class="line">157</div><div class="line">158</div><div class="line">159</div><div class="line">160</div><div class="line">161</div><div class="line">162</div><div class="line">163</div><div class="line">164</div><div class="line">165</div><div class="line">166</div><div class="line">167</div><div class="line">168</div><div class="line">169</div><div class="line">170</div><div class="line">171</div><div class="line">172</div><div class="line">173</div><div class="line">174</div><div class="line">175</div><div class="line">176</div><div class="line">177</div><div class="line">178</div><div class="line">179</div><div class="line">180</div><div class="line">181</div><div class="line">182</div><div class="line">183</div><div class="line">184</div><div class="line">185</div><div class="line">186</div><div class="line">187</div><div class="line">188</div><div class="line">189</div><div class="line">190</div><div class="line">191</div><div class="line">192</div><div class="line">193</div><div class="line">194</div><div class="line">195</div><div class="line">196</div><div class="line">197</div><div class="line">198</div><div class="line">199</div><div class="line">200</div><div class="line">201</div><div class="line">202</div><div class="line">203</div><div class="line">204</div><div class="line">205</div><div class="line">206</div><div class="line">207</div><div class="line">208</div><div class="line">209</div><div class="line">210</div><div class="line">211</div><div class="line">212</div><div class="line">213</div><div class="line">214</div><div class="line">215</div><div class="line">216</div><div class="line">217</div><div class="line">218</div><div class="line">219</div><div class="line">220</div><div class="line">221</div><div class="line">222</div><div class="line">223</div><div class="line">224</div><div class="line">225</div><div class="line">226</div><div class="line">227</div><div class="line">228</div><div class="line">229</div><div class="line">230</div><div class="line">231</div></pre></td><td class="code"><pre><div class="line">localhost:binspect ronglei$ xcrun otool -l hw.out </div><div class="line">hw.out:</div><div class="line">Load command 0</div><div class="line">      cmd LC_SEGMENT_64</div><div class="line">  cmdsize 72</div><div class="line">  segname __PAGEZERO</div><div class="line">   vmaddr 0x0000000000000000</div><div class="line">   vmsize 0x0000000100000000</div><div class="line">  fileoff 0</div><div class="line"> filesize 0</div><div class="line">  maxprot 0x00000000</div><div class="line"> initprot 0x00000000</div><div class="line">   nsects 0</div><div class="line">    flags 0x0</div><div class="line">Load command 1</div><div class="line">      cmd LC_SEGMENT_64</div><div class="line">  cmdsize 552</div><div class="line">  segname __TEXT</div><div class="line">   vmaddr 0x0000000100000000</div><div class="line">   vmsize 0x0000000000001000</div><div class="line">  fileoff 0</div><div class="line"> filesize 4096</div><div class="line">  maxprot 0x00000007</div><div class="line"> initprot 0x00000005</div><div class="line">   nsects 6</div><div class="line">    flags 0x0</div><div class="line">Section</div><div class="line">  sectname __text</div><div class="line">   segname __TEXT</div><div class="line">      addr 0x0000000100000f40</div><div class="line">      size 0x000000000000002a</div><div class="line">    offset 3904</div><div class="line">     align 2^4 (16)</div><div class="line">    reloff 0</div><div class="line">    nreloc 0</div><div class="line">     flags 0x80000400</div><div class="line"> reserved1 0</div><div class="line"> reserved2 0</div><div class="line">Section</div><div class="line">  sectname __stubs</div><div class="line">   segname __TEXT</div><div class="line">      addr 0x0000000100000f6a</div><div class="line">      size 0x0000000000000006</div><div class="line">    offset 3946</div><div class="line">     align 2^1 (2)</div><div class="line">    reloff 0</div><div class="line">    nreloc 0</div><div class="line">     flags 0x80000408</div><div class="line"> reserved1 0 (index into indirect symbol table)</div><div class="line"> reserved2 6 (size of stubs)</div><div class="line">Section</div><div class="line">  sectname __stub_helper</div><div class="line">   segname __TEXT</div><div class="line">      addr 0x0000000100000f70</div><div class="line">      size 0x000000000000001a</div><div class="line">    offset 3952</div><div class="line">     align 2^2 (4)</div><div class="line">    reloff 0</div><div class="line">    nreloc 0</div><div class="line">     flags 0x80000400</div><div class="line"> reserved1 0</div><div class="line"> reserved2 0</div><div class="line">Section</div><div class="line">  sectname __cstring</div><div class="line">   segname __TEXT</div><div class="line">      addr 0x0000000100000f8a</div><div class="line">      size 0x000000000000000e</div><div class="line">    offset 3978</div><div class="line">     align 2^0 (1)</div><div class="line">    reloff 0</div><div class="line">    nreloc 0</div><div class="line">     flags 0x00000002</div><div class="line"> reserved1 0</div><div class="line"> reserved2 0</div><div class="line">Section</div><div class="line">  sectname __unwind_info</div><div class="line">   segname __TEXT</div><div class="line">      addr 0x0000000100000f98</div><div class="line">      size 0x0000000000000048</div><div class="line">    offset 3992</div><div class="line">     align 2^2 (4)</div><div class="line">    reloff 0</div><div class="line">    nreloc 0</div><div class="line">     flags 0x00000000</div><div class="line"> reserved1 0</div><div class="line"> reserved2 0</div><div class="line">Section</div><div class="line">  sectname __eh_frame</div><div class="line">   segname __TEXT</div><div class="line">      addr 0x0000000100000fe0</div><div class="line">      size 0x0000000000000018</div><div class="line">    offset 4064</div><div class="line">     align 2^3 (8)</div><div class="line">    reloff 0</div><div class="line">    nreloc 0</div><div class="line">     flags 0x00000000</div><div class="line"> reserved1 0</div><div class="line"> reserved2 0</div><div class="line">Load command 2</div><div class="line">      cmd LC_SEGMENT_64</div><div class="line">  cmdsize 232</div><div class="line">  segname __DATA</div><div class="line">   vmaddr 0x0000000100001000</div><div class="line">   vmsize 0x0000000000001000</div><div class="line">  fileoff 4096</div><div class="line"> filesize 4096</div><div class="line">  maxprot 0x00000007</div><div class="line"> initprot 0x00000003</div><div class="line">   nsects 2</div><div class="line">    flags 0x0</div><div class="line">Section</div><div class="line">  sectname __nl_symbol_ptr</div><div class="line">   segname __DATA</div><div class="line">      addr 0x0000000100001000</div><div class="line">      size 0x0000000000000010</div><div class="line">    offset 4096</div><div class="line">     align 2^3 (8)</div><div class="line">    reloff 0</div><div class="line">    nreloc 0</div><div class="line">     flags 0x00000006</div><div class="line"> reserved1 1 (index into indirect symbol table)</div><div class="line"> reserved2 0</div><div class="line">Section</div><div class="line">  sectname __la_symbol_ptr</div><div class="line">   segname __DATA</div><div class="line">      addr 0x0000000100001010</div><div class="line">      size 0x0000000000000008</div><div class="line">    offset 4112</div><div class="line">     align 2^3 (8)</div><div class="line">    reloff 0</div><div class="line">    nreloc 0</div><div class="line">     flags 0x00000007</div><div class="line"> reserved1 3 (index into indirect symbol table)</div><div class="line"> reserved2 0</div><div class="line">Load command 3</div><div class="line">      cmd LC_SEGMENT_64</div><div class="line">  cmdsize 72</div><div class="line">  segname __LINKEDIT</div><div class="line">   vmaddr 0x0000000100002000</div><div class="line">   vmsize 0x0000000000001000</div><div class="line">  fileoff 8192</div><div class="line"> filesize 304</div><div class="line">  maxprot 0x00000007</div><div class="line"> initprot 0x00000001</div><div class="line">   nsects 0</div><div class="line">    flags 0x0</div><div class="line">Load command 4</div><div class="line">            cmd LC_DYLD_INFO_ONLY</div><div class="line">        cmdsize 48</div><div class="line">     rebase_off 8192</div><div class="line">    rebase_size 8</div><div class="line">       bind_off 8200</div><div class="line">      bind_size 24</div><div class="line">  weak_bind_off 0</div><div class="line"> weak_bind_size 0</div><div class="line">  lazy_bind_off 8224</div><div class="line"> lazy_bind_size 16</div><div class="line">     export_off 8240</div><div class="line">    export_size 48</div><div class="line">Load command 5</div><div class="line">     cmd LC_SYMTAB</div><div class="line"> cmdsize 24</div><div class="line">  symoff 8360</div><div class="line">   nsyms 4</div><div class="line">  stroff 8440</div><div class="line"> strsize 56</div><div class="line">Load command 6</div><div class="line">            cmd LC_DYSYMTAB</div><div class="line">        cmdsize 80</div><div class="line">      ilocalsym 0</div><div class="line">      nlocalsym 0</div><div class="line">     iextdefsym 0</div><div class="line">     nextdefsym 2</div><div class="line">      iundefsym 2</div><div class="line">      nundefsym 2</div><div class="line">         tocoff 0</div><div class="line">           ntoc 0</div><div class="line">      modtaboff 0</div><div class="line">        nmodtab 0</div><div class="line">   extrefsymoff 0</div><div class="line">    nextrefsyms 0</div><div class="line"> indirectsymoff 8424</div><div class="line">  nindirectsyms 4</div><div class="line">      extreloff 0</div><div class="line">        nextrel 0</div><div class="line">      locreloff 0</div><div class="line">        nlocrel 0</div><div class="line">Load command 7</div><div class="line">          cmd LC_LOAD_DYLINKER</div><div class="line">      cmdsize 32</div><div class="line">         name /usr/lib/dyld (offset 12)</div><div class="line">Load command 8</div><div class="line">     cmd LC_UUID</div><div class="line"> cmdsize 24</div><div class="line">    uuid ED7FAB6F-8A35-3C1A-9825-A92D7E42B142</div><div class="line">Load command 9</div><div class="line">      cmd LC_VERSION_MIN_MACOSX</div><div class="line">  cmdsize 16</div><div class="line">  version 10.10</div><div class="line">      sdk 10.10</div><div class="line">Load command 10</div><div class="line">      cmd LC_SOURCE_VERSION</div><div class="line">  cmdsize 16</div><div class="line">  version 0.0</div><div class="line">Load command 11</div><div class="line">       cmd LC_MAIN</div><div class="line">   cmdsize 24</div><div class="line">  entryoff 3904</div><div class="line"> stacksize 0</div><div class="line">Load command 12</div><div class="line">          cmd LC_LOAD_DYLIB</div><div class="line">      cmdsize 56</div><div class="line">         name /usr/lib/libSystem.B.dylib (offset 24)</div><div class="line">   time stamp 2 Thu Jan  1 08:00:02 1970</div><div class="line">      current version 1213.0.0</div><div class="line">compatibility version 1.0.0</div><div class="line">Load command 13</div><div class="line">      cmd LC_FUNCTION_STARTS</div><div class="line">  cmdsize 16</div><div class="line">  dataoff 8288</div><div class="line"> datasize 8</div><div class="line">Load command 14</div><div class="line">      cmd LC_DATA_IN_CODE</div><div class="line">  cmdsize 16</div><div class="line">  dataoff 8296</div><div class="line"> datasize 0</div><div class="line">Load command 15</div><div class="line">      cmd LC_DYLIB_CODE_SIGN_DRS</div><div class="line">  cmdsize 16</div><div class="line">  dataoff 8296</div><div class="line"> datasize 64</div></pre></td></tr></table></figure>
+<ul>
+<li>LC_SEGMENT_64：(Load command 0-3)定义了一个(64-bit)的segments及其中的sections在文件加载时如何映射到内存中。</li>
+<li>LC_SYMTAB：(Load command 5)定义了文件的符号表(stabs style)和字符表。链接器在链接文件的时候会用到，调试器也可以将它们将符号表映射到与它们相对应的源码文件中，以便于调试问题所在。</li>
+<li>LC_DYSYMTAB：(Load command 6)为动态链接器提供了额外的信息，用以如何将符号写进符号表中。</li>
+<li>LC_DYLD_INFO_ONLY：(Load command 4)定义了一些额外的与动态链接压缩信息，包含信号的元数据和动态绑定其它事情的操作码。“_ONLY”后缀意味着这条load command需要在程序中运行，因此那些不懂这条load command的旧的链接器将无法运行。</li>
+<li>LC_LOAD_DYLINKER：(Load command 7)加载动态链接器，(name /usr/lib/dyld)</li>
+<li>LC_LOAD_DYLIB：(Load command 12)加载动态链接共享库。如：“/usr/lib/libSystem.B.dylib”一个用标准C语言函数库。每一个动态库都会被动态链接器加载进内存，它们内部包含一张符号名称与地址链接在一起的符号表。</li>
+<li>LC_MAIN：(Load command 11)指定了程序main()函数的入口地址。</li>
+<li>LC_UUID：(Load command 8)提供了一个随机的唯一标示符(UUID)，通常由静态连接器生成。</li>
+<li>LC_VERSION_MIN_MAXOSX：(Load command 9)该二进制文件所支持的最低OS X系统版本。</li>
+<li>LC_SOURCE_VERSION：(Load command 10)用于build二进制文件的源码版本。</li>
+<li>LC_FUNTION_STARTS：(Load command 13)定义了一张包含所有函数开始位置的表。</li>
+<li>LC_DATA_IN_CODE：(Load command 14)定义了code segemnt中的一张非指令表。</li>
+<li>LC_DYLIB_CODE_SIGN_DRS：(Load command 15)为动态链接库定义了代码签名。</li>
+</ul>
+<h3 id="Segments-and-Sections"><a href="#Segments-and-Sections" class="headerlink" title="Segments and Sections"></a>Segments and Sections</h3><p>segment 在Mach-O文件中定义了一定范围的字节数，在动态链接器加载程序的时候这一特定范围的字节数将被映射到对应的虚拟内存中。<br>出于内存分页的考虑，头结构和加载命令通常会成为第一个segment 的一部分。在一个可执行文件中，这通常意味着头结构和加载命令会被放置到__TEXT segment 的开头，因为它才是第一个包含数据的segment。<br></p>
+<p><strong>注意：内容为空的section需要被放置在segment的末尾，否则标准工具将无法对Mach-O文件正确地进行操作。</strong></p>
+<p>我们可以通过size指令打印出Mach-O文件在虚拟内存中的布局：</p>
+<figure class="highlight plain"><table><tr><td class="gutter"><pre><div class="line">1</div><div class="line">2</div><div class="line">3</div><div class="line">4</div><div class="line">5</div><div class="line">6</div><div class="line">7</div><div class="line">8</div><div class="line">9</div><div class="line">10</div><div class="line">11</div><div class="line">12</div><div class="line">13</div><div class="line">14</div><div class="line">15</div><div class="line">16</div></pre></td><td class="code"><pre><div class="line">localhost:binspect ronglei$ xcrun size -x -l -m hw_clang.out </div><div class="line">Segment __PAGEZERO: 0x100000000 (vmaddr 0x0 fileoff 0)</div><div class="line">Segment __TEXT: 0x1000 (vmaddr 0x100000000 fileoff 0)</div><div class="line">	Section __text: 0x2a (addr 0x100000f40 offset 3904)</div><div class="line">	Section __stubs: 0x6 (addr 0x100000f6a offset 3946)</div><div class="line">	Section __stub_helper: 0x1a (addr 0x100000f70 offset 3952)</div><div class="line">	Section __cstring: 0xe (addr 0x100000f8a offset 3978)</div><div class="line">	Section __unwind_info: 0x48 (addr 0x100000f98 offset 3992)</div><div class="line">	Section __eh_frame: 0x18 (addr 0x100000fe0 offset 4064)</div><div class="line">	total 0xb8</div><div class="line">Segment __DATA: 0x1000 (vmaddr 0x100001000 fileoff 4096)</div><div class="line">	Section __nl_symbol_ptr: 0x10 (addr 0x100001000 offset 4096)</div><div class="line">	Section __la_symbol_ptr: 0x8 (addr 0x100001010 offset 4112)</div><div class="line">	total 0x18</div><div class="line">Segment __LINKEDIT: 0x1000 (vmaddr 0x100002000 fileoff 8192)</div><div class="line">total 0x100003000</div></pre></td></tr></table></figure>
+<p>在上一节的otool -l hw.out 命令输出中我们看到，segment/section结构被定义在’LC_SEGMENT_64’加载命令中。下面然我们来看一下有关它们的一下详细信息:<br></p>
+<ul>
+<li><strong>PAGEZERO ：作为可执行文件的第一个segment，该segment被放置在虚拟内存开始的位置权限为可读写。</strong>PAGEZERO segment在被映射入内存后（在当前的架构对于基于Intel和PowerPC的Mac计算机而言，该空间大小为4096字节用十六进制表示为0x1000）占据虚拟内存一页的空间，而在存储在磁盘上市，__PAGESIZE segment不不占据任何空间，所以他加载进内存中所需要的空间要比存储在磁盘上的空间更大。顺便说一句该segment是隐藏恶意代码的好地方。</li>
+<li><p><strong>TEXT：包含可执行代码和只读数据。为了使得内核方便的将该段直接从可执行文件中映射到共享内存中，静态链接器设置该段在虚拟内存的权限为只读。当该段被映射到内存的时候，它被所有对它感兴趣的进程所共享(这正是framework，bundle和shared library的主要用途，但是它可以在同一个执行程序中运行多个拷贝)，只读属性同时意味着由该segment组成的内存页不需要再被写回到磁盘中。当内核需要释放物理内存时，它只需简单地释放一页或更多页的</strong>TEXT，然后在需要的时候重新从磁盘将他们读取到内存。</p>
+</li>
+<li><p>__text：存放可执行机械代码的section；</p>
+</li>
+<li>__stubs：间接地符号存根。代表着lazy引用和no-lazy引用做要跳转的地址值。</li>
+<li>__stubs_helper：为lazy加载符号提供帮助。</li>
+<li>__cstring：存储只读的C语言格式字符串(如：“hello, wold!0”)的section，链接器会对该section进行去重的处理。</li>
+<li><strong>unwind_info：栈展开信息的压缩格式。该section是链接器对‘</strong>eh_frame’section里面的信息进行压缩产生的。</li>
+<li>__eh_frame：一个标准的用于异常处理的<br>section，它负责为DWARF格式提供栈展开信息。</li>
+</ul>
+<ul>
+<li><p><strong>DATA：一个包含可读写数据的segment。静态链接器设置这段虚拟内存的属性为可读写。因为它是可写读写的，共享库的</strong>DATA段会被拷贝到每一个与这个库链接的进程中。当可读写__DATA段被映射到虚拟内存页的时候，内核将他们标记为写时拷贝(copy-on-write)；因此当进程向某页写入数据时，该进程将会接受一个该页的私有拷贝。</p>
+</li>
+<li><p>__nl_symbol_ptr：指向非延迟导入符号(non-lazy imported symbols)的表。</p>
+</li>
+<li>__la_symbol_ptr：指向延迟导入符号(lazy imported symbols)的表。</li>
+</ul>
+<ul>
+<li>__OBJ：一个包含用于Ojbectiv-C语言动态运行时库数据的segment。</li>
+<li>__IMPORT：一个只有在IA-32架构的计算机中才会产生的segment。</li>
+<li>__LINKEDIT：段包含会被动态链接器使用的原生数据，如：符号，字符串和重定位表入口。</li>
+</ul>
+<h3 id="Reference"><a href="#Reference" class="headerlink" title="Reference"></a>Reference</h3><p><a href="https://developer.apple.com/library/mac/documentation/DeveloperTools/Conceptual/MachORuntime/#//apple_ref/c/" target="_blank" rel="external">OS X ABI Mach-O File Format Reference</a><br><br><a href="http://www.reinterpretcast.com/hello-world-mach-o" target="_blank" rel="external">THE NITTY GRITTY OF “HELLO WORLD” ON OS X</a><br><br><a href="http://www.objc.io/issue-6/mach-o-executables.html" target="_blank" rel="external">Mach-O Executables</a><br><br><a href="https://www.mikeash.com/pyblog/friday-qa-2012-11-09-dyld-dynamic-linking-on-os-x.html" target="_blank" rel="external">Dynamic Linking On OS X</a><br><br><a href="http://blog.163.com/iswing@126/blog/static/166700480201129102259978/" target="_blank" rel="external">otool</a><br><br><a href="http://www.th7.cn/Program/IOS/201412/335328.shtml" target="_blank" rel="external">iOS程序main函数之前发生了什么</a></p>
+
+      
+    </div>
+
+    <div>
+      
+        
+
+      
+    </div>
+
+    <div>
+      
+        
+
+      
+    </div>
+
+    <footer class="post-footer">
+      
+
+      
+        <div class="post-nav">
+          <div class="post-nav-next post-nav-item">
+            
+              <a href="/2015/05/30/150530-afnetworking/" rel="next" title="AFNetworking2.0源码分析(原创)">
+                <i class="fa fa-chevron-left"></i> AFNetworking2.0源码分析(原创)
+              </a>
+            
+          </div>
+
+          <div class="post-nav-prev post-nav-item">
+            
+              <a href="/2015/06/29/150629-oc-source-code-overview/" rel="prev" title="OC运行时源码概览">
+                OC运行时源码概览 <i class="fa fa-chevron-right"></i>
+              </a>
+            
+          </div>
+        </div>
+      
+
+      
+      
+    </footer>
+  </article>
+
+
+
+    <div class="post-spread">
+      
+    </div>
+  </div>
+
+
+          </div>
+          
+
+
+          
+  <div class="comments" id="comments">
+    
+  </div>
+
+
+        </div>
+        
+          
+  
+  <div class="sidebar-toggle">
+    <div class="sidebar-toggle-line-wrap">
+      <span class="sidebar-toggle-line sidebar-toggle-line-first"></span>
+      <span class="sidebar-toggle-line sidebar-toggle-line-middle"></span>
+      <span class="sidebar-toggle-line sidebar-toggle-line-last"></span>
+    </div>
+  </div>
+
+  <aside id="sidebar" class="sidebar">
+    <div class="sidebar-inner">
+
+      
+
+      
+        <ul class="sidebar-nav motion-element">
+          <li class="sidebar-nav-toc sidebar-nav-active" data-target="post-toc-wrap" >
+            文章目錄
+          </li>
+          <li class="sidebar-nav-overview" data-target="site-overview">
+            本站概覽
+          </li>
+        </ul>
+      
+
+      <section class="site-overview sidebar-panel ">
+        <div class="site-author motion-element" itemprop="author" itemscope itemtype="//schema.org/Person">
+          <img class="site-author-image" itemprop="image"
+               src="/images/avatar.gif"
+               alt="ronglei" />
+          <p class="site-author-name" itemprop="name">ronglei</p>
+          <p class="site-description motion-element" itemprop="description"></p>
+        </div>
+        <nav class="site-state motion-element">
+          <div class="site-state-item site-state-posts">
+            <a href="/archives">
+              <span class="site-state-item-count">21</span>
+              <span class="site-state-item-name">文章</span>
+            </a>
+          </div>
+
+          
+            <div class="site-state-item site-state-categories">
+              
+                <span class="site-state-item-count">8</span>
+                <span class="site-state-item-name">分類</span>
+              
+            </div>
+          
+
+          
+            <div class="site-state-item site-state-tags">
+              <a href="/tags">
+                <span class="site-state-item-count">5</span>
+                <span class="site-state-item-name">標籤</span>
+              </a>
+            </div>
+          
+
+        </nav>
+
+        
+
+        <div class="links-of-author motion-element">
+          
+        </div>
+
+        
+        
+
+        
+        
+
+      </section>
+
+      
+        <section class="post-toc-wrap motion-element sidebar-panel sidebar-panel-active">
+          <div class="post-toc">
+            
+              
+            
+            
+              <div class="post-toc-content"><ol class="nav"><li class="nav-item nav-level-3"><a class="nav-link" href="#Basic-Structure"><span class="nav-number">1.</span> <span class="nav-text">Basic Structure</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#Header-Structure"><span class="nav-number">2.</span> <span class="nav-text">Header Structure</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#Load-Commands"><span class="nav-number">3.</span> <span class="nav-text">Load Commands</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#Segments-and-Sections"><span class="nav-number">4.</span> <span class="nav-text">Segments and Sections</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#Reference"><span class="nav-number">5.</span> <span class="nav-text">Reference</span></a></li></ol></div>
+            
+          </div>
+        </section>
+      
+
+    </div>
+  </aside>
+
+
+        
+      </div>
+    </main>
+
+    <footer id="footer" class="footer">
+      <div class="footer-inner">
+        <div class="copyright" >
+  
+  &copy; 
+  <span itemprop="copyrightYear">2016</span>
+  <span class="with-love">
+    <i class="fa fa-heart"></i>
+  </span>
+  <span class="author" itemprop="copyrightHolder">ronglei</span>
+</div>
+
+<div class="powered-by">
+  由 <a class="theme-link" href="https://hexo.io">Hexo</a> 強力驅動
+</div>
+
+<div class="theme-info">
+  主題 -
+  <a class="theme-link" href="https://github.com/iissnan/hexo-theme-next">
+    NexT.Mist
+  </a>
+</div>
+
+        
+
+        
+      </div>
+    </footer>
+
+    <div class="back-to-top">
+      <i class="fa fa-arrow-up"></i>
+    </div>
+  </div>
+
+  
+
+<script type="text/javascript">
+  if (Object.prototype.toString.call(window.Promise) !== '[object Function]') {
+    window.Promise = null;
+  }
+</script>
+
+
+
+
+
+
+
+
+
+  
+
+
+
+  
+  <script type="text/javascript" src="/vendors/jquery/index.js?v=2.1.3"></script>
+
+  
+  <script type="text/javascript" src="/vendors/fastclick/lib/fastclick.min.js?v=1.0.6"></script>
+
+  
+  <script type="text/javascript" src="/vendors/jquery_lazyload/jquery.lazyload.js?v=1.9.7"></script>
+
+  
+  <script type="text/javascript" src="/vendors/velocity/velocity.min.js?v=1.2.1"></script>
+
+  
+  <script type="text/javascript" src="/vendors/velocity/velocity.ui.min.js?v=1.2.1"></script>
+
+  
+  <script type="text/javascript" src="/vendors/fancybox/source/jquery.fancybox.pack.js?v=2.1.5"></script>
+
+
+  
+
+
+  <script type="text/javascript" src="/js/src/utils.js?v=5.0.2"></script>
+
+  <script type="text/javascript" src="/js/src/motion.js?v=5.0.2"></script>
+
+
+
+  
+  
+
+  
+  <script type="text/javascript" src="/js/src/scrollspy.js?v=5.0.2"></script>
+<script type="text/javascript" src="/js/src/post-details.js?v=5.0.2"></script>
+
+
+
+  
+
+
+  <script type="text/javascript" src="/js/src/bootstrap.js?v=5.0.2"></script>
+
+
+
+  
+
+
+
+  
+
+
+
+
+  
+  
+
+  
+
+  
+
+  
+
+</body>
+</html>

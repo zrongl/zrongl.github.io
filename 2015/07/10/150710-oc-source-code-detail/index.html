@@ -1,0 +1,649 @@
+<!doctype html>
+
+
+
+  
+
+
+<html class="theme-next mist use-motion">
+<head>
+  <meta charset="UTF-8"/>
+<meta http-equiv="X-UA-Compatible" content="IE=edge,chrome=1" />
+<meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1"/>
+
+
+
+<meta http-equiv="Cache-Control" content="no-transform" />
+<meta http-equiv="Cache-Control" content="no-siteapp" />
+
+
+
+
+
+
+
+
+
+
+
+
+  
+  
+  <link href="/vendors/fancybox/source/jquery.fancybox.css?v=2.1.5" rel="stylesheet" type="text/css" />
+
+
+
+
+  
+  
+  
+  
+
+  
+    
+    
+  
+
+  
+
+  
+
+  
+
+  
+
+  
+    
+    
+    <link href="//fonts.googleapis.com/css?family=Lato:300,300italic,400,400italic,700,700italic&subset=latin,latin-ext" rel="stylesheet" type="text/css">
+  
+
+
+
+
+
+
+<link href="/vendors/font-awesome/css/font-awesome.min.css?v=4.4.0" rel="stylesheet" type="text/css" />
+
+<link href="/css/main.css?v=5.0.2" rel="stylesheet" type="text/css" />
+
+
+  <meta name="keywords" content="Hexo, NexT" />
+
+
+
+
+
+
+
+
+  <link rel="shortcut icon" type="image/x-icon" href="/favicon.ico?v=5.0.2" />
+
+
+
+
+
+
+<meta name="description" content="介绍应用中的Objective-C类是如何被加载进内存的，以及在加载进内存过程中是基于什么结构去组织类与类之间关系的">
+<meta property="og:type" content="article">
+<meta property="og:title" content="OC运行时源码细节">
+<meta property="og:url" content="http://zrongl.github.io/2015/07/10/150710-oc-source-code-detail/index.html">
+<meta property="og:site_name" content="Zrongl">
+<meta property="og:description" content="介绍应用中的Objective-C类是如何被加载进内存的，以及在加载进内存过程中是基于什么结构去组织类与类之间关系的">
+<meta property="og:image" content="http://zrongl.github.io/2015/07/10/150710-oc-source-code-detail/150710-oc-source-code-detail-00.png">
+<meta property="og:image" content="http://zrongl.github.io/2015/07/10/150710-oc-source-code-detail/150710-oc-source-code-detail-01.png">
+<meta property="og:updated_time" content="2016-10-09T10:15:22.000Z">
+<meta name="twitter:card" content="summary">
+<meta name="twitter:title" content="OC运行时源码细节">
+<meta name="twitter:description" content="介绍应用中的Objective-C类是如何被加载进内存的，以及在加载进内存过程中是基于什么结构去组织类与类之间关系的">
+<meta name="twitter:image" content="http://zrongl.github.io/2015/07/10/150710-oc-source-code-detail/150710-oc-source-code-detail-00.png">
+
+
+
+<script type="text/javascript" id="hexo.configuration">
+  var NexT = window.NexT || {};
+  var CONFIG = {
+    scheme: 'Mist',
+    sidebar: {"position":"left","display":"post"},
+    fancybox: true,
+    motion: true,
+    duoshuo: {
+      userId: '0',
+      author: '博主'
+    }
+  };
+</script>
+
+
+
+
+  <link rel="canonical" href="http://zrongl.github.io/2015/07/10/150710-oc-source-code-detail/"/>
+
+
+  <title> OC运行时源码细节 | Zrongl </title>
+</head>
+
+<body itemscope itemtype="//schema.org/WebPage" lang="zh-tw">
+
+  
+
+
+
+
+
+
+
+
+
+
+  
+  
+    
+  
+
+  <div class="container one-collumn sidebar-position-left page-post-detail ">
+    <div class="headband"></div>
+
+    <header id="header" class="header" itemscope itemtype="//schema.org/WPHeader">
+      <div class="header-inner"><div class="site-meta ">
+  
+
+  <div class="custom-logo-site-title">
+    <a href="/"  class="brand" rel="start">
+      <span class="logo-line-before"><i></i></span>
+      <span class="site-title">Zrongl</span>
+      <span class="logo-line-after"><i></i></span>
+    </a>
+  </div>
+  <p class="site-subtitle"></p>
+</div>
+
+<div class="site-nav-toggle">
+  <button>
+    <span class="btn-bar"></span>
+    <span class="btn-bar"></span>
+    <span class="btn-bar"></span>
+  </button>
+</div>
+
+<nav class="site-nav">
+  
+
+  
+    <ul id="menu" class="menu">
+      
+        
+        <li class="menu-item menu-item-home">
+          <a href="/" rel="section">
+            
+              <i class="menu-item-icon fa fa-fw fa-home"></i> <br />
+            
+            首頁
+          </a>
+        </li>
+      
+        
+        <li class="menu-item menu-item-archives">
+          <a href="/archives" rel="section">
+            
+              <i class="menu-item-icon fa fa-fw fa-archive"></i> <br />
+            
+            歸檔
+          </a>
+        </li>
+      
+        
+        <li class="menu-item menu-item-tags">
+          <a href="/tags" rel="section">
+            
+              <i class="menu-item-icon fa fa-fw fa-tags"></i> <br />
+            
+            標籤
+          </a>
+        </li>
+      
+
+      
+    </ul>
+  
+
+  
+</nav>
+
+ </div>
+    </header>
+
+    <main id="main" class="main">
+      <div class="main-inner">
+        <div class="content-wrap">
+          <div id="content" class="content">
+            
+
+  <div id="posts" class="posts-expand">
+    
+
+  
+  
+
+  
+  
+  
+
+  <article class="post post-type-normal " itemscope itemtype="//schema.org/Article">
+
+    
+      <header class="post-header">
+
+        
+        
+          <h1 class="post-title" itemprop="name headline">
+            
+            
+              
+                OC运行时源码细节
+              
+            
+          </h1>
+        
+
+        <div class="post-meta">
+          <span class="post-time">
+            <span class="post-meta-item-icon">
+              <i class="fa fa-calendar-o"></i>
+            </span>
+            <span class="post-meta-item-text">發表於</span>
+            <time itemprop="dateCreated" datetime="2015-07-10T00:00:00+08:00" content="2015-07-10">
+              2015-07-10
+            </time>
+          </span>
+
+          
+            <span class="post-category" >
+              &nbsp; | &nbsp;
+              <span class="post-meta-item-icon">
+                <i class="fa fa-folder-o"></i>
+              </span>
+              <span class="post-meta-item-text">分類於</span>
+              
+                <span itemprop="about" itemscope itemtype="https://schema.org/Thing">
+                  <a href="/categories/iOS/" itemprop="url" rel="index">
+                    <span itemprop="name">iOS</span>
+                  </a>
+                </span>
+
+                
+                
+
+              
+            </span>
+          
+
+          
+            
+          
+
+          
+
+          
+          
+
+          
+        </div>
+      </header>
+    
+
+
+    <div class="post-body" itemprop="articleBody">
+
+      
+      
+
+      
+        <blockquote>
+<p>之前的<a href="http://zrongl.github.io/ios/2015/05/29/object-c-source-code-analysis.html">一篇文章</a>简略的介绍了objc runtime的在程序启动之前都做了哪些事情，接下来我们深入到细节中看看，应用链接库中的类及应用本身定义的类被映射进内存并建立关联的过程以及objc是通过什么结构去管理类之间的这种复杂联系的。</p>
+</blockquote>
+<h4 id="内存映射"><a href="#内存映射" class="headerlink" title="内存映射"></a>内存映射</h4><p><strong>编译链接过程：</strong><br><br>编译器根据代码生成可执行文件(Windows平台下为PE文件格式、Linux平台下为ELF文件格式、Mac平台下为Mach-O文件格式)的过程，每一种可执行文件格式都有其特定的文件结构，Mach-O文件格式请参阅<a href="http://zrongl.github.io/translation/2015/05/19/mach-o-file-format-reference.html">这篇文章</a>，其他平台的可执行文件格式与Mach-O类似，特定segment及其section都有着特定的含义，但是无论哪个平台的可执行文件格式其文件中肯定会包含<code>data</code>,<code>text</code>,<code>stack</code>等segment。Mach-O与其他平台可执行文件格式不同之处在于：</p>
+<blockquote>
+<p><strong>OBJC2.0之前：</strong><br><br>编译器专门为Objective-C类及方法在Mach-O可执行文件中开辟了一个叫做<code>__OBJC</code>的segment，其中包含了一切与Objective-C语言相关的类信息，包括类库和应用重定义的类。<br><br><strong>OBJC2.0之后：</strong><br><br>编译器将这些跟Objective-C语言相关的信息存储到了<code>__TEXT</code>和<code>__DATA</code>segment中，名称为于<code>__objc_classname</code>,<code>__objc_methname</code>,<code>__objc_classlist</code>,<code>__objc_imageinfo</code>等的section中，其中<code>__objc_imageinfo</code>section中记录着应用(应用的可执行文件并不是xxx.app文件，而是xxx.app文件目录下的xxx文件)执行所需要链接的库信息(lib/framework)，<code>__objc_classlist</code>section中记录着本应用中声明的类信息。</p>
+</blockquote>
+<p><strong>程序执行过程</strong><br><br>对于Mac/iOS系统执行程序时，首先从Mach-O文件中读取framework和应用中定义的类信息，然后对这些类建立connection，最终会存储在一个全局的(extern)<code>NSMapTable</code>结构中，名称为<code>class_hash</code>，等待代码运行时去使用已经建立connection的类。<br><br>在OBJC2.0之前：<br><br>详见objc-file-old.mm文件中宏定义:</p>
+<figure class="highlight plain"><table><tr><td class="gutter"><pre><div class="line">1</div><div class="line">2</div><div class="line">3</div><div class="line">4</div><div class="line">5</div><div class="line">6</div><div class="line">7</div><div class="line">8</div><div class="line">9</div></pre></td><td class="code"><pre><div class="line">#define GETSECT(name, type, sectname)                                   \</div><div class="line">    type *name(const header_info *hi, size_t *outCount)  \</div><div class="line">    &#123;                                                                   \</div><div class="line">        unsigned long byteCount = 0;                                    \</div><div class="line">        type *data = (type *)                                           \</div><div class="line">            getsectiondata(hi-&gt;mhdr, SEG_OBJC, sectname, &amp;byteCount);   \</div><div class="line">        *outCount = byteCount / sizeof(type);                           \</div><div class="line">        return data;                                                    \</div><div class="line">    &#125;</div></pre></td></tr></table></figure>
+<p>表明类的信息是从<code>SEG_OBJC</code>即为__OBJC segment中读取得到的。</p>
+<p>而在OBJC2.0之后：<br><br>详见objc-file.mm文件中的宏定义</p>
+<figure class="highlight plain"><table><tr><td class="gutter"><pre><div class="line">1</div><div class="line">2</div><div class="line">3</div><div class="line">4</div><div class="line">5</div><div class="line">6</div><div class="line">7</div><div class="line">8</div><div class="line">9</div></pre></td><td class="code"><pre><div class="line">#define GETSECT(name, type, sectname)                                   \</div><div class="line">    type *name(const header_info *hi, size_t *outCount)  \</div><div class="line">    &#123;                                                                   \</div><div class="line">        unsigned long byteCount = 0;                                    \</div><div class="line">        type *data = (type *)                                           \</div><div class="line">            getsectiondata(hi-&gt;mhdr, SEG_DATA, sectname, &amp;byteCount);   \</div><div class="line">        *outCount = byteCount / sizeof(type);                           \</div><div class="line">        return data;                                                    \</div><div class="line">    &#125;</div></pre></td></tr></table></figure>
+<p>表明类的信息是从<code>SEG_DATA</code>即为<code>__DATA</code>segment中读取得到的。</p>
+<p>细心地朋友肯能会发现在objc-runtime-old.mm文件中有这样一段注释，他的大概意思是：<br></p>
+<ol>
+<li>当images被加载完成(在程序启动或其他情况下)，runtime需要从中加载classes和categories，将classes与superclasses建立关联，categories与parent classes建立关联，然后调用+load方法。</li>
+<li>runtime可以以任意顺序对classes进行处理，也就是说，runtime可能先于superclasses发现class，为了处理这种无序的class加载顺序，runtime建立了一种”pending class”机制。</li>
+<li>一个class在image中第一次被发现时被视为”unconnected”，它被存储在<code>unconected_class_hash</code>中。如果该class的所有superclass都存在并且已经被”connected”，这个新的class可以被connected进他的superclasses并被移到<code>class_hash</code>中以便被使用。否则该class会一直被存储在<code>unconnected_class_hash</code>中知道superclasses完成connecting。</li>
+<li>image mapping并”不是当前线程安全”的操作，它会在一些情况下被重新执行那个：superclass找到了一些引起ZeroLink的原因时回去加载另一个image，或者调用+load的方法时dyld会去加载另一个image。</li>
+</ol>
+<p>image mapping 顺序为：</p>
+<ol>
+<li>读取images中所有的classes</li>
+<li>读取images中所有的categories</li>
+<li>对所有classes建立connection</li>
+<li>处理selector和class的引用计数</li>
+<li>修复images中所有protocol对象</li>
+<li>调用<code>+load</code>方法</li>
+</ol>
+<p>详见：</p>
+<figure class="highlight plain"><table><tr><td class="gutter"><pre><div class="line">1</div><div class="line">2</div><div class="line">3</div><div class="line">4</div><div class="line">5</div><div class="line">6</div><div class="line">7</div><div class="line">8</div><div class="line">9</div><div class="line">10</div><div class="line">11</div><div class="line">12</div><div class="line">13</div><div class="line">14</div><div class="line">15</div><div class="line">16</div><div class="line">17</div><div class="line">18</div><div class="line">19</div><div class="line">20</div><div class="line">21</div><div class="line">22</div><div class="line">23</div><div class="line">24</div><div class="line">25</div><div class="line">26</div><div class="line">27</div></pre></td><td class="code"><pre><div class="line">* Read all classes in all new images. </div><div class="line"> *   Add them all to unconnected_class_hash. </div><div class="line"> *   Note any +load implementations before categories are attached.</div><div class="line"> *   Attach any pending categories.</div><div class="line"> * Read all categories in all new images. </div><div class="line"> *   Attach categories whose parent class exists (connected or not), </div><div class="line"> *     and pend the rest.</div><div class="line"> *   Mark them all eligible for +load (if implemented), even if the </div><div class="line"> *     parent class is missing.</div><div class="line"> * Try to connect all classes in all new images. </div><div class="line"> *   If the superclass is missing, pend the class</div><div class="line"> *   If the superclass is unconnected, try to recursively connect it</div><div class="line"> *   If the superclass is connected:</div><div class="line"> *     connect the class</div><div class="line"> *     mark the class eligible for +load, if implemented</div><div class="line"> *     fix up any pended classrefs referring to the class</div><div class="line"> *     connect any pended subclasses of the class</div><div class="line"> * Resolve selector refs and class refs in all new images.</div><div class="line"> *   Class refs whose classes still do not exist are pended.</div><div class="line"> * Fix up protocol objects in all new images.</div><div class="line"> * Call +load for classes and categories.</div><div class="line"> *   May include classes or categories that are not in these images, </div><div class="line"> *     but are newly eligible because of these image.</div><div class="line"> *   Class +loads will be called superclass-first because of the </div><div class="line"> *     superclass-first nature of the connecting process.</div><div class="line"> *   Category +load needs to be deferred until the parent class is </div><div class="line"> *     connected and has had its +load called.</div></pre></td></tr></table></figure>
+<h4 id="建立Classes之间的连接"><a href="#建立Classes之间的连接" class="headerlink" title="建立Classes之间的连接"></a>建立Classes之间的连接</h4><p>从images中读取classes后需要构建classes之间的关系网，而构建这一关系网的基础结构是<code>NXMapTable</code>和<code>NXHashTable</code>，熟悉这两个结构及其操作函数有助于我们对构建classes之间connection关系部分代码的理解。根据名称我们可以明显的看出这两个结构是基于hash表结构构建的。<code>NXMapTable</code>与<code>NXHashTable</code>结构及其操作函数详见项目代码<a href="https://github.com/zrongl/BaseAlgorithm/tree/master/Algorithm/DataStructure" target="_blank" rel="external">Gitub</a>。</p>
+<h5 id="NXHashTable"><a href="#NXHashTable" class="headerlink" title="NXHashTable"></a>NXHashTable</h5><p>结构体如下：</p>
+<figure class="highlight plain"><table><tr><td class="gutter"><pre><div class="line">1</div><div class="line">2</div><div class="line">3</div><div class="line">4</div><div class="line">5</div><div class="line">6</div><div class="line">7</div><div class="line">8</div><div class="line">9</div><div class="line">10</div><div class="line">11</div><div class="line">12</div><div class="line">13</div><div class="line">14</div><div class="line">15</div><div class="line">16</div><div class="line">17</div><div class="line">18</div><div class="line">19</div><div class="line">20</div><div class="line">21</div><div class="line">22</div><div class="line">23</div><div class="line">24</div><div class="line">25</div><div class="line">26</div><div class="line">27</div><div class="line">28</div><div class="line">29</div><div class="line">30</div><div class="line">31</div><div class="line">32</div><div class="line">33</div><div class="line">34</div><div class="line">35</div><div class="line">36</div><div class="line">37</div><div class="line">38</div><div class="line">39</div><div class="line">40</div><div class="line">41</div><div class="line">42</div><div class="line">43</div><div class="line">44</div><div class="line">45</div></pre></td><td class="code"><pre><div class="line">/**</div><div class="line"> * hash     :决定了获取节点index的计算规则</div><div class="line"> * isEqual  :用于判断两个节点是否相同</div><div class="line"> * free     :用于释放节点</div><div class="line"> */</div><div class="line">typedef struct &#123;</div><div class="line">    uintptr_t	(*hash)(const void *info, const void *data);</div><div class="line">    int         (*isEqual)(const void *info, const void *data1, const void *data2);</div><div class="line">    void        (*free)(const void *info, void *data);</div><div class="line">    int         style; /* reserved for future expansion; currently 0 */</div><div class="line">&#125; NXHashTablePrototype;</div><div class="line"></div><div class="line">/**</div><div class="line"> * 下面是hash结构体</div><div class="line"> * prototype  :hash函数表</div><div class="line"> * count      :hash结构已经有的key个数</div><div class="line"> * nbBuckets  :hash表的容量大小,随count增多而改变</div><div class="line"> * 出于查找效率的考虑? 当count &gt; nbBuckets时会通过_NXHashRehash函数进行扩扩容</div><div class="line"> * buckets    :hash表的数组基址</div><div class="line"> */</div><div class="line">typedef struct &#123;</div><div class="line">    const NXHashTablePrototype	*prototype;</div><div class="line">    unsigned                    count;</div><div class="line">    unsigned                    nbBuckets;</div><div class="line">    void                        *buckets;</div><div class="line">    const void                  *info;</div><div class="line">&#125; NXHashTable;</div><div class="line"></div><div class="line">/**</div><div class="line"> * 为了提高效率,使用以下结构</div><div class="line"> * 当只有一个元素的时候 one就指代data的值</div><div class="line"> * 当有多于一个元素的时候 就需要通过遍历many数组 来获取data的值</div><div class="line"> */</div><div class="line">typedef union &#123;</div><div class="line">    const void	*one;</div><div class="line">    const void	**many;</div><div class="line">&#125; oneOrMany;</div><div class="line"></div><div class="line">/**</div><div class="line"> * hash表的元素,存储着具有相同hash值的所有key</div><div class="line"> */</div><div class="line">typedef struct	&#123;</div><div class="line">    unsigned 	count;</div><div class="line">    oneOrMany	elements;</div><div class="line">&#125; HashBucket;</div></pre></td></tr></table></figure>
+<p>重点的宏定义的理解：</p>
+<figure class="highlight plain"><table><tr><td class="gutter"><pre><div class="line">1</div><div class="line">2</div><div class="line">3</div><div class="line">4</div><div class="line">5</div><div class="line">6</div><div class="line">7</div><div class="line">8</div><div class="line">9</div><div class="line">10</div><div class="line">11</div><div class="line">12</div><div class="line">13</div><div class="line">14</div><div class="line">15</div><div class="line">16</div><div class="line">17</div><div class="line">18</div><div class="line">19</div><div class="line">20</div><div class="line">21</div><div class="line">22</div></pre></td><td class="code"><pre><div class="line">/*  BUCKETOF是一个宏，它返回指定data值经过hash后的数组地址</div><div class="line"> 主要分三步:</div><div class="line"> 1.(*table-&gt;prototype-&gt;hash)(table-&gt;info,data)表示调用具体hash表的函数表的hash函数。对于ptr型的实际调用是NXPtrHash函数。</div><div class="line"> 2.((*table-&gt;prototype-&gt;hash)(table-&gt;info,data) % table-&gt;nbBuckets) 表示将得到的hash值进行求余，以对应于hash桶的索引。</div><div class="line"> 3.(((HashBucket*)table-&gt;buckets)+((*table-&gt;prototype-&gt;hash)(table-&gt;info, data) %table-&gt;nbBuckets))表示将索引加上基地址buckets，即时对应的data散列到的HashBucket数组中</div><div class="line"> */</div><div class="line">#define	BUCKETOF(table, data)   (((HashBucket *)table-&gt;buckets) + ((*table-&gt;prototype-&gt;hash)(table-&gt;info, data) % table-&gt;nbBuckets))</div><div class="line">/* GOOD_CAPACITY返回恰当的buckets的容量大小，初始化函数NXCreateHashTableFromZone中会用到，比如：</div><div class="line"> * c值       返回值</div><div class="line"> * 0-1       1</div><div class="line"> * 2-3       3</div><div class="line"> * 4-7       7</div><div class="line"> * 8-15      15</div><div class="line"> * 16-31     31</div><div class="line"> * 32-63     63</div><div class="line"> * 64-127    127 ...</div><div class="line">**/</div><div class="line">#define GOOD_CAPACITY(c)        (exp2m1 (log2u (c)+1))</div><div class="line">/*</div><div class="line"> * MORE_CAPACITY根据当前容量返回扩容后的容量大小，在扩容函数_NXHashRehash中会用到</div><div class="line"> **/</div><div class="line">#define MORE_CAPACITY(b)        (b*2+1)</div></pre></td></tr></table></figure>
+<p>NXHashTable数据操作的内存布局如下图：</p>
+<img src="/2015/07/10/150710-oc-source-code-detail/150710-oc-source-code-detail-00.png" alt="NXHashTable结构布局" title="NXHashTable结构布局">
+<p>注意：<br>在NXHashTable结构中</p>
+<ol>
+<li><code>prototype</code>的hash函数决定了index的获取规则分为通过指针获取还是字符串获取，NXHashTable中的hash函数的参数一般式指针即(Ptr)</li>
+<li><code>count</code>代表存储的HashBucket的数量</li>
+<li><code>nbBucket</code>代表bucket容量的大小一般为2^n-1</li>
+<li><code>bucket</code>指向存储HashBucket的数组的指针</li>
+</ol>
+<p>在HashBucket结构中</p>
+<ol>
+<li><code>count</code>代表该HahsBucket结构存储元素的数量</li>
+<li>当存储一个元素时直接存储到<code>void *one</code>中，当存储多于一个元素时存储到<code>void **many</code>代表的二维数据中</li>
+</ol>
+<h5 id="NXMapTable"><a href="#NXMapTable" class="headerlink" title="NXMapTable"></a>NXMapTable</h5><p>NXMapTable与NXHashTable不同之处在于，NXMapTable的buckets指向存储MapPair结构的数组，即：</p>
+<figure class="highlight plain"><table><tr><td class="gutter"><pre><div class="line">1</div><div class="line">2</div><div class="line">3</div><div class="line">4</div></pre></td><td class="code"><pre><div class="line">typedef struct _MapPair &#123;</div><div class="line">    const void	*key;</div><div class="line">    const void	*value;</div><div class="line">&#125; MapPair;</div></pre></td></tr></table></figure>
+<p>NXMapTable数据操作的内存布局如下图：</p>
+<img src="/2015/07/10/150710-oc-source-code-detail/150710-oc-source-code-detail-01.png" alt="NXMapTable结构布局" title="NXMapTable结构布局">
+<p>注意：<br>在NXMapTable中</p>
+<ol>
+<li><code>pototype</code>的hash函数决定了index的获取规则分为通过指针获取还是字符串获取，NXMapTable中的hash函数的参数一般式字符串(Str)</li>
+<li><code>count</code>代表存储的MapPair的数量</li>
+<li><code>nbBucketMinusOne</code>代表bucket容量的大小一般为2^n-1</li>
+<li><code>buckets</code>指向存储MapPair的数组的指针</li>
+</ol>
+<p>在MapPair中</p>
+<ol>
+<li><code>key</code>一般代表指向str的指针，所以该结构一般用于存储有名称的对象，如selctor，class，protocol等</li>
+<li><code>value</code>一般存储与key存储的字符串相关联的结构体.</li>
+</ol>
+<h5 id="metaclass的理解"><a href="#metaclass的理解" class="headerlink" title="metaclass的理解"></a>metaclass的理解</h5><figure class="highlight plain"><table><tr><td class="gutter"><pre><div class="line">1</div><div class="line">2</div><div class="line">3</div><div class="line">4</div><div class="line">5</div><div class="line">6</div><div class="line">7</div><div class="line">8</div><div class="line">9</div><div class="line">10</div><div class="line">11</div><div class="line">12</div><div class="line">13</div><div class="line">14</div><div class="line">15</div></pre></td><td class="code"><pre><div class="line">/** </div><div class="line"> * 创建一个新的类和元类.</div><div class="line"> * </div><div class="line"> * @param superclass 新创建class的superclass，如果传Nil则会创建一个新的root class.</div><div class="line"> * @param name 新创建的class的名称，该字符串将被深拷贝.</div><div class="line"> * @param extraBytes class和metaclass对象末尾的ivars索引所需要的内存大小，一般设置为0.</div><div class="line"> * </div><div class="line"> * @return 返回新的class或Nil(如：name属性已经被占用).</div><div class="line"> * </div><div class="line"> * @note 可以通过object_getClass(newClass)方法获取指向新创建的metaclass的指针.</div><div class="line"> * @note 想创建新的类需要调用objc_allocateClassPair.然后通过class_addMethod和class_addIvar设置class的属性和方法(协议).</div><div class="line"> * 当已经创建了新的class，调用objc_registerClassPair方法将class和metaclass添加到全局的哈希结构中，以供调用.</div><div class="line"> * @note 实例方法和实例变量应该添加到实例的类中；类方法应该添加到metaclass中.</div><div class="line"> */</div><div class="line">Class objc_allocateClassPair(Class superclass, const char *name, size_t extraBytes)</div></pre></td></tr></table></figure>
+
+      
+    </div>
+
+    <div>
+      
+        
+
+      
+    </div>
+
+    <div>
+      
+        
+
+      
+    </div>
+
+    <footer class="post-footer">
+      
+
+      
+        <div class="post-nav">
+          <div class="post-nav-next post-nav-item">
+            
+              <a href="/2015/06/29/150629-oc-source-code-overview/" rel="next" title="OC运行时源码概览">
+                <i class="fa fa-chevron-left"></i> OC运行时源码概览
+              </a>
+            
+          </div>
+
+          <div class="post-nav-prev post-nav-item">
+            
+              <a href="/2015/08/25/150825-views-layers-animations/" rel="prev" title="视图，层和动画">
+                视图，层和动画 <i class="fa fa-chevron-right"></i>
+              </a>
+            
+          </div>
+        </div>
+      
+
+      
+      
+    </footer>
+  </article>
+
+
+
+    <div class="post-spread">
+      
+    </div>
+  </div>
+
+
+          </div>
+          
+
+
+          
+  <div class="comments" id="comments">
+    
+  </div>
+
+
+        </div>
+        
+          
+  
+  <div class="sidebar-toggle">
+    <div class="sidebar-toggle-line-wrap">
+      <span class="sidebar-toggle-line sidebar-toggle-line-first"></span>
+      <span class="sidebar-toggle-line sidebar-toggle-line-middle"></span>
+      <span class="sidebar-toggle-line sidebar-toggle-line-last"></span>
+    </div>
+  </div>
+
+  <aside id="sidebar" class="sidebar">
+    <div class="sidebar-inner">
+
+      
+
+      
+        <ul class="sidebar-nav motion-element">
+          <li class="sidebar-nav-toc sidebar-nav-active" data-target="post-toc-wrap" >
+            文章目錄
+          </li>
+          <li class="sidebar-nav-overview" data-target="site-overview">
+            本站概覽
+          </li>
+        </ul>
+      
+
+      <section class="site-overview sidebar-panel ">
+        <div class="site-author motion-element" itemprop="author" itemscope itemtype="//schema.org/Person">
+          <img class="site-author-image" itemprop="image"
+               src="/images/avatar.gif"
+               alt="ronglei" />
+          <p class="site-author-name" itemprop="name">ronglei</p>
+          <p class="site-description motion-element" itemprop="description"></p>
+        </div>
+        <nav class="site-state motion-element">
+          <div class="site-state-item site-state-posts">
+            <a href="/archives">
+              <span class="site-state-item-count">21</span>
+              <span class="site-state-item-name">文章</span>
+            </a>
+          </div>
+
+          
+            <div class="site-state-item site-state-categories">
+              
+                <span class="site-state-item-count">8</span>
+                <span class="site-state-item-name">分類</span>
+              
+            </div>
+          
+
+          
+            <div class="site-state-item site-state-tags">
+              <a href="/tags">
+                <span class="site-state-item-count">5</span>
+                <span class="site-state-item-name">標籤</span>
+              </a>
+            </div>
+          
+
+        </nav>
+
+        
+
+        <div class="links-of-author motion-element">
+          
+        </div>
+
+        
+        
+
+        
+        
+
+      </section>
+
+      
+        <section class="post-toc-wrap motion-element sidebar-panel sidebar-panel-active">
+          <div class="post-toc">
+            
+              
+            
+            
+              <div class="post-toc-content"><ol class="nav"><li class="nav-item nav-level-4"><a class="nav-link" href="#内存映射"><span class="nav-number">1.</span> <span class="nav-text">内存映射</span></a></li><li class="nav-item nav-level-4"><a class="nav-link" href="#建立Classes之间的连接"><span class="nav-number">2.</span> <span class="nav-text">建立Classes之间的连接</span></a><ol class="nav-child"><li class="nav-item nav-level-5"><a class="nav-link" href="#NXHashTable"><span class="nav-number">2.1.</span> <span class="nav-text">NXHashTable</span></a></li><li class="nav-item nav-level-5"><a class="nav-link" href="#NXMapTable"><span class="nav-number">2.2.</span> <span class="nav-text">NXMapTable</span></a></li><li class="nav-item nav-level-5"><a class="nav-link" href="#metaclass的理解"><span class="nav-number">2.3.</span> <span class="nav-text">metaclass的理解</span></a></li></ol></li></ol></div>
+            
+          </div>
+        </section>
+      
+
+    </div>
+  </aside>
+
+
+        
+      </div>
+    </main>
+
+    <footer id="footer" class="footer">
+      <div class="footer-inner">
+        <div class="copyright" >
+  
+  &copy; 
+  <span itemprop="copyrightYear">2016</span>
+  <span class="with-love">
+    <i class="fa fa-heart"></i>
+  </span>
+  <span class="author" itemprop="copyrightHolder">ronglei</span>
+</div>
+
+<div class="powered-by">
+  由 <a class="theme-link" href="https://hexo.io">Hexo</a> 強力驅動
+</div>
+
+<div class="theme-info">
+  主題 -
+  <a class="theme-link" href="https://github.com/iissnan/hexo-theme-next">
+    NexT.Mist
+  </a>
+</div>
+
+        
+
+        
+      </div>
+    </footer>
+
+    <div class="back-to-top">
+      <i class="fa fa-arrow-up"></i>
+    </div>
+  </div>
+
+  
+
+<script type="text/javascript">
+  if (Object.prototype.toString.call(window.Promise) !== '[object Function]') {
+    window.Promise = null;
+  }
+</script>
+
+
+
+
+
+
+
+
+
+  
+
+
+
+  
+  <script type="text/javascript" src="/vendors/jquery/index.js?v=2.1.3"></script>
+
+  
+  <script type="text/javascript" src="/vendors/fastclick/lib/fastclick.min.js?v=1.0.6"></script>
+
+  
+  <script type="text/javascript" src="/vendors/jquery_lazyload/jquery.lazyload.js?v=1.9.7"></script>
+
+  
+  <script type="text/javascript" src="/vendors/velocity/velocity.min.js?v=1.2.1"></script>
+
+  
+  <script type="text/javascript" src="/vendors/velocity/velocity.ui.min.js?v=1.2.1"></script>
+
+  
+  <script type="text/javascript" src="/vendors/fancybox/source/jquery.fancybox.pack.js?v=2.1.5"></script>
+
+
+  
+
+
+  <script type="text/javascript" src="/js/src/utils.js?v=5.0.2"></script>
+
+  <script type="text/javascript" src="/js/src/motion.js?v=5.0.2"></script>
+
+
+
+  
+  
+
+  
+  <script type="text/javascript" src="/js/src/scrollspy.js?v=5.0.2"></script>
+<script type="text/javascript" src="/js/src/post-details.js?v=5.0.2"></script>
+
+
+
+  
+
+
+  <script type="text/javascript" src="/js/src/bootstrap.js?v=5.0.2"></script>
+
+
+
+  
+
+
+
+  
+
+
+
+
+  
+  
+
+  
+
+  
+
+  
+
+</body>
+</html>

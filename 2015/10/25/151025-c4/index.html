@@ -1,0 +1,644 @@
+<!doctype html>
+
+
+
+  
+
+
+<html class="theme-next mist use-motion">
+<head>
+  <meta charset="UTF-8"/>
+<meta http-equiv="X-UA-Compatible" content="IE=edge,chrome=1" />
+<meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1"/>
+
+
+
+<meta http-equiv="Cache-Control" content="no-transform" />
+<meta http-equiv="Cache-Control" content="no-siteapp" />
+
+
+
+
+
+
+
+
+
+
+
+
+  
+  
+  <link href="/vendors/fancybox/source/jquery.fancybox.css?v=2.1.5" rel="stylesheet" type="text/css" />
+
+
+
+
+  
+  
+  
+  
+
+  
+    
+    
+  
+
+  
+
+  
+
+  
+
+  
+
+  
+    
+    
+    <link href="//fonts.googleapis.com/css?family=Lato:300,300italic,400,400italic,700,700italic&subset=latin,latin-ext" rel="stylesheet" type="text/css">
+  
+
+
+
+
+
+
+<link href="/vendors/font-awesome/css/font-awesome.min.css?v=4.4.0" rel="stylesheet" type="text/css" />
+
+<link href="/css/main.css?v=5.0.2" rel="stylesheet" type="text/css" />
+
+
+  <meta name="keywords" content="Hexo, NexT" />
+
+
+
+
+
+
+
+
+  <link rel="shortcut icon" type="image/x-icon" href="/favicon.ico?v=5.0.2" />
+
+
+
+
+
+
+<meta name="description" content="关于开源编译器小项目`c4`代码的学习">
+<meta property="og:type" content="article">
+<meta property="og:title" content="编译器项目c4的学习(原创)">
+<meta property="og:url" content="http://zrongl.github.io/2015/10/25/151025-c4/index.html">
+<meta property="og:site_name" content="Zrongl">
+<meta property="og:description" content="关于开源编译器小项目`c4`代码的学习">
+<meta property="og:image" content="http://zrongl.github.io/2015/10/25/151025-c4/151025-c4-00.png">
+<meta property="og:image" content="http://zrongl.github.io/2015/10/25/151025-c4/151025-c4-01.png">
+<meta property="og:image" content="http://zrongl.github.io/2015/10/25/151025-c4/151025-c4-02.png">
+<meta property="og:image" content="http://zrongl.github.io/2015/10/25/151025-c4/151025-c4-03.png">
+<meta property="og:image" content="http://zrongl.github.io/2015/10/25/151025-c4/151025-c4-04.png">
+<meta property="og:updated_time" content="2016-10-09T10:37:49.000Z">
+<meta name="twitter:card" content="summary">
+<meta name="twitter:title" content="编译器项目c4的学习(原创)">
+<meta name="twitter:description" content="关于开源编译器小项目`c4`代码的学习">
+<meta name="twitter:image" content="http://zrongl.github.io/2015/10/25/151025-c4/151025-c4-00.png">
+
+
+
+<script type="text/javascript" id="hexo.configuration">
+  var NexT = window.NexT || {};
+  var CONFIG = {
+    scheme: 'Mist',
+    sidebar: {"position":"left","display":"post"},
+    fancybox: true,
+    motion: true,
+    duoshuo: {
+      userId: '0',
+      author: '博主'
+    }
+  };
+</script>
+
+
+
+
+  <link rel="canonical" href="http://zrongl.github.io/2015/10/25/151025-c4/"/>
+
+
+  <title> 编译器项目c4的学习(原创) | Zrongl </title>
+</head>
+
+<body itemscope itemtype="//schema.org/WebPage" lang="zh-tw">
+
+  
+
+
+
+
+
+
+
+
+
+
+  
+  
+    
+  
+
+  <div class="container one-collumn sidebar-position-left page-post-detail ">
+    <div class="headband"></div>
+
+    <header id="header" class="header" itemscope itemtype="//schema.org/WPHeader">
+      <div class="header-inner"><div class="site-meta ">
+  
+
+  <div class="custom-logo-site-title">
+    <a href="/"  class="brand" rel="start">
+      <span class="logo-line-before"><i></i></span>
+      <span class="site-title">Zrongl</span>
+      <span class="logo-line-after"><i></i></span>
+    </a>
+  </div>
+  <p class="site-subtitle"></p>
+</div>
+
+<div class="site-nav-toggle">
+  <button>
+    <span class="btn-bar"></span>
+    <span class="btn-bar"></span>
+    <span class="btn-bar"></span>
+  </button>
+</div>
+
+<nav class="site-nav">
+  
+
+  
+    <ul id="menu" class="menu">
+      
+        
+        <li class="menu-item menu-item-home">
+          <a href="/" rel="section">
+            
+              <i class="menu-item-icon fa fa-fw fa-home"></i> <br />
+            
+            首頁
+          </a>
+        </li>
+      
+        
+        <li class="menu-item menu-item-archives">
+          <a href="/archives" rel="section">
+            
+              <i class="menu-item-icon fa fa-fw fa-archive"></i> <br />
+            
+            歸檔
+          </a>
+        </li>
+      
+        
+        <li class="menu-item menu-item-tags">
+          <a href="/tags" rel="section">
+            
+              <i class="menu-item-icon fa fa-fw fa-tags"></i> <br />
+            
+            標籤
+          </a>
+        </li>
+      
+
+      
+    </ul>
+  
+
+  
+</nav>
+
+ </div>
+    </header>
+
+    <main id="main" class="main">
+      <div class="main-inner">
+        <div class="content-wrap">
+          <div id="content" class="content">
+            
+
+  <div id="posts" class="posts-expand">
+    
+
+  
+  
+
+  
+  
+  
+
+  <article class="post post-type-normal " itemscope itemtype="//schema.org/Article">
+
+    
+      <header class="post-header">
+
+        
+        
+          <h1 class="post-title" itemprop="name headline">
+            
+            
+              
+                编译器项目c4的学习(原创)
+              
+            
+          </h1>
+        
+
+        <div class="post-meta">
+          <span class="post-time">
+            <span class="post-meta-item-icon">
+              <i class="fa fa-calendar-o"></i>
+            </span>
+            <span class="post-meta-item-text">發表於</span>
+            <time itemprop="dateCreated" datetime="2015-10-25T00:00:00+08:00" content="2015-10-25">
+              2015-10-25
+            </time>
+          </span>
+
+          
+            <span class="post-category" >
+              &nbsp; | &nbsp;
+              <span class="post-meta-item-icon">
+                <i class="fa fa-folder-o"></i>
+              </span>
+              <span class="post-meta-item-text">分類於</span>
+              
+                <span itemprop="about" itemscope itemtype="https://schema.org/Thing">
+                  <a href="/categories/Linux/" itemprop="url" rel="index">
+                    <span itemprop="name">Linux</span>
+                  </a>
+                </span>
+
+                
+                
+
+              
+            </span>
+          
+
+          
+            
+          
+
+          
+
+          
+          
+
+          
+        </div>
+      </header>
+    
+
+
+    <div class="post-body" itemprop="articleBody">
+
+      
+      
+
+      
+        <blockquote>
+<p>本文是对开源小项目<a href="https://github.com/rswier/c4" target="_blank" rel="external">c4</a>进行学习的笔记，也可以视为对其实现的内存追踪，为的是能够更加深刻的了解程序实现的具体步骤。本项目的亮点在于仅仅通过4个函数就在内存中模拟出了对程序逐字逐句的解析并转换为伪汇编代码，最后在对伪汇编进行解析，输出程序执行结果；当然简洁性的代价就是该编译器仅支持特定语义的解析，并且刚才提到了编译和执行过程都是在内存中去模拟的，并不会生成特定阶段的目标文件比如：<code>.i</code>，<code>.s</code>，<code>.out</code>文件，但是便于我们去阅读和学习，从中我们可以看出编译器最复杂的地方可能在于语义分析的逻辑部分了。</p>
+</blockquote>
+<h3 id="基本结构与函数的理解"><a href="#基本结构与函数的理解" class="headerlink" title="基本结构与函数的理解"></a>基本结构与函数的理解</h3><ul>
+<li>全局变量</li>
+</ul>
+<figure class="highlight plain"><table><tr><td class="gutter"><pre><div class="line">1</div><div class="line">2</div><div class="line">3</div><div class="line">4</div><div class="line">5</div><div class="line">6</div><div class="line">7</div><div class="line">8</div><div class="line">9</div><div class="line">10</div><div class="line">11</div><div class="line">12</div></pre></td><td class="code"><pre><div class="line">char *p, *lp,   // 指向source area的指针，读入的代码会以文本信息的形式读入在该区域</div><div class="line">*data;          // data/bss 段指针</div><div class="line">int *e, *le,    // 指向text area的指针，解析代码后生成相应的伪汇编代码写入该区域</div><div class="line">*id,            // 指向当前正在设置或解析的语义关键字结构</div><div class="line">*sym,           // 指向symble area的指针，能够解析的关键字、库函数以及函数的参数和局部变量会存储在该区域</div><div class="line">tk,             // 当前正在解析的代码的游标</div><div class="line">ival,           // 当前解析的数字的值</div><div class="line">ty,             // 语义关键字结构的类型</div><div class="line">loc,            // 局部变量偏移量标识</div><div class="line">line,           // 当前解析的代码行数</div><div class="line">src,            // 出书解析的代码和生成的伪汇编代码的标识</div><div class="line">debug;          // 输出汇编代码执行结果标识</div></pre></td></tr></table></figure>
+<ul>
+<li>枚举类型</li>
+</ul>
+<figure class="highlight plain"><table><tr><td class="gutter"><pre><div class="line">1</div><div class="line">2</div><div class="line">3</div><div class="line">4</div><div class="line">5</div><div class="line">6</div><div class="line">7</div><div class="line">8</div><div class="line">9</div><div class="line">10</div><div class="line">11</div><div class="line">12</div><div class="line">13</div><div class="line">14</div><div class="line">15</div><div class="line">16</div><div class="line">17</div></pre></td><td class="code"><pre><div class="line">// 类型、关键字、操作码标识</div><div class="line">enum &#123;</div><div class="line">    Num = 128, Fun, Sys, Glo, Loc, Id,</div><div class="line">    Char, Else, Enum, If, Int, Return, Sizeof, While,</div><div class="line">    Assign, Cond, Lor, Lan, Or, Xor, And, Eq, Ne, Lt, Gt, Le, Ge, Shl, Shr, Add, Sub, Mul, Div, Mod, Inc, Dec, Brak</div><div class="line">&#125;;</div><div class="line"></div><div class="line">// 汇编操作码</div><div class="line">enum &#123; LEA ,IMM ,JMP ,JSR ,BZ  ,BNZ ,ENT ,ADJ ,LEV ,LI  ,LC  ,SI  ,SC  ,PSH ,</div><div class="line">    OR  ,XOR ,AND ,EQ  ,NE  ,LT  ,GT  ,LE  ,GE  ,SHL ,SHR ,ADD ,SUB ,MUL ,DIV ,MOD ,</div><div class="line">    OPEN,READ,CLOS,PRTF,MALC,MSET,MCMP,EXIT &#125;;</div><div class="line"></div><div class="line">// 数据类型</div><div class="line">enum &#123; CHAR, INT, PTR &#125;;</div><div class="line"></div><div class="line">// 语义关键字结构，方便进行偏移读取</div><div class="line">enum &#123; Tk, Hash, Name, Class, Type, Val, HClass, HType, HVal, Idsz &#125;;</div></pre></td></tr></table></figure>
+<ul>
+<li>函数</li>
+</ul>
+<figure class="highlight plain"><table><tr><td class="gutter"><pre><div class="line">1</div><div class="line">2</div><div class="line">3</div><div class="line">4</div><div class="line">5</div><div class="line">6</div><div class="line">7</div><div class="line">8</div><div class="line">9</div><div class="line">10</div><div class="line">11</div><div class="line">12</div><div class="line">13</div><div class="line">14</div><div class="line">15</div><div class="line">16</div><div class="line">17</div><div class="line">18</div><div class="line">19</div><div class="line">20</div><div class="line">21</div><div class="line">22</div><div class="line">23</div><div class="line">24</div><div class="line">25</div><div class="line">26</div></pre></td><td class="code"><pre><div class="line">/**</div><div class="line"> *  从p中读取下一个字符并进行处理</div><div class="line"> *  通过tk进行标识</div><div class="line"> *  遍历关键字结构体并用id指向该结构首地址</div><div class="line"> */</div><div class="line">void next();</div><div class="line"></div><div class="line">/**</div><div class="line"> *  操作符语义解析(如:sizof，&amp;，|，++，--，=，==等等)</div><div class="line"> *  生成伪汇编代码，写到text area中</div><div class="line"> *  @param lev 操作符标识</div><div class="line"> */</div><div class="line">void expr(int lev);</div><div class="line"></div><div class="line">/**</div><div class="line"> *  逻辑关键字解析(如：if，while，return等)</div><div class="line"> *  生成伪汇编代码，写到text area中</div><div class="line"> */</div><div class="line">void stmt();</div><div class="line"></div><div class="line">/**</div><div class="line"> *  读取源代码文件</div><div class="line"> *  生成伪汇编代码</div><div class="line"> *  执行伪汇编代码</div><div class="line"> */</div><div class="line">int main(int argc, char **argv)</div></pre></td></tr></table></figure>
+<h3 id="准备阶段"><a href="#准备阶段" class="headerlink" title="准备阶段"></a>准备阶段</h3><p>为了便于调试我利用<code>c4.c</code>建立一个Xcode工程，并且在<code>main</code>函数中给<code>argc``argv</code>进行了赋值：</p>
+<figure class="highlight plain"><table><tr><td class="gutter"><pre><div class="line">1</div><div class="line">2</div><div class="line">3</div><div class="line">4</div><div class="line">5</div><div class="line">6</div><div class="line">7</div><div class="line">8</div><div class="line">9</div><div class="line">10</div><div class="line">11</div><div class="line">12</div><div class="line">13</div><div class="line">14</div><div class="line">15</div><div class="line">16</div><div class="line">17</div><div class="line">18</div><div class="line">19</div><div class="line">20</div></pre></td><td class="code"><pre><div class="line">int main(int argc, char **argv)</div><div class="line">&#123;</div><div class="line">    int fd, bt, ty, poolsz, *idmain;</div><div class="line">    int *pc, *sp, *bp, a, cycle; // vm registers</div><div class="line">    int i, *t; // temps</div><div class="line">    </div><div class="line">    // 为输入参数赋值</div><div class="line">    argc = 3;</div><div class="line">    char **av = argv;</div><div class="line">    ++av;</div><div class="line">    *av = &quot;-d&quot;;</div><div class="line">    ++av;</div><div class="line">    *av = &quot;/Users/ronglei/Documents/Code/c4/add.c&quot;;</div><div class="line">    </div><div class="line">    --argc; ++argv;</div><div class="line">    if (argc &gt; 0 &amp;&amp; **argv == &apos;-&apos; &amp;&amp; (*argv)[1] == &apos;s&apos;) &#123; src = 1; --argc; ++argv; &#125;</div><div class="line">    if (argc &gt; 0 &amp;&amp; **argv == &apos;-&apos; &amp;&amp; (*argv)[1] == &apos;d&apos;) &#123; debug = 1; --argc; ++argv; &#125;</div><div class="line">    if (argc &lt; 1) &#123; printf(&quot;usage: c4 [-s] [-d] file ...\n&quot;); return -1; &#125;</div><div class="line">    </div><div class="line">    ...</div></pre></td></tr></table></figure>
+<p>在此我们以编译一下代码段为例子进行解析：</p>
+<figure class="highlight plain"><table><tr><td class="gutter"><pre><div class="line">1</div><div class="line">2</div><div class="line">3</div><div class="line">4</div><div class="line">5</div><div class="line">6</div><div class="line">7</div><div class="line">8</div><div class="line">9</div><div class="line">10</div><div class="line">11</div><div class="line">12</div><div class="line">13</div><div class="line">14</div><div class="line">15</div><div class="line">16</div><div class="line">17</div></pre></td><td class="code"><pre><div class="line">#include &lt;stdio.h&gt;</div><div class="line"></div><div class="line">int add(int x, int y)</div><div class="line">&#123;</div><div class="line">	int sum;</div><div class="line">	sum = x+y;</div><div class="line">	return sum;</div><div class="line">&#125;</div><div class="line"></div><div class="line">void main()</div><div class="line">&#123;</div><div class="line">    int a, b, c;</div><div class="line">    a = 1;</div><div class="line">	b = 2;</div><div class="line">    c = add(a, b);</div><div class="line">  	printf(&quot;%d\n&quot;, c);</div><div class="line">&#125;</div></pre></td></tr></table></figure>
+<p>接下来就是为各个区域申请内存空间：</p>
+<figure class="highlight plain"><table><tr><td class="gutter"><pre><div class="line">1</div><div class="line">2</div><div class="line">3</div><div class="line">4</div><div class="line">5</div><div class="line">6</div><div class="line">7</div><div class="line">8</div><div class="line">9</div><div class="line">10</div><div class="line">11</div><div class="line">12</div><div class="line">13</div><div class="line">14</div><div class="line">15</div><div class="line">16</div><div class="line">17</div><div class="line">18</div><div class="line">19</div><div class="line">20</div></pre></td><td class="code"><pre><div class="line">int main(int argc, char **argv)</div><div class="line">&#123;</div><div class="line">    ...</div><div class="line">    </div><div class="line">    // 申请内存空间</div><div class="line">    poolsz = 256*1024; // arbitrary size</div><div class="line">    if (!(sym = malloc(poolsz))) &#123; printf(&quot;could not malloc(%d) symbol area\n&quot;, poolsz); return -1; &#125;</div><div class="line">    if (!(le = e = malloc(poolsz))) &#123; printf(&quot;could not malloc(%d) text area\n&quot;, poolsz); return -1; &#125;</div><div class="line">    if (!(data = malloc(poolsz))) &#123; printf(&quot;could not malloc(%d) data area\n&quot;, poolsz); return -1; &#125;</div><div class="line">    if (!(sp = malloc(poolsz))) &#123; printf(&quot;could not malloc(%d) stack area\n&quot;, poolsz); return -1; &#125;</div><div class="line">    </div><div class="line">    memset(sym,  0, poolsz);</div><div class="line">    memset(e,    0, poolsz);</div><div class="line">    memset(data, 0, poolsz);</div><div class="line">    </div><div class="line">    if ((fd = open(*argv, 0)) &lt; 0) &#123; printf(&quot;could not open(%s)\n&quot;, *argv); return -1; &#125;</div><div class="line">    if (!(lp = p = malloc(poolsz))) &#123; printf(&quot;could not malloc(%d) source area\n&quot;, poolsz); return -1; &#125;</div><div class="line">    if ((i = (int)read(fd, p, poolsz-1)) &lt;= 0) &#123; printf(&quot;read() returned %d\n&quot;, i); return -1; &#125;</div><div class="line">    </div><div class="line">    ...</div></pre></td></tr></table></figure>
+<p>申请完成之后内存布局是这样的：</p>
+<img src="/2015/10/25/151025-c4/151025-c4-00.png" alt="申请各区块内存后的内存布局" title="申请各区块内存后的内存布局">
+<p>在申请完symbol area，text area，data area，stack area这四片区域之后，程序将支持的关键字和库函数转换为特定结构写入到symbol所对应的内存区域中，方便之后解析的时候使用，对应代码：</p>
+<figure class="highlight plain"><table><tr><td class="gutter"><pre><div class="line">1</div><div class="line">2</div><div class="line">3</div><div class="line">4</div><div class="line">5</div><div class="line">6</div><div class="line">7</div><div class="line">8</div><div class="line">9</div><div class="line">10</div><div class="line">11</div><div class="line">12</div></pre></td><td class="code"><pre><div class="line">int main(int argc, char **argv)</div><div class="line">&#123;</div><div class="line">    ...</div><div class="line">    </div><div class="line">    p = &quot;char else enum if int return sizeof while &quot;</div><div class="line">    &quot;open read close printf malloc memset memcmp exit void main&quot;;</div><div class="line">    i = Char; while (i &lt;= While) &#123; next(); id[Tk] = i++; &#125; // add keywords to symbol table</div><div class="line">    i = OPEN; while (i &lt;= EXIT) &#123; next(); id[Class] = Sys; id[Type] = INT; id[Val] = i++; &#125; // add library to symbol table</div><div class="line">    next(); id[Tk] = Char; // handle void type</div><div class="line">    next(); idmain = id; // keep track of main</div><div class="line">    </div><div class="line">    ...</div></pre></td></tr></table></figure>
+<p>执行完成后symbol area内存布局情况如图：</p>
+<img src="/2015/10/25/151025-c4/151025-c4-01.png" alt="执行完成后symbol area内存布局" title="执行完成后symbol area内存布局">
+<p>其中Hash段和Name段是通过关键字或函数名称字符串运算得到到，拿关键字<code>char</code>举例，源码这里存在一些疏漏，我们会在最后说明：</p>
+<figure class="highlight plain"><table><tr><td class="gutter"><pre><div class="line">1</div><div class="line">2</div></pre></td><td class="code"><pre><div class="line">Hash字段值为：(c+h+a+r)*147*64+strlen(char)</div><div class="line">Name字段值为：&quot;*(int *)char...&quot;</div></pre></td></tr></table></figure>
+<h3 id="语义解析阶段"><a href="#语义解析阶段" class="headerlink" title="语义解析阶段"></a>语义解析阶段</h3><p>接下来就要进行语义的解析并在text area生成响应的伪汇编代码：</p>
+<figure class="highlight plain"><table><tr><td class="gutter"><pre><div class="line">1</div><div class="line">2</div><div class="line">3</div><div class="line">4</div><div class="line">5</div><div class="line">6</div><div class="line">7</div><div class="line">8</div><div class="line">9</div><div class="line">10</div><div class="line">11</div><div class="line">12</div><div class="line">13</div><div class="line">14</div><div class="line">15</div><div class="line">16</div><div class="line">17</div><div class="line">18</div><div class="line">19</div><div class="line">20</div><div class="line">21</div><div class="line">22</div><div class="line">23</div><div class="line">24</div><div class="line">25</div><div class="line">26</div><div class="line">27</div><div class="line">28</div><div class="line">29</div><div class="line">30</div><div class="line">31</div><div class="line">32</div><div class="line">33</div><div class="line">34</div><div class="line">35</div><div class="line">36</div><div class="line">37</div><div class="line">38</div><div class="line">39</div><div class="line">40</div><div class="line">41</div><div class="line">42</div><div class="line">43</div><div class="line">44</div><div class="line">45</div><div class="line">46</div><div class="line">47</div><div class="line">48</div><div class="line">49</div><div class="line">50</div><div class="line">51</div><div class="line">52</div><div class="line">53</div><div class="line">54</div><div class="line">55</div><div class="line">56</div><div class="line">57</div><div class="line">58</div><div class="line">59</div><div class="line">60</div><div class="line">61</div><div class="line">62</div><div class="line">63</div><div class="line">64</div><div class="line">65</div><div class="line">66</div><div class="line">67</div><div class="line">68</div><div class="line">69</div><div class="line">70</div><div class="line">71</div><div class="line">72</div><div class="line">73</div><div class="line">74</div><div class="line">75</div><div class="line">76</div><div class="line">77</div><div class="line">78</div><div class="line">79</div><div class="line">80</div><div class="line">81</div><div class="line">82</div><div class="line">83</div><div class="line">84</div><div class="line">85</div><div class="line">86</div><div class="line">87</div><div class="line">88</div><div class="line">89</div><div class="line">90</div><div class="line">91</div><div class="line">92</div><div class="line">93</div><div class="line">94</div><div class="line">95</div><div class="line">96</div><div class="line">97</div><div class="line">98</div><div class="line">99</div><div class="line">100</div><div class="line">101</div><div class="line">102</div></pre></td><td class="code"><pre><div class="line">int main(int argc, char **argv)</div><div class="line">&#123;</div><div class="line">	...</div><div class="line">	</div><div class="line">	// parse declarations</div><div class="line">    line = 1;</div><div class="line">    next();</div><div class="line">    // 检测到 int add(...)</div><div class="line">    while (tk) &#123;</div><div class="line">        bt = INT; // basetype</div><div class="line">        if (tk == Int) next(); // 接下来处理add函数 id指向add所构建的结构体 tk=Id</div><div class="line">        else if (tk == Char) &#123; next(); bt = CHAR; &#125;</div><div class="line">        else if (tk == Enum) &#123;</div><div class="line">            next();</div><div class="line">            if (tk != &apos;&#123;&apos;) next();</div><div class="line">            if (tk == &apos;&#123;&apos;) &#123;</div><div class="line">                next();</div><div class="line">                i = 0;</div><div class="line">                while (tk != &apos;&#125;&apos;) &#123;</div><div class="line">                    if (tk != Id) &#123; printf(&quot;%d: bad enum identifier %d\n&quot;, line, tk); return -1; &#125;</div><div class="line">                    next();</div><div class="line">                    if (tk == Assign) &#123;</div><div class="line">                        next();</div><div class="line">                        if (tk != Num) &#123; printf(&quot;%d: bad enum initializer\n&quot;, line); return -1; &#125;</div><div class="line">                        i = ival;</div><div class="line">                        next();</div><div class="line">                    &#125;</div><div class="line">                    id[Class] = Num; id[Type] = INT; id[Val] = i++;</div><div class="line">                    if (tk == &apos;,&apos;) next();</div><div class="line">                &#125;</div><div class="line">                next();</div><div class="line">            &#125;</div><div class="line">        &#125;</div><div class="line">        while (tk != &apos;;&apos; &amp;&amp; tk != &apos;&#125;&apos;) &#123;</div><div class="line">            ty = bt;</div><div class="line">            while (tk == Mul) &#123; next(); ty = ty + PTR; &#125;</div><div class="line">            if (tk != Id) &#123; printf(&quot;%d: bad global declaration\n&quot;, line); return -1; &#125;</div><div class="line">            if (id[Class]) &#123; printf(&quot;%d: duplicate global definition\n&quot;, line); return -1; &#125;</div><div class="line">            next(); // 过滤掉&apos;(&apos;</div><div class="line">            id[Type] = ty;</div><div class="line">            if (tk == &apos;(&apos;) &#123; // function</div><div class="line">                id[Class] = Fun;</div><div class="line">//                id[Val] = (int)(e + 1);</div><div class="line">                id[Val] = (long)(e + 1);</div><div class="line">                next(); i = 0;</div><div class="line">                while (tk != &apos;)&apos;) &#123; // 处理add函数的参数列表</div><div class="line">                    ty = INT;</div><div class="line">                    if (tk == Int) next();</div><div class="line">                    else if (tk == Char) &#123; next(); ty = CHAR; &#125;</div><div class="line">                    while (tk == Mul) &#123; next(); ty = ty + PTR; &#125;</div><div class="line">                    if (tk != Id) &#123; printf(&quot;%d: bad parameter declaration\n&quot;, line); return -1; &#125;</div><div class="line">                    if (id[Class] == Loc) &#123; printf(&quot;%d: duplicate parameter definition\n&quot;, line); return -1; &#125;</div><div class="line">                    id[HClass] = id[Class]; id[Class] = Loc;</div><div class="line">                    id[HType]  = id[Type];  id[Type] = ty;</div><div class="line">                    id[HVal]   = id[Val];   id[Val] = i++;</div><div class="line">                    next();</div><div class="line">                    if (tk == &apos;,&apos;) next();</div><div class="line">                &#125;</div><div class="line">                next(); // add函数参数解析完成</div><div class="line">                if (tk != &apos;&#123;&apos;) &#123; printf(&quot;%d: bad function definition\n&quot;, line); return -1; &#125;</div><div class="line">                loc = ++i;</div><div class="line">                next();</div><div class="line">                while (tk == Int || tk == Char) &#123; // 处理函数内的局部变量</div><div class="line">                    bt = (tk == Int) ? INT : CHAR;</div><div class="line">                    next();</div><div class="line">                    while (tk != &apos;;&apos;) &#123;</div><div class="line">                        ty = bt;</div><div class="line">                        while (tk == Mul) &#123; next(); ty = ty + PTR; &#125;</div><div class="line">                        if (tk != Id) &#123; printf(&quot;%d: bad local declaration\n&quot;, line); return -1; &#125;</div><div class="line">                        if (id[Class] == Loc) &#123; printf(&quot;%d: duplicate local definition\n&quot;, line); return -1; &#125;</div><div class="line">                        id[HClass] = id[Class]; id[Class] = Loc;</div><div class="line">                        id[HType]  = id[Type];  id[Type] = ty;</div><div class="line">                        id[HVal]   = id[Val];   id[Val] = ++i;</div><div class="line">                        next();</div><div class="line">                        if (tk == &apos;,&apos;) next();</div><div class="line">                    &#125;</div><div class="line">                    next();</div><div class="line">                &#125;</div><div class="line">                *++e = ENT; *++e = i - loc; // 文本段 ENT入口 (i-loc)局部变量个数</div><div class="line">                while (tk != &apos;&#125;&apos;) stmt(); // 处理函数内部的操作</div><div class="line">                *++e = LEV;</div><div class="line">                id = sym; // 将函数内部的局部变量的Class Type Val清空</div><div class="line">                while (id[Tk]) &#123;</div><div class="line">                    if (id[Class] == Loc) &#123;</div><div class="line">                        id[Class] = id[HClass];</div><div class="line">                        id[Type] = id[HType];</div><div class="line">                        id[Val] = id[HVal];</div><div class="line">                    &#125;</div><div class="line">                    id = id + Idsz;</div><div class="line">                &#125;</div><div class="line">            &#125;</div><div class="line">            else &#123;</div><div class="line">                id[Class] = Glo;</div><div class="line">                id[Val] = (int)data;</div><div class="line">                data = data + sizeof(int);</div><div class="line">            &#125;</div><div class="line">            if (tk == &apos;,&apos;) next();</div><div class="line">        &#125;</div><div class="line">        next();</div><div class="line">    &#125;</div><div class="line">    </div><div class="line">    ...</div></pre></td></tr></table></figure>
+<p>再次过程中，会为曾将解析过的函数、函数的参数以及函数作用于内声明的变量，在symbol area内生成相应的结构来对他们进行标识和记录，最后在对它们的特定字段进行清理，如图：</p>
+<img src="/2015/10/25/151025-c4/151025-c4-02.png" alt="清理后的内存布局" title="清理后的内存布局">
+<p>在text area生成的伪汇编代码后的内存布局情况如图：</p>
+<img src="/2015/10/25/151025-c4/151025-c4-03.png" alt="text段生成伪汇编代码后的内存布" title="text段生成伪汇编代码后的内存布">
+<h3 id="汇编执行阶段"><a href="#汇编执行阶段" class="headerlink" title="汇编执行阶段"></a>汇编执行阶段</h3><p>最后就是对text area生成的汇编代码进行解析和执行，代码如下：</p>
+<figure class="highlight plain"><table><tr><td class="gutter"><pre><div class="line">1</div><div class="line">2</div><div class="line">3</div><div class="line">4</div><div class="line">5</div><div class="line">6</div><div class="line">7</div><div class="line">8</div><div class="line">9</div><div class="line">10</div><div class="line">11</div><div class="line">12</div><div class="line">13</div><div class="line">14</div><div class="line">15</div><div class="line">16</div><div class="line">17</div><div class="line">18</div><div class="line">19</div><div class="line">20</div><div class="line">21</div><div class="line">22</div><div class="line">23</div><div class="line">24</div><div class="line">25</div><div class="line">26</div><div class="line">27</div><div class="line">28</div><div class="line">29</div><div class="line">30</div><div class="line">31</div><div class="line">32</div><div class="line">33</div><div class="line">34</div><div class="line">35</div><div class="line">36</div><div class="line">37</div><div class="line">38</div><div class="line">39</div><div class="line">40</div><div class="line">41</div><div class="line">42</div><div class="line">43</div><div class="line">44</div><div class="line">45</div><div class="line">46</div><div class="line">47</div><div class="line">48</div><div class="line">49</div><div class="line">50</div><div class="line">51</div><div class="line">52</div><div class="line">53</div><div class="line">54</div><div class="line">55</div><div class="line">56</div><div class="line">57</div><div class="line">58</div><div class="line">59</div><div class="line">60</div><div class="line">61</div><div class="line">62</div><div class="line">63</div><div class="line">64</div><div class="line">65</div><div class="line">66</div><div class="line">67</div><div class="line">68</div><div class="line">69</div><div class="line">70</div></pre></td><td class="code"><pre><div class="line">int main(int argc, char **argv)</div><div class="line">&#123;</div><div class="line">	...</div><div class="line">	</div><div class="line">    // 获取main函数入口地址赋值给pc</div><div class="line">    if (!(pc = *(long *)(idmain+Val))) &#123; printf(&quot;main() not defined\n&quot;); return -1; &#125; </div><div class="line">    </div><div class="line">    if (src) return 0;</div><div class="line">    // 设置栈区域，栈是从高位地址向低位地址扩展的</div><div class="line">    sp = (int *)((char *)sp + poolsz);</div><div class="line">    *--sp = EXIT; // call exit if main returns</div><div class="line">    *--sp = PSH; t = sp;</div><div class="line">    *--sp = argc;</div><div class="line">    *--sp = (int)argv;</div><div class="line">    *--sp = (int)t;</div><div class="line">    </div><div class="line">    // run...</div><div class="line">    cycle = 0;</div><div class="line">    while (1) &#123;</div><div class="line">        i = *pc++; ++cycle;</div><div class="line">        if (debug) &#123;</div><div class="line">            printf(&quot;%d&gt; %.4s&quot;, cycle,</div><div class="line">                   &amp;&quot;LEA ,IMM ,JMP ,JSR ,BZ  ,BNZ ,ENT ,ADJ ,LEV ,LI  ,LC  ,SI  ,SC  ,PSH ,&quot;</div><div class="line">                   &quot;OR  ,XOR ,AND ,EQ  ,NE  ,LT  ,GT  ,LE  ,GE  ,SHL ,SHR ,ADD ,SUB ,MUL ,DIV ,MOD ,&quot;</div><div class="line">                   &quot;OPEN,READ,CLOS,PRTF,MALC,MSET,MCMP,EXIT,&quot;[i * 5]);</div><div class="line">            if (i &lt;= ADJ) printf(&quot; %d\n&quot;, *pc); else printf(&quot;\n&quot;);</div><div class="line">        &#125;</div><div class="line">        if      (i == LEA) a = (int)(bp + *pc++);                             // load local address</div><div class="line">        else if (i == IMM) a = *pc++;                                         // load global address or immediate</div><div class="line">        else if (i == JMP) pc = (int *)*pc;                                   // jump</div><div class="line">        else if (i == JSR) &#123; *--sp = (int)(pc + 1); pc = (int *)*pc; &#125;        // jump to subroutine</div><div class="line">        else if (i == BZ)  pc = a ? pc + 1 : (int *)*pc;                      // branch if zero</div><div class="line">        else if (i == BNZ) pc = a ? (int *)*pc : pc + 1;                      // branch if not zero</div><div class="line">        else if (i == ENT) &#123; *--sp = (int)bp; bp = sp; sp = sp - *pc++; &#125;     // enter subroutine</div><div class="line">        else if (i == ADJ) sp = sp + *pc++;                                   // stack adjust</div><div class="line">        else if (i == LEV) &#123; sp = bp; bp = (int *)*sp++; pc = (int *)*sp++; &#125; // leave subroutine</div><div class="line">        else if (i == LI)  a = *(int *)a;                                     // load int</div><div class="line">        else if (i == LC)  a = *(char *)a;                                    // load char</div><div class="line">        else if (i == SI)  *(int *)*sp++ = a;                                 // store int</div><div class="line">        else if (i == SC)  a = *(char *)*sp++ = a;                            // store char</div><div class="line">        else if (i == PSH) *--sp = a;                                         // push</div><div class="line">        </div><div class="line">        else if (i == OR)  a = *sp++ |  a;</div><div class="line">        else if (i == XOR) a = *sp++ ^  a;</div><div class="line">        else if (i == AND) a = *sp++ &amp;  a;</div><div class="line">        else if (i == EQ)  a = *sp++ == a;</div><div class="line">        else if (i == NE)  a = *sp++ != a;</div><div class="line">        else if (i == LT)  a = *sp++ &lt;  a;</div><div class="line">        else if (i == GT)  a = *sp++ &gt;  a;</div><div class="line">        else if (i == LE)  a = *sp++ &lt;= a;</div><div class="line">        else if (i == GE)  a = *sp++ &gt;= a;</div><div class="line">        else if (i == SHL) a = *sp++ &lt;&lt; a;</div><div class="line">        else if (i == SHR) a = *sp++ &gt;&gt; a;</div><div class="line">        else if (i == ADD) a = *sp++ +  a;</div><div class="line">        else if (i == SUB) a = *sp++ -  a;</div><div class="line">        else if (i == MUL) a = *sp++ *  a;</div><div class="line">        else if (i == DIV) a = *sp++ /  a;</div><div class="line">        else if (i == MOD) a = *sp++ %  a;</div><div class="line">        </div><div class="line">        else if (i == OPEN) a = open((char *)sp[1], *sp);</div><div class="line">        else if (i == READ) a = read(sp[2], (char *)sp[1], *sp);</div><div class="line">        else if (i == CLOS) a = close(*sp);</div><div class="line">        else if (i == PRTF) &#123; t = sp + pc[1]; a = printf((char *)t[-1], t[-2], t[-3], t[-4], t[-5], t[-6]); &#125;</div><div class="line">        else if (i == MALC) a = (int)malloc(*sp);</div><div class="line">        else if (i == MSET) a = (int)memset((char *)sp[2], sp[1], *sp);</div><div class="line">        else if (i == MCMP) a = memcmp((char *)sp[2], (char *)sp[1], *sp);</div><div class="line">        else if (i == EXIT) &#123; printf(&quot;exit(%d) cycle = %d\n&quot;, *sp, cycle); return *sp; &#125;</div><div class="line">        else &#123; printf(&quot;unknown instruction = %d! cycle = %d\n&quot;, i, cycle); return -1; &#125;</div><div class="line">    &#125;</div><div class="line">&#125;</div></pre></td></tr></table></figure>
+<p>这个阶段利用pc读取text area生成的伪汇编代码，然后利用指向stack area的指针sp模拟执行，示意图如下：</p>
+<img src="/2015/10/25/151025-c4/151025-c4-04.png" alt="执行代码的内存情况" title="执行代码的内存情况">
+<h3 id="纠错"><a href="#纠错" class="headerlink" title="纠错"></a>纠错</h3><ul>
+<li><p>查找支持的关键字或库函数过程中，在<code>next()</code>函数以下代码段中：</p>
+  <figure class="highlight plain"><table><tr><td class="gutter"><pre><div class="line">1</div><div class="line">2</div><div class="line">3</div><div class="line">4</div><div class="line">5</div><div class="line">6</div><div class="line">7</div><div class="line">8</div><div class="line">9</div><div class="line">10</div><div class="line">11</div><div class="line">12</div><div class="line">13</div><div class="line">14</div><div class="line">15</div><div class="line">16</div><div class="line">17</div><div class="line">18</div><div class="line">19</div><div class="line">20</div></pre></td><td class="code"><pre><div class="line">void next()</div><div class="line">&#123;</div><div class="line">	...</div><div class="line">	  else if ((tk &gt;= &apos;a&apos; &amp;&amp; tk &lt;= &apos;z&apos;) || (tk &gt;= &apos;A&apos; &amp;&amp; tk &lt;= &apos;Z&apos;) || tk == &apos;_&apos;) &#123;</div><div class="line">      pp = p - 1;</div><div class="line">      while ((*p &gt;= &apos;a&apos; &amp;&amp; *p &lt;= &apos;z&apos;) || (*p &gt;= &apos;A&apos; &amp;&amp; *p &lt;= &apos;Z&apos;) || (*p &gt;= &apos;0&apos; &amp;&amp; *p &lt;= &apos;9&apos;) || *p == &apos;_&apos;)</div><div class="line">        tk = tk * 147 + *p++;</div><div class="line">      tk = (tk &lt;&lt; 6) + (p - pp);</div><div class="line">      id = sym;</div><div class="line">      while (id[Tk]) &#123;</div><div class="line">        if (tk == id[Hash] &amp;&amp; !memcmp((char *)id[Name], pp, p - pp)) &#123; tk = id[Tk]; return; &#125;</div><div class="line">        id = id + Idsz;</div><div class="line">      &#125;</div><div class="line">      id[Name] = (int)pp;</div><div class="line">      id[Hash] = tk;</div><div class="line">      tk = id[Tk] = Id;</div><div class="line">      return;</div><div class="line">    &#125;</div><div class="line">	...</div><div class="line">&#125;</div></pre></td></tr></table></figure>
+<p>  从代码中我们可以看出，在对之前添加的关键字或函数进行匹配时，是通过对Hash段和Name段进行比较得出的，条件表达式为即：</p>
+  <figure class="highlight plain"><table><tr><td class="gutter"><pre><div class="line">1</div><div class="line">2</div><div class="line">3</div><div class="line">4</div></pre></td><td class="code"><pre><div class="line">// 这条语句在编译的时候编译器会报错</div><div class="line">tk == id[Hash] &amp;&amp; !memcmp((char *)id[Name], pp, p - pp)</div><div class="line">// 正确的写法</div><div class="line">tk == id[Hash] &amp;&amp; !memcmp((char *)(id+Name), pp, p - pp)</div></pre></td></tr></table></figure>
+<p>  当我们对Name进行存储的时候是将字符串指针强转为int型去存储的，即：</p>
+  <figure class="highlight plain"><table><tr><td class="gutter"><pre><div class="line">1</div></pre></td><td class="code"><pre><div class="line">id[Name] = (int)pp;</div></pre></td></tr></table></figure>
+<p>  这里面作者想表达的意图是，将字符串指针强转为整形指针存入到Name字段中，所以对Name字段进行存储是应该做如下修改：</p>
+  <figure class="highlight plain"><table><tr><td class="gutter"><pre><div class="line">1</div></pre></td><td class="code"><pre><div class="line">id[Name] = *(int *)pp;</div></pre></td></tr></table></figure>
+<p>  注意由于<code>char</code>类型占1个字节，<code>int</code>类型占4个字节，所以此时Name段记录的字符为pp所指向字符的前4个字节：<br><br>  如果<code>pp = &quot;char else...&quot;</code>，则Name字段内容转换为字符串为<code>&quot;char&quot;</code>；<br><br>  如果<code>pp = &quot;if else&quot;</code>，则Name字段内容转换为字符串为<code>&quot;if e&quot;</code>；<br><br>  如果<code>pp = &quot;return else&quot;</code>，则Name字段内容转换为字符串为<code>&quot;retu&quot;</code>；<br><br>  因此在对该字段内容进行比较时，对比较的长度的要求就比较特殊，上面条件判断就应该改为：</p>
+  <figure class="highlight plain"><table><tr><td class="gutter"><pre><div class="line">1</div><div class="line">2</div><div class="line">3</div><div class="line">4</div><div class="line">5</div><div class="line">6</div><div class="line">7</div><div class="line">8</div></pre></td><td class="code"><pre><div class="line">// 如果比较的字符串长度小于4个字节，比较长度就取该长度；</div><div class="line">// 如果比较的字符串长度大于4个字节，比较长度就取4个字节长度进行比较，因为在存储的之后我们只记录了字符串的前4个字节；</div><div class="line">int cmp_len = (p - pp) &gt; 4 ? 4 : (p - pp);</div><div class="line">if (tk == id[Hash] &amp;&amp; !memcmp((char *)(id+Name), pp, cmp_len)) </div><div class="line">&#123; </div><div class="line">	tk = id[Tk]; </div><div class="line">	return; </div><div class="line">&#125;</div></pre></td></tr></table></figure>
+</li>
+</ul>
+<p><br></p>
+<ul>
+<li><p>在对生成的汇编代码进行模拟运行的时候，需要获取之前存储的main函数以及自定义函数的地址进行跳转，而当时存储的时候代码如下：</p>
+  <figure class="highlight plain"><table><tr><td class="gutter"><pre><div class="line">1</div></pre></td><td class="code"><pre><div class="line">id[Val] = (int)(e + 1);</div></pre></td></tr></table></figure>
+<p>  我们看到是将地址值强转成int型去存储的，对于32位机器来说，地址是通过8位16进制数去表示的，地址的长度正好是int型的长度4个字节；但在64位机器上，地址是通过16位16进制数表示，地址长度为8个字节，此处如果想用int型去存储地址的话，高4位地址会被截取，存储的只是低4位地址的内容，在跳转的时候就会出问题。</p>
+</li>
+</ul>
+
+      
+    </div>
+
+    <div>
+      
+        
+
+      
+    </div>
+
+    <div>
+      
+        
+
+      
+    </div>
+
+    <footer class="post-footer">
+      
+
+      
+        <div class="post-nav">
+          <div class="post-nav-next post-nav-item">
+            
+              <a href="/2015/10/10/151010-thread-semaphore-practise/" rel="next" title="利用线程和信号量模拟冰淇淋商店运营情况">
+                <i class="fa fa-chevron-left"></i> 利用线程和信号量模拟冰淇淋商店运营情况
+              </a>
+            
+          </div>
+
+          <div class="post-nav-prev post-nav-item">
+            
+              <a href="/2015/11/15/151115-sinvoice-generate/" rel="prev" title="从数据到声音">
+                从数据到声音 <i class="fa fa-chevron-right"></i>
+              </a>
+            
+          </div>
+        </div>
+      
+
+      
+      
+    </footer>
+  </article>
+
+
+
+    <div class="post-spread">
+      
+    </div>
+  </div>
+
+
+          </div>
+          
+
+
+          
+  <div class="comments" id="comments">
+    
+  </div>
+
+
+        </div>
+        
+          
+  
+  <div class="sidebar-toggle">
+    <div class="sidebar-toggle-line-wrap">
+      <span class="sidebar-toggle-line sidebar-toggle-line-first"></span>
+      <span class="sidebar-toggle-line sidebar-toggle-line-middle"></span>
+      <span class="sidebar-toggle-line sidebar-toggle-line-last"></span>
+    </div>
+  </div>
+
+  <aside id="sidebar" class="sidebar">
+    <div class="sidebar-inner">
+
+      
+
+      
+        <ul class="sidebar-nav motion-element">
+          <li class="sidebar-nav-toc sidebar-nav-active" data-target="post-toc-wrap" >
+            文章目錄
+          </li>
+          <li class="sidebar-nav-overview" data-target="site-overview">
+            本站概覽
+          </li>
+        </ul>
+      
+
+      <section class="site-overview sidebar-panel ">
+        <div class="site-author motion-element" itemprop="author" itemscope itemtype="//schema.org/Person">
+          <img class="site-author-image" itemprop="image"
+               src="/images/avatar.gif"
+               alt="ronglei" />
+          <p class="site-author-name" itemprop="name">ronglei</p>
+          <p class="site-description motion-element" itemprop="description"></p>
+        </div>
+        <nav class="site-state motion-element">
+          <div class="site-state-item site-state-posts">
+            <a href="/archives">
+              <span class="site-state-item-count">21</span>
+              <span class="site-state-item-name">文章</span>
+            </a>
+          </div>
+
+          
+            <div class="site-state-item site-state-categories">
+              
+                <span class="site-state-item-count">8</span>
+                <span class="site-state-item-name">分類</span>
+              
+            </div>
+          
+
+          
+            <div class="site-state-item site-state-tags">
+              <a href="/tags">
+                <span class="site-state-item-count">5</span>
+                <span class="site-state-item-name">標籤</span>
+              </a>
+            </div>
+          
+
+        </nav>
+
+        
+
+        <div class="links-of-author motion-element">
+          
+        </div>
+
+        
+        
+
+        
+        
+
+      </section>
+
+      
+        <section class="post-toc-wrap motion-element sidebar-panel sidebar-panel-active">
+          <div class="post-toc">
+            
+              
+            
+            
+              <div class="post-toc-content"><ol class="nav"><li class="nav-item nav-level-3"><a class="nav-link" href="#基本结构与函数的理解"><span class="nav-number">1.</span> <span class="nav-text">基本结构与函数的理解</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#准备阶段"><span class="nav-number">2.</span> <span class="nav-text">准备阶段</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#语义解析阶段"><span class="nav-number">3.</span> <span class="nav-text">语义解析阶段</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#汇编执行阶段"><span class="nav-number">4.</span> <span class="nav-text">汇编执行阶段</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#纠错"><span class="nav-number">5.</span> <span class="nav-text">纠错</span></a></li></ol></div>
+            
+          </div>
+        </section>
+      
+
+    </div>
+  </aside>
+
+
+        
+      </div>
+    </main>
+
+    <footer id="footer" class="footer">
+      <div class="footer-inner">
+        <div class="copyright" >
+  
+  &copy; 
+  <span itemprop="copyrightYear">2016</span>
+  <span class="with-love">
+    <i class="fa fa-heart"></i>
+  </span>
+  <span class="author" itemprop="copyrightHolder">ronglei</span>
+</div>
+
+<div class="powered-by">
+  由 <a class="theme-link" href="https://hexo.io">Hexo</a> 強力驅動
+</div>
+
+<div class="theme-info">
+  主題 -
+  <a class="theme-link" href="https://github.com/iissnan/hexo-theme-next">
+    NexT.Mist
+  </a>
+</div>
+
+        
+
+        
+      </div>
+    </footer>
+
+    <div class="back-to-top">
+      <i class="fa fa-arrow-up"></i>
+    </div>
+  </div>
+
+  
+
+<script type="text/javascript">
+  if (Object.prototype.toString.call(window.Promise) !== '[object Function]') {
+    window.Promise = null;
+  }
+</script>
+
+
+
+
+
+
+
+
+
+  
+
+
+
+  
+  <script type="text/javascript" src="/vendors/jquery/index.js?v=2.1.3"></script>
+
+  
+  <script type="text/javascript" src="/vendors/fastclick/lib/fastclick.min.js?v=1.0.6"></script>
+
+  
+  <script type="text/javascript" src="/vendors/jquery_lazyload/jquery.lazyload.js?v=1.9.7"></script>
+
+  
+  <script type="text/javascript" src="/vendors/velocity/velocity.min.js?v=1.2.1"></script>
+
+  
+  <script type="text/javascript" src="/vendors/velocity/velocity.ui.min.js?v=1.2.1"></script>
+
+  
+  <script type="text/javascript" src="/vendors/fancybox/source/jquery.fancybox.pack.js?v=2.1.5"></script>
+
+
+  
+
+
+  <script type="text/javascript" src="/js/src/utils.js?v=5.0.2"></script>
+
+  <script type="text/javascript" src="/js/src/motion.js?v=5.0.2"></script>
+
+
+
+  
+  
+
+  
+  <script type="text/javascript" src="/js/src/scrollspy.js?v=5.0.2"></script>
+<script type="text/javascript" src="/js/src/post-details.js?v=5.0.2"></script>
+
+
+
+  
+
+
+  <script type="text/javascript" src="/js/src/bootstrap.js?v=5.0.2"></script>
+
+
+
+  
+
+
+
+  
+
+
+
+
+  
+  
+
+  
+
+  
+
+  
+
+</body>
+</html>

@@ -1,0 +1,696 @@
+<!doctype html>
+
+
+
+  
+
+
+<html class="theme-next mist use-motion">
+<head>
+  <meta charset="UTF-8"/>
+<meta http-equiv="X-UA-Compatible" content="IE=edge,chrome=1" />
+<meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1"/>
+
+
+
+<meta http-equiv="Cache-Control" content="no-transform" />
+<meta http-equiv="Cache-Control" content="no-siteapp" />
+
+
+
+
+
+
+
+
+
+
+
+
+  
+  
+  <link href="/vendors/fancybox/source/jquery.fancybox.css?v=2.1.5" rel="stylesheet" type="text/css" />
+
+
+
+
+  
+  
+  
+  
+
+  
+    
+    
+  
+
+  
+
+  
+
+  
+
+  
+
+  
+    
+    
+    <link href="//fonts.googleapis.com/css?family=Lato:300,300italic,400,400italic,700,700italic&subset=latin,latin-ext" rel="stylesheet" type="text/css">
+  
+
+
+
+
+
+
+<link href="/vendors/font-awesome/css/font-awesome.min.css?v=4.4.0" rel="stylesheet" type="text/css" />
+
+<link href="/css/main.css?v=5.0.2" rel="stylesheet" type="text/css" />
+
+
+  <meta name="keywords" content="Hexo, NexT" />
+
+
+
+
+
+
+
+
+  <link rel="shortcut icon" type="image/x-icon" href="/favicon.ico?v=5.0.2" />
+
+
+
+
+
+
+<meta name="description" content="面试之前过一遍神清气爽！">
+<meta property="og:type" content="article">
+<meta property="og:title" content="OC知识要点">
+<meta property="og:url" content="http://zrongl.github.io/2015/05/12/150512-oc-main-point/index.html">
+<meta property="og:site_name" content="Zrongl">
+<meta property="og:description" content="面试之前过一遍神清气爽！">
+<meta property="og:image" content="http://zrongl.github.io/2015/05/12/150512-oc-main-point/150512-oc-main-point-00.png">
+<meta property="og:image" content="http://zrongl.github.io/2015/05/12/150512-oc-main-point/150512-oc-main-point-01.png">
+<meta property="og:image" content="http://zrongl.github.io/2015/05/12/150512-oc-main-point/150512-oc-main-point-02.png">
+<meta property="og:updated_time" content="2016-10-09T09:58:18.000Z">
+<meta name="twitter:card" content="summary">
+<meta name="twitter:title" content="OC知识要点">
+<meta name="twitter:description" content="面试之前过一遍神清气爽！">
+<meta name="twitter:image" content="http://zrongl.github.io/2015/05/12/150512-oc-main-point/150512-oc-main-point-00.png">
+
+
+
+<script type="text/javascript" id="hexo.configuration">
+  var NexT = window.NexT || {};
+  var CONFIG = {
+    scheme: 'Mist',
+    sidebar: {"position":"left","display":"post"},
+    fancybox: true,
+    motion: true,
+    duoshuo: {
+      userId: '0',
+      author: '博主'
+    }
+  };
+</script>
+
+
+
+
+  <link rel="canonical" href="http://zrongl.github.io/2015/05/12/150512-oc-main-point/"/>
+
+
+  <title> OC知识要点 | Zrongl </title>
+</head>
+
+<body itemscope itemtype="//schema.org/WebPage" lang="zh-tw">
+
+  
+
+
+
+
+
+
+
+
+
+
+  
+  
+    
+  
+
+  <div class="container one-collumn sidebar-position-left page-post-detail ">
+    <div class="headband"></div>
+
+    <header id="header" class="header" itemscope itemtype="//schema.org/WPHeader">
+      <div class="header-inner"><div class="site-meta ">
+  
+
+  <div class="custom-logo-site-title">
+    <a href="/"  class="brand" rel="start">
+      <span class="logo-line-before"><i></i></span>
+      <span class="site-title">Zrongl</span>
+      <span class="logo-line-after"><i></i></span>
+    </a>
+  </div>
+  <p class="site-subtitle"></p>
+</div>
+
+<div class="site-nav-toggle">
+  <button>
+    <span class="btn-bar"></span>
+    <span class="btn-bar"></span>
+    <span class="btn-bar"></span>
+  </button>
+</div>
+
+<nav class="site-nav">
+  
+
+  
+    <ul id="menu" class="menu">
+      
+        
+        <li class="menu-item menu-item-home">
+          <a href="/" rel="section">
+            
+              <i class="menu-item-icon fa fa-fw fa-home"></i> <br />
+            
+            首頁
+          </a>
+        </li>
+      
+        
+        <li class="menu-item menu-item-archives">
+          <a href="/archives" rel="section">
+            
+              <i class="menu-item-icon fa fa-fw fa-archive"></i> <br />
+            
+            歸檔
+          </a>
+        </li>
+      
+        
+        <li class="menu-item menu-item-tags">
+          <a href="/tags" rel="section">
+            
+              <i class="menu-item-icon fa fa-fw fa-tags"></i> <br />
+            
+            標籤
+          </a>
+        </li>
+      
+
+      
+    </ul>
+  
+
+  
+</nav>
+
+ </div>
+    </header>
+
+    <main id="main" class="main">
+      <div class="main-inner">
+        <div class="content-wrap">
+          <div id="content" class="content">
+            
+
+  <div id="posts" class="posts-expand">
+    
+
+  
+  
+
+  
+  
+  
+
+  <article class="post post-type-normal " itemscope itemtype="//schema.org/Article">
+
+    
+      <header class="post-header">
+
+        
+        
+          <h1 class="post-title" itemprop="name headline">
+            
+            
+              
+                OC知识要点
+              
+            
+          </h1>
+        
+
+        <div class="post-meta">
+          <span class="post-time">
+            <span class="post-meta-item-icon">
+              <i class="fa fa-calendar-o"></i>
+            </span>
+            <span class="post-meta-item-text">發表於</span>
+            <time itemprop="dateCreated" datetime="2015-05-12T00:00:00+08:00" content="2015-05-12">
+              2015-05-12
+            </time>
+          </span>
+
+          
+            <span class="post-category" >
+              &nbsp; | &nbsp;
+              <span class="post-meta-item-icon">
+                <i class="fa fa-folder-o"></i>
+              </span>
+              <span class="post-meta-item-text">分類於</span>
+              
+                <span itemprop="about" itemscope itemtype="https://schema.org/Thing">
+                  <a href="/categories/iOS/" itemprop="url" rel="index">
+                    <span itemprop="name">iOS</span>
+                  </a>
+                </span>
+
+                
+                
+
+              
+            </span>
+          
+
+          
+            
+          
+
+          
+
+          
+          
+
+          
+        </div>
+      </header>
+    
+
+
+    <div class="post-body" itemprop="articleBody">
+
+      
+      
+
+      
+        <h3 id="Object-C-runtime"><a href="#Object-C-runtime" class="headerlink" title="Object-C runtime"></a>Object-C runtime</h3><p>Object-C动态运行时特性是用C和汇编实现的,可以使得程序在运行时才去创建，访问，修改类或对象的属性，方法或协议。</p>
+<h3 id="对象、类和元类"><a href="#对象、类和元类" class="headerlink" title="对象、类和元类"></a>对象、类和元类</h3><img src="/2015/05/12/150512-oc-main-point/150512-oc-main-point-00.png" alt="实例、对象、类的继承关系" title="实例、对象、类的继承关系">
+<h3 id="Method、SEL和IMP"><a href="#Method、SEL和IMP" class="headerlink" title="Method、SEL和IMP"></a>Method、SEL和IMP</h3><p>Mehtod是一个函数整体的总称，包括方法名，返回值，参数及实现。<br><br>SEL本质上是<code>char *</code>指针，代表方法的名称。<br><br>IMP本质上是函数指针，指向方法的地址。<br><br>每一个Object-C对象结构中都维护有一个方法列表，其中方法是以key-value的形式存在的，key就是SEL，而value则是IMP，所以OC中同一对象中不能存在名字相同的方法，即使它们有不同的传入参数。<br></p>
+<h3 id="消息传递"><a href="#消息传递" class="headerlink" title="消息传递"></a>消息传递</h3><p>自己类的cacheList -&gt; mehtodList -&gt;<br><br>父类们的cacheList -&gt; mehtodList -&gt;<br><br>最终查找到共同的父类NSObject，仍为查找到方法-&gt;<br><br>resolveInstanceMethod(可在此为类临时添加方法) -&gt;<br><br>forwardingTargetForSelector(可以指定一个类去接收这个消息) -&gt;<br><br>methodSignatureForSelector(可以指定一个NSMethodSignature对象代替该方法) -&gt;<br><br>forwardInvocation(可以将该消息发送给指定对象去执行) -&gt;<br><br>doesNotRecognizeSelector(可在此记录crash信息)unsignatured selecter crash<br></p>
+<blockquote>
+<p>JSPath在创建多参数IMP的时候，就是在forwardInvocation方法获取方法的所有参数信息的。</p>
+</blockquote>
+<p>关于JSPath相关介绍参阅<a href="http://blog.cnbang.net/tech/2808/" target="_blank" rel="external">这篇文章</a><br><br>更详细的介绍请参阅<a href="http://zrongl.github.io/original/2014/11/18/object-c-runtime-feature.html">这篇文章</a></p>
+<h3 id="Category"><a href="#Category" class="headerlink" title="Category"></a>Category</h3><p>可以动态地为已经存在的类添加新的方法，这样可以保证类的原始设计规模较小，功能增加时再逐步扩展。<br><br><strong>加载时机：</strong><br><br>1.打开objc源代码，找到 objc-os.mm, 函数<code>_objc_init</code>为runtime的加载入口，由libSystem调用，进行初始化操作。<br><br>2.之后调用objc-runtime-new.mm -&gt; <code>map_images</code>加载map到内存<br><br>3.之后调用objc-runtime-new.mm-&gt; <code>_read_images</code>初始化内存中的map, 这个时候将会load所有的类，协议还有Category。<br></p>
+<h3 id="Associate"><a href="#Associate" class="headerlink" title="Associate"></a>Associate</h3><p>通过<strong>类别</strong>和<strong>访问器</strong>，再结合<strong>联合存储</strong>技术，我们可以为类增加属性。即在categray文件中声明属性及其访问器，并用<code>objc_setAssociatedObject</code>和<code>objc_getAssociatedObject</code>方法去设置和读取属性。<br><br>实现原理：<br></p>
+<ol>
+<li>有一个单例的<code>AssociationsHashMap</code>实例<br></li>
+<li><code>AssociationsHashMap</code>实例用于保存一个个的<code>ObjectAssociationMap</code>对象<br></li>
+<li>每个类都拥有一个<code>ObjectAssociationMap</code>实例，每个类通过联合存储模式保存的键值对也都保存在<code>ObjectAssociationMap</code>实例中。<br></li>
+<li>Key对应的值无所谓，我们需要的是key的地址。<br></li>
+</ol>
+<p>内存释放:<br><br>被关联的对象在生命周期内要比对象本身释放的晚很多<br><br>对象的内存销毁时间表:<a href="https://github.com/ChenYilong" target="_blank" rel="external">https://github.com/ChenYilong</a><br></p>
+<ol>
+<li>调用 -release ：引用计数变为零<ul>
+<li>对象正在被销毁，生命周期即将结束.</li>
+<li>不能再有新的 __weak 弱引用， 否则将指向 nil.</li>
+<li>调用 [self dealloc] </li>
+</ul>
+</li>
+<li>子类 调用 -dealloc<ul>
+<li>继承关系中最底层的子类 在调用 -dealloc</li>
+<li>如果是 MRC 代码 则会手动释放实例变量们（iVars）</li>
+<li>继承关系中每一层的父类 都在调用 -dealloc</li>
+</ul>
+</li>
+<li>NSObject 调 -dealloc<ul>
+<li>只做一件事：调用 Objective-C runtime 中的 object_dispose() 方法</li>
+</ul>
+</li>
+<li>调用 object_dispose()<ul>
+<li>为 C++ 的实例变量们（iVars）调用 destructors </li>
+<li>为 ARC 状态下的 实例变量们（iVars） 调用 -release </li>
+<li><strong>解除所有使用 runtime Associate方法关联的对象</strong></li>
+<li>解除所有 __weak 引用</li>
+<li>调用 free()</li>
+</ul>
+</li>
+</ol>
+<h3 id="KVO"><a href="#KVO" class="headerlink" title="KVO"></a>KVO</h3><p>键值观察建立对对象成员变量的观察，当变量值发生改变时会触发相应的观察事件<br><br><strong>实现原理:</strong><br><br>当某个类的对象第一次被观察时，<strong>系统就会在运行期动态地创建该类的一个派生类</strong>，在这个派生类中重写基类中任何被观察属性的 setter 方法。<br><strong>派生类在被重写的 setter 方法实现真正的通知机制</strong>，就如前面手动实现键值观察那样。这么做是基于设置属性会调用 setter 方法，而通过重写就获得了 KVO 需要的通知机制。当然前提是要通过遵循 KVO 的属性设置方式来变更属性值，如果仅是直接修改属性对应的成员变量，是无法实现 KVO 的。<br>同时派生类还重写了 class 方法以“欺骗”外部调用者它就是起初的那个类。然后系统将这个对象的 isa 指针指向这个新诞生的派生类，因此这个对象就成为该派生类的对象了，因而在该对象上对 setter 的调用就会调用重写的 setter，从而激活键值通知机制。此外，派生类还重写了 dealloc 方法来释放资源。<br><br><strong><code>NSNotification的通知回调会在发出post的线程中同步执行</code></strong></p>
+<p>更详细的介绍请参阅<a href="http://blog.csdn.net/kesalin/article/details/8194240" target="_blank" rel="external">这篇文章</a></p>
+<h3 id="内存管理"><a href="#内存管理" class="headerlink" title="内存管理"></a>内存管理</h3><p>Object-C是用引用计数来维护和管理内存，遵循谁创建谁释放的原则。<br><br>clang规定了四种所有权限定符包括：</p>
+<ul>
+<li>__autoreleasing</li>
+<li>__strong</li>
+<li>__unsafe_unretain</li>
+<li>__weak</li>
+</ul>
+<p>clang包含了以下属性声明类型：</p>
+<ul>
+<li><strong>assign</strong> implies __unsafe_unretained ownership.</li>
+<li><strong>copy</strong> implies __strong ownership, as well as the usual behavior of * copy semantics on the setter.</li>
+<li><strong>retain</strong> implies __strong ownership.</li>
+<li><strong>strong</strong> implies __strong ownership.</li>
+<li><strong>unsafe_unretained</strong> implies __unsafe_unretained ownership.</li>
+<li><strong>weak</strong> implies __weak ownership.</li>
+</ul>
+<p>arc并非其他语言的垃圾回收器，它只是将MRC中需要手动添加的<code>retian/release/autorelease</code>方法的过程交给编译去做了相应的处理。<br><br><strong><code>@property</code>属性修饰符</strong>：<br><br><code>retain/assign/strong/weak/unsafe_unretained/copy</code><br><br><strong>retain/strong：</strong>可以持有对象，使得对象的引用计数+1；<br><br><strong>copy：</strong>会创建对象的副本，防止无意间的修改影响原对象<br><br><strong>weak/unsafe_unretained：</strong>只是指向对象，不会引起引用计数的变化；对象释放后weak修饰的属性会自动置为nil，unsafe_unretained 则不会<br><br><strong>assign：</strong>修饰的属性可以不是OC对象，比如CGFloat，int等</p>
+<figure class="highlight plain"><table><tr><td class="gutter"><pre><div class="line">1</div><div class="line">2</div><div class="line">3</div><div class="line">4</div><div class="line">5</div><div class="line">6</div><div class="line">7</div><div class="line">8</div><div class="line">9</div><div class="line">10</div><div class="line">11</div></pre></td><td class="code"><pre><div class="line">// ARC环境下</div><div class="line">// obj默认被__strong修饰，此时它持有对象 对象的引用计数为1</div><div class="line">id obj = [[NSObject alloc] init];</div><div class="line">// weak_obj只是指向对象</div><div class="line">id __weak weak_obj = obj;</div><div class="line">// obj此时失去对对象的持有 对象的引用计数为0 此时系统会回收该对象</div><div class="line">obj = nil;</div><div class="line">// 由于weak_obj指向的对象已经被销毁 </div><div class="line">// 此时系统将被__weak修饰的变量weak_obj赋值为nil</div><div class="line">// 如果weak_obj被assign或unsafe_unretained修饰 系统不会将它的值赋为nil 此时weak_obj会变成野指针 是不安全的</div><div class="line">NSLog(@&quot;%@&quot;, weak_obj);</div></pre></td></tr></table></figure>
+<p><strong><code>performSelector</code>的使用</strong>：<br><br>当使用<code>performSelector</code>去执行创建或返回对象的方法时需要注意：</p>
+<figure class="highlight plain"><table><tr><td class="gutter"><pre><div class="line">1</div><div class="line">2</div><div class="line">3</div><div class="line">4</div><div class="line">5</div><div class="line">6</div><div class="line">7</div><div class="line">8</div><div class="line">9</div><div class="line">10</div><div class="line">11</div><div class="line">12</div><div class="line">13</div></pre></td><td class="code"><pre><div class="line">SEL selector;</div><div class="line">    if (/* condition */) &#123;</div><div class="line">        selector = @selector(newObject);</div><div class="line">    &#125; else if (/* other condition */) &#123;</div><div class="line">        selector = @selector(copyObject);</div><div class="line">    &#125; else &#123;</div><div class="line">        selector = @selector(getProperty);</div><div class="line">    &#125;</div><div class="line">    </div><div class="line">    id ret = [target performSelector:selector];</div><div class="line">    </div><div class="line">    // 上面这段代码，编译器会给出如下警告，这是为什么呢？</div><div class="line">    // warning: performSelector may cause a leak because its selector is unknow [-Warc-performSelector-leak]</div></pre></td></tr></table></figure>
+<p>由于动态特性，编译器不知道即将调用的 selector 是什么，不了解方法签名和返回值，甚至是否有返回值都不懂，所以编译器无法用 ARC 的内存管理规则来判断返回值是否应该释放。因此，ARC 采用了比较谨慎的做法，不添加释放操作，即在方法返回对象时就可能将其持有，从而可能导致内存泄露。<br><br>以本段代码为例，前两种情况（newObject, copyObject）都需要再次释放，而第三种情况不需要。这种泄露隐藏得如此之深，以至于使用静态分析都很难检测到。如果把代码的最后一行改成：<br><br><code>[object performSelector:selector];</code><br><br>不创建一个返回值变量测试分析，简直难以想象这里居然会出现内存问题。所以如果你使用的 selector 有返回值，一定要处理掉。<br><br><strong><code>autorelease</code> 自动释放池:</strong><br><br><strong>手动添加autorelease：</strong>一般发生在自定义线程中，比如自定义的NSOperation的main函数中需要手动添加@autorelease否则可能造成内存泄露<br><br><strong>系统自动添加autorelease：</strong>在主线程中每一个运行循环开始的时候，系统会自动创建autorelease，运行循环结束的时候会向池中的每一个对象发送release消息，然后该释放池对象会被添加到下一个运行循环的释放吃中去释放，以此类推。比如：viewController的viewDidLoad到viewDidAppear之间就是一个运行循环<br></p>
+<p>更深入的理解请参阅<a href="https://www.zybuluo.com/MicroCai/note/67734" target="_blank" rel="external">这篇文章</a><br></p>
+<h3 id="Block"><a href="#Block" class="headerlink" title="Block"></a>Block</h3><p>Block又称匿名函数，他的核心是一段可执行的代码，你可以给它传递参数或获取返回值。<br><br>在内存中Block分三种类型：<br><br>•<code>_NSConcreteGlobalBlock</code> 全局的静态block，不会访问任何外部变量<br><br>•<code>_NSConcreteStackBlock</code> 保存在栈中的block，出栈时会被销毁<br></p>
+<p><strong>a.</strong>在局部作用域中声明的block需要在作用域之外调用时，需要对该block进行copy操作，将该block拷贝找堆上，并将其类型转换为<code>_NSConcreteMallocBlock</code>类型<br><br><strong>b.</strong>需要对block外的变量进行修改时需要添加<code>__block</code>修饰，当系统将block复制到堆上时，该变量的地址也会一同被拷贝到堆上(区别于不加<code>__block</code>修饰的变量，只会将该变量的值拷贝到堆上，当时栈环境对该变量的修改并不会影响Block执行时使用该变量的值)<br></p>
+<figure class="highlight plain"><table><tr><td class="gutter"><pre><div class="line">1</div><div class="line">2</div><div class="line">3</div><div class="line">4</div><div class="line">5</div><div class="line">6</div><div class="line">7</div><div class="line">8</div><div class="line">9</div><div class="line">10</div></pre></td><td class="code"><pre><div class="line">__block int a = 5;</div><div class="line">int (^add)(int b) = ^(int b)&#123;</div><div class="line">    return a + b;</div><div class="line">&#125;;</div><div class="line">a += 2;</div><div class="line">    </div><div class="line">printf(&quot;%i&quot;, add(4));</div><div class="line"></div><div class="line">输出：11</div><div class="line">不加__block修饰输出9</div></pre></td></tr></table></figure>
+<p><strong>c.</strong>MRC情况下，<code>__block</code>修饰符可以解除Block循环引用的问题</p>
+<figure class="highlight plain"><table><tr><td class="gutter"><pre><div class="line">1</div><div class="line">2</div><div class="line">3</div><div class="line">4</div><div class="line">5</div></pre></td><td class="code"><pre><div class="line">__block id tmp = self;</div><div class="line">void(^block)(void) = ^&#123;</div><div class="line">    tmp = nil;</div><div class="line">&#125;;</div><div class="line">block();</div></pre></td></tr></table></figure>
+<p>在不允许使用<code>__weak</code>修饰符的情况下(MRC)，避免使用<code>__unsafe_unretained</code>修饰符，但是前提是Block必须被执行。<br><br>•<code>_NSConcreteMallocBlock</code> 保存在堆中的block，当引用计数为0时会被销毁<br></p>
+<p>更详细的介绍请参阅：<br><br><a href="http://my.oschina.net/joanfen/blog/317644" target="_blank" rel="external">Block的应用</a><br><br><a href="https://www.zybuluo.com/MicroCai/note/51116" target="_blank" rel="external">Block的实现</a></p>
+<h3 id="Runloop"><a href="#Runloop" class="headerlink" title="Runloop"></a>Runloop</h3><p>Runloop是iOS中实现的一种事件驱动模型：<br><br><strong>主线程</strong>的Runloop默认是启动的，它主要执行更新用户界面的操作。<br><br><strong>子线程</strong>的Runloop默认是关闭的，所以在子线程的runloop中添加了一个时间源后，需要手动启动子线程的runloop才能对时间源进行监听和触发。如果想保持子线程长时间运行不退出，可以启动线程的runloop向其中添加一些长时间或周期性的事件源，如：<code>performSelecter``NSTimer``NSURLConection</code>等<br></p>
+<p>iOS系统中的Runloop可以运行在以下几种模式中：<br><br><code>NSRunLoopDefaultMode</code> 默认模式中几乎包含了所有输入源(NSConnection除外),一般情况下应使用此模式。<br><br><code>NSRunLoopCommonModes</code> 这是一个伪模式，其为一组run loop mode的集合，将输入源加入此模式意味着在Common Modes中包含的所有输入源都可以处理。<br><br><code>UITrackingRunLoopMode</code> 用户界面拖动操作时处于此种模式下，在此模式下会限制输入事件的处理。例如，当手指按住UITableView拖动时就会处于此模式。</p>
+<p><strong>事件响应：</strong><br>主线程创建的时候Runloop会对source0与source1这两个事件源进行监听，source0用于接收系统事件，如：UIEvent，进而唤醒runloop去进行处理；source1用于接收系统的mach_port事件，然后唤醒runloop去处理。当一个硬件事件(触摸/锁屏/摇晃/加速等)触发后：</p>
+<ol>
+<li>首先由IOKit.framework生成一个IOHIDEvent事件并由 SpringBoard接收</li>
+<li>随后由<code>mach_port</code>转发给当前的App进程，source1接收<code>mach_port</code>事件后，在source1的回调函数中转发给source0</li>
+<li>source0接收事件后，在source0的回调函数中调用 <code>_UIApplicationHandleEventQueue()</code>进行应用内部的分发<br>，<code>_UIApplicationHandleEventQueue()</code>会把IOHIDEvent处理并包装成UIEvent进行处理或分发，其中包括识别UIGesture/处理屏幕旋转/发送给UIWindow等；</li>
+<li>当识别到一个guesture手势的时候，会中断当前touchBegin/Move/End系列回调，随后系统将对应的 UIGestureRecognizer标记为待处理，当事件循环的Observer监听到BeforeWaiting(Runloop即将进入休眠)状态时，会在其回调函数<code>_UIGestureRecognizerUpdateObserver()</code>中获取所有刚被标记为待处理的GestureRecognizer，并执行GestureRecognizer的回调。<br>当有UIGestureRecognizer的变化(创建/销毁/状态改变)时，这个回调都会进行相应处理。</li>
+</ol>
+<h3 id="Thread"><a href="#Thread" class="headerlink" title="Thread"></a>Thread</h3><h5 id="GCD"><a href="#GCD" class="headerlink" title="GCD"></a>GCD</h5><blockquote>
+<p>despatch queue按照任务执行顺序分为：<br><br><strong>串行队列(serial queue)</strong>：串行队列中的任务是顺序执行的(所有任务在一个线程中按顺序执行)<br><br><strong>并行队列(concurrent queue)</strong>：并行队列中的任务是并发执行的(同时有多个线程并发执行任务)</p>
+</blockquote>
+<p>dispatch queue分为三种：<br><br><strong>main queue</strong> 属于串行队列，运行主循环runloop，一般执行与界面显示有关的操作需要放到主线程队列中去执行。<br><br><strong>global queue</strong> 属于并行队列，可以通过<code>dispatch_get_global_queue</code>函数获取不同优先级(<code>DISPATCH_QUEUE_PRIORITY_HIGH</code>，<br><code>DISPATCH_QUEUE_PRIORITY_DEFAULT</code>，<br><code>DISPATCH_QUEUE_PRIORITY_LOW</code>，<br><code>DISPATCH_QUEUE_PRIORITY_BACKGROUND</code>)的全局队列<br><br><strong>custom queue</strong> 通过<code>dispatch_queue_create</code>方法创建的队列 ，通过参数可获取指定类型(<code>DISPATCHQUEUESERIAL</code>，<br><code>DISPATCHQUEUECONCURRENT</code>)的队列，用户队列中的任务最终都会被安排到全局队列中去执行。<br><br><strong>相关方法：</strong><br><br><code>dispatch_async</code> 异步执行任务。<br><br><code>dispatch_sync</code>  同步执行任务。<br><br><code>dispatch_after</code> 延迟执行任务。<br><br><code>dispatch_apply</code> 并行执行多次任务。<br><br><code>dispatch_group</code> 用于任务调度，可实现等待放入group中的每个queue中所有任务都执行完之后再继续向下执行。<br><br><code>dispatch_barrier_async</code> 用于任务调度，可实现等待前几个任务并行执行完成后，单独执行下面一条任务，等这条执行完成后，再并行执行后面的任务。<br><br><code>dispatch_source</code> 用于监听系统的源，然后触发相应的处理。<br></p>
+<h5 id="NSOperation"><a href="#NSOperation" class="headerlink" title="NSOperation"></a>NSOperation</h5><p><code>main</code>与<code>start</code><br>默认情况下<code>main</code>函数不会做任何事情，如果只是执行一些简单的任务只需要重载<code>main</code>函数即可；但是如果要执行一些复杂的并发操作需要重载<code>start</code>并手动更新operation的状态(excting，finish等)然后在<code>start</code>函数中进行一些operation状态的检查，满足条件后再调用<code>main</code>执行操作。<br></p>
+<p><strong>GCD与NSOperation的比较:</strong></p>
+<ol>
+<li><code>GCD</code>是底层的C语言构成的API，而<code>NSOperationQueue</code>及相关对象是Objc的对象。在GCD中，在队列中执行的是由block构成的任务，这是一个轻量级的数据结构；而<code>NSOperation</code>作为一个对象，为我们提供了更多的选择；<br></li>
+<li>在<code>NSOperationQueue</code>中，我们可以随时取消已经设定要准备执行的任务(当然，已经开始的任务就无法阻止了)，而GCD没法停止已经加入queue的block(其实是有的，但需要许多复杂的代码)；<br></li>
+<li><code>NSOperation</code>能够方便地设置依赖关系，我们可以让一个Operation依赖于另一个Operation，这样的话尽管两个Operation处于同一个并行队列中，但前者会直到后者执行完毕后再执行；<br></li>
+<li>我们能将KVO应用在<code>NSOperation</code>中，可以监听一个Operation是否完成或取消，这样子能比<code>GCD</code>更加有效地掌控我们执行的后台任务；<br></li>
+<li>在<code>NSOperation</code>中，我们能够设置<code>NSOperation</code>的priority优先级，能够使同一个并行队列中的任务区分先后地执行，而在GCD中，我们只能区分不同任务队列的优先级，如果要区分block任务的优先级，也需要大量的复杂代码；<br></li>
+<li>我们能够对<code>NSOperation</code>进行继承，在这之上添加成员变量与成员方法，提高整个代码的复用度，这比简单地将block任务排入执行队列更有自由度，能够在其之上添加更多自定制的功能。<br></li>
+<li><code>NSOperationQueue</code>将任务装载进主线程的队列中，runloop每执行一个循环都会取出队列中的一个任务去执行，这样使得在每两个operation被执行之间可以允许进行更新视图的操作。对于<code>dispatch_async</code>和<code>performSelectorOnMainThread</code>，则会将装载进队列中的block或selector一个接一个的执行，而不会插入更新视图或其他类似的操作。<br></li>
+</ol>
+<p>更详细的介绍请参阅这<a href="http://mobile.51cto.com/iphone-403490.htm" target="_blank" rel="external">一系列文章</a></p>
+<h4 id="DeepIntoThread"><a href="#DeepIntoThread" class="headerlink" title="DeepIntoThread"></a><a href="https://github.com/zrongl/DeepIntoThread" target="_blank" rel="external">DeepIntoThread</a></h4><h3 id="iOS沙盒目录及其用途"><a href="#iOS沙盒目录及其用途" class="headerlink" title="iOS沙盒目录及其用途"></a>iOS沙盒目录及其用途</h3><p>下图为出自<a href="https://developer.apple.com/library/mac/documentation/FileManagement/Conceptual/FileSystemProgrammingGuide/Introduction/Introduction.html#//apple_ref/doc/uid/TP40010672-CH1-SW1" target="_blank" rel="external">官方文档</a></p>
+<img src="/2015/05/12/150512-oc-main-point/150512-oc-main-point-01.png" alt="沙盒目录结构" title="沙盒目录结构">
+<h4 id="MyApp-app"><a href="#MyApp-app" class="headerlink" title="MyApp.app"></a>MyApp.app</h4><p>存储应用程序本身的数据，包括<strong>资源文件和可执行文件</strong>等，并且该目录为只读的。程序启动以后，会根据需要从该目录中动态加载代码或资源到内存，这里用到了lazy loading的思想。<br></p>
+<h4 id="Documents"><a href="#Documents" class="headerlink" title="Documents"></a>Documents</h4><p>存储应用程序的数据文件，并且这些数据应该是<strong>不可再生的</strong>。<br><br><em>Documents/Inbox</em><br><br><strong>存储由外部应用请求当前应用程序打开的文件</strong>。</p>
+<h4 id="Library"><a href="#Library" class="headerlink" title="Library"></a>Library</h4><p>苹果建议用来存放<strong>默认设置或其它状态信息</strong>。除Caches子目录外，其他目录会被iTunes同步。<br><br><em>Library/Caches</em><br><br>存储<strong>可再生的应用程序的数据文件</strong>，如网络请求的数据，并且应用程序负责删除该目录下的文件。<br><br><em>Library/Preferences</em><br><br>存储应用程序的<strong>偏好设置文件</strong>，程序中使用NSUserDefaults写的数据会以plist的文件形式存储在该目录下。<br></p>
+<h4 id="Temp"><a href="#Temp" class="headerlink" title="Temp"></a>Temp</h4><p>保存各种<strong>临时文件</strong>，即应用再次启动时不需要的文件，该目录下的东西随时(比如系统磁盘空间不足时)有可能<strong>被系统清理掉</strong>。</p>
+<h3 id="UIResponder"><a href="#UIResponder" class="headerlink" title="UIResponder"></a>UIResponder</h3><p><strong>Hit-test</strong><br><br>通过hit-test确定将touch event传递给谁<br><br>其中hit-test通过调用<code>pointTest:withEvent:</code>方法的返回值确定点击的point是否落在指定视图bounds范围内<br><br><strong>Responder-chain</strong><br><br>通过responder-chain将touch event逐层传递给父<code>view-&gt;window-&gt;application</code><br></p>
+<p>更详细的描述请参阅<a href="http://southpeak.github.io/blog/2015/03/07/uiresponder/?utm_source=tuicool" target="_blank" rel="external">这篇文章</a></p>
+<h3 id="UIViewController生命周期"><a href="#UIViewController生命周期" class="headerlink" title="UIViewController生命周期"></a>UIViewController生命周期</h3><img src="/2015/05/12/150512-oc-main-point/150512-oc-main-point-02.png" alt="Controller lifecycle" title="Controller lifecycle">
+<blockquote>
+<p><strong>苹果文档中对于loadView的解释：</strong><br><br>你不应该直接调用该方法，视图控制器会在需要视图但是它的视图属性为nil时调用该方法。<br>该方法用于加载或创建一个新的视图对象并将它与视图控制器的视图属性建立关联。<br><br>当视图控制器与一个nib文件相关联时，该方法会自动去加载该nib文件。<br><br>当视图控制器实例化自一个storyboard，<br>或通过initWithNibName:bundle:方法为其指定一个与其相关联的nib文件；<br>或者iOS查找到一个与视图控制器的名称相匹配的nib文件时，<br>该视图控制器的nibName属性都会返回一个非空的值。<br><br>通过以上几步视图控制器还是没有找到一个与它相关联的nib文件时，<br>该方法回去创建一个普通的视图取代它们对视图控制器的视图属性进行初始化。<br><br>如果你是通过Interface Builder去创建你的视图并初始化视图控制器的，你不可以重载该方法。<br><br>当你想要手动创建自定义视图的时候需要调用该方法。这样的话你就必须指定视图层的跟视图。<br>你创建的视图必须是唯一的实例并且不应该共享给任何其它的视图控制器对象。<br><br>你的自定义实现中不应该调用[super loadView]<br>如果你想要实现有关自定义视图的其它初始化工作应该在viewDidLoad方法中去完成。</p>
+</blockquote>
+<h3 id="UIApplication"><a href="#UIApplication" class="headerlink" title="UIApplication"></a>UIApplication</h3><h4 id="启动流程"><a href="#启动流程" class="headerlink" title="启动流程"></a>启动流程</h4><p>程序启动-&gt;<br><br>libDispatch、Runtime初始化-&gt;<br><br>main-&gt;UIApplicationMain-&gt;<br><br>初始化UIApplication对象，确定ApplicationDelegate-&gt;<br><br>启动主线程及Runloop-&gt;<br><br>监听处理系统或用户事件-&gt;<br>手动或系统强制结束程序</p>
+<h4 id="UIApplication-Delegate-Protrol"><a href="#UIApplication-Delegate-Protrol" class="headerlink" title="UIApplication Delegate Protrol"></a>UIApplication Delegate Protrol</h4><p>FinishLaunchingWithOptions程序启动完成<br><br>WillResignActive即将失去活动状态<br><br>DidBecomeActive已经重新获取活动状态<br><br>DidEnterBackground已经进入后台<br><br>WillEnterForeground即将进入前台<br><br>WillTerminate即将被销毁<br><br>DidReceiveMemoryWarning接收到内存警告<br></p>
+
+      
+    </div>
+
+    <div>
+      
+        
+
+      
+    </div>
+
+    <div>
+      
+        
+
+      
+    </div>
+
+    <footer class="post-footer">
+      
+
+      
+        <div class="post-nav">
+          <div class="post-nav-next post-nav-item">
+            
+              <a href="/2015/05/07/150507-ios-screen-rotate/" rel="next" title="iOS屏幕旋转的回调过程(原创)">
+                <i class="fa fa-chevron-left"></i> iOS屏幕旋转的回调过程(原创)
+              </a>
+            
+          </div>
+
+          <div class="post-nav-prev post-nav-item">
+            
+              <a href="/2015/05/30/150530-afnetworking/" rel="prev" title="AFNetworking2.0源码分析(原创)">
+                AFNetworking2.0源码分析(原创) <i class="fa fa-chevron-right"></i>
+              </a>
+            
+          </div>
+        </div>
+      
+
+      
+      
+    </footer>
+  </article>
+
+
+
+    <div class="post-spread">
+      
+    </div>
+  </div>
+
+
+          </div>
+          
+
+
+          
+  <div class="comments" id="comments">
+    
+  </div>
+
+
+        </div>
+        
+          
+  
+  <div class="sidebar-toggle">
+    <div class="sidebar-toggle-line-wrap">
+      <span class="sidebar-toggle-line sidebar-toggle-line-first"></span>
+      <span class="sidebar-toggle-line sidebar-toggle-line-middle"></span>
+      <span class="sidebar-toggle-line sidebar-toggle-line-last"></span>
+    </div>
+  </div>
+
+  <aside id="sidebar" class="sidebar">
+    <div class="sidebar-inner">
+
+      
+
+      
+        <ul class="sidebar-nav motion-element">
+          <li class="sidebar-nav-toc sidebar-nav-active" data-target="post-toc-wrap" >
+            文章目錄
+          </li>
+          <li class="sidebar-nav-overview" data-target="site-overview">
+            本站概覽
+          </li>
+        </ul>
+      
+
+      <section class="site-overview sidebar-panel ">
+        <div class="site-author motion-element" itemprop="author" itemscope itemtype="//schema.org/Person">
+          <img class="site-author-image" itemprop="image"
+               src="/images/avatar.gif"
+               alt="ronglei" />
+          <p class="site-author-name" itemprop="name">ronglei</p>
+          <p class="site-description motion-element" itemprop="description"></p>
+        </div>
+        <nav class="site-state motion-element">
+          <div class="site-state-item site-state-posts">
+            <a href="/archives">
+              <span class="site-state-item-count">21</span>
+              <span class="site-state-item-name">文章</span>
+            </a>
+          </div>
+
+          
+            <div class="site-state-item site-state-categories">
+              
+                <span class="site-state-item-count">8</span>
+                <span class="site-state-item-name">分類</span>
+              
+            </div>
+          
+
+          
+            <div class="site-state-item site-state-tags">
+              <a href="/tags">
+                <span class="site-state-item-count">5</span>
+                <span class="site-state-item-name">標籤</span>
+              </a>
+            </div>
+          
+
+        </nav>
+
+        
+
+        <div class="links-of-author motion-element">
+          
+        </div>
+
+        
+        
+
+        
+        
+
+      </section>
+
+      
+        <section class="post-toc-wrap motion-element sidebar-panel sidebar-panel-active">
+          <div class="post-toc">
+            
+              
+            
+            
+              <div class="post-toc-content"><ol class="nav"><li class="nav-item nav-level-3"><a class="nav-link" href="#Object-C-runtime"><span class="nav-number">1.</span> <span class="nav-text">Object-C runtime</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#对象、类和元类"><span class="nav-number">2.</span> <span class="nav-text">对象、类和元类</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#Method、SEL和IMP"><span class="nav-number">3.</span> <span class="nav-text">Method、SEL和IMP</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#消息传递"><span class="nav-number">4.</span> <span class="nav-text">消息传递</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#Category"><span class="nav-number">5.</span> <span class="nav-text">Category</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#Associate"><span class="nav-number">6.</span> <span class="nav-text">Associate</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#KVO"><span class="nav-number">7.</span> <span class="nav-text">KVO</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#内存管理"><span class="nav-number">8.</span> <span class="nav-text">内存管理</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#Block"><span class="nav-number">9.</span> <span class="nav-text">Block</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#Runloop"><span class="nav-number">10.</span> <span class="nav-text">Runloop</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#Thread"><span class="nav-number">11.</span> <span class="nav-text">Thread</span></a><ol class="nav-child"><li class="nav-item nav-level-5"><a class="nav-link" href="#GCD"><span class="nav-number">11.0.1.</span> <span class="nav-text">GCD</span></a></li><li class="nav-item nav-level-5"><a class="nav-link" href="#NSOperation"><span class="nav-number">11.0.2.</span> <span class="nav-text">NSOperation</span></a></li></ol></li><li class="nav-item nav-level-4"><a class="nav-link" href="#DeepIntoThread"><span class="nav-number">11.1.</span> <span class="nav-text">DeepIntoThread</span></a></li></ol></li><li class="nav-item nav-level-3"><a class="nav-link" href="#iOS沙盒目录及其用途"><span class="nav-number">12.</span> <span class="nav-text">iOS沙盒目录及其用途</span></a><ol class="nav-child"><li class="nav-item nav-level-4"><a class="nav-link" href="#MyApp-app"><span class="nav-number">12.1.</span> <span class="nav-text">MyApp.app</span></a></li><li class="nav-item nav-level-4"><a class="nav-link" href="#Documents"><span class="nav-number">12.2.</span> <span class="nav-text">Documents</span></a></li><li class="nav-item nav-level-4"><a class="nav-link" href="#Library"><span class="nav-number">12.3.</span> <span class="nav-text">Library</span></a></li><li class="nav-item nav-level-4"><a class="nav-link" href="#Temp"><span class="nav-number">12.4.</span> <span class="nav-text">Temp</span></a></li></ol></li><li class="nav-item nav-level-3"><a class="nav-link" href="#UIResponder"><span class="nav-number">13.</span> <span class="nav-text">UIResponder</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#UIViewController生命周期"><span class="nav-number">14.</span> <span class="nav-text">UIViewController生命周期</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#UIApplication"><span class="nav-number">15.</span> <span class="nav-text">UIApplication</span></a><ol class="nav-child"><li class="nav-item nav-level-4"><a class="nav-link" href="#启动流程"><span class="nav-number">15.1.</span> <span class="nav-text">启动流程</span></a></li><li class="nav-item nav-level-4"><a class="nav-link" href="#UIApplication-Delegate-Protrol"><span class="nav-number">15.2.</span> <span class="nav-text">UIApplication Delegate Protrol</span></a></li></ol></li></ol></div>
+            
+          </div>
+        </section>
+      
+
+    </div>
+  </aside>
+
+
+        
+      </div>
+    </main>
+
+    <footer id="footer" class="footer">
+      <div class="footer-inner">
+        <div class="copyright" >
+  
+  &copy; 
+  <span itemprop="copyrightYear">2016</span>
+  <span class="with-love">
+    <i class="fa fa-heart"></i>
+  </span>
+  <span class="author" itemprop="copyrightHolder">ronglei</span>
+</div>
+
+<div class="powered-by">
+  由 <a class="theme-link" href="https://hexo.io">Hexo</a> 強力驅動
+</div>
+
+<div class="theme-info">
+  主題 -
+  <a class="theme-link" href="https://github.com/iissnan/hexo-theme-next">
+    NexT.Mist
+  </a>
+</div>
+
+        
+
+        
+      </div>
+    </footer>
+
+    <div class="back-to-top">
+      <i class="fa fa-arrow-up"></i>
+    </div>
+  </div>
+
+  
+
+<script type="text/javascript">
+  if (Object.prototype.toString.call(window.Promise) !== '[object Function]') {
+    window.Promise = null;
+  }
+</script>
+
+
+
+
+
+
+
+
+
+  
+
+
+
+  
+  <script type="text/javascript" src="/vendors/jquery/index.js?v=2.1.3"></script>
+
+  
+  <script type="text/javascript" src="/vendors/fastclick/lib/fastclick.min.js?v=1.0.6"></script>
+
+  
+  <script type="text/javascript" src="/vendors/jquery_lazyload/jquery.lazyload.js?v=1.9.7"></script>
+
+  
+  <script type="text/javascript" src="/vendors/velocity/velocity.min.js?v=1.2.1"></script>
+
+  
+  <script type="text/javascript" src="/vendors/velocity/velocity.ui.min.js?v=1.2.1"></script>
+
+  
+  <script type="text/javascript" src="/vendors/fancybox/source/jquery.fancybox.pack.js?v=2.1.5"></script>
+
+
+  
+
+
+  <script type="text/javascript" src="/js/src/utils.js?v=5.0.2"></script>
+
+  <script type="text/javascript" src="/js/src/motion.js?v=5.0.2"></script>
+
+
+
+  
+  
+
+  
+  <script type="text/javascript" src="/js/src/scrollspy.js?v=5.0.2"></script>
+<script type="text/javascript" src="/js/src/post-details.js?v=5.0.2"></script>
+
+
+
+  
+
+
+  <script type="text/javascript" src="/js/src/bootstrap.js?v=5.0.2"></script>
+
+
+
+  
+
+
+
+  
+
+
+
+
+  
+  
+
+  
+
+  
+
+  
+
+</body>
+</html>

@@ -1,0 +1,615 @@
+<!doctype html>
+
+
+
+  
+
+
+<html class="theme-next mist use-motion">
+<head>
+  <meta charset="UTF-8"/>
+<meta http-equiv="X-UA-Compatible" content="IE=edge,chrome=1" />
+<meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1"/>
+
+
+
+<meta http-equiv="Cache-Control" content="no-transform" />
+<meta http-equiv="Cache-Control" content="no-siteapp" />
+
+
+
+
+
+
+
+
+
+
+
+
+  
+  
+  <link href="/vendors/fancybox/source/jquery.fancybox.css?v=2.1.5" rel="stylesheet" type="text/css" />
+
+
+
+
+  
+  
+  
+  
+
+  
+    
+    
+  
+
+  
+
+  
+
+  
+
+  
+
+  
+    
+    
+    <link href="//fonts.googleapis.com/css?family=Lato:300,300italic,400,400italic,700,700italic&subset=latin,latin-ext" rel="stylesheet" type="text/css">
+  
+
+
+
+
+
+
+<link href="/vendors/font-awesome/css/font-awesome.min.css?v=4.4.0" rel="stylesheet" type="text/css" />
+
+<link href="/css/main.css?v=5.0.2" rel="stylesheet" type="text/css" />
+
+
+  <meta name="keywords" content="Hexo, NexT" />
+
+
+
+
+
+
+
+
+  <link rel="shortcut icon" type="image/x-icon" href="/favicon.ico?v=5.0.2" />
+
+
+
+
+
+
+<meta name="description" content="从接口功能与结构相对应的角度解释sqlite，使得对sqlite的理解更加深入">
+<meta property="og:type" content="article">
+<meta property="og:title" content="Sqlite3">
+<meta property="og:url" content="http://zrongl.github.io/2016/09/21/160922-sqlite3/index.html">
+<meta property="og:site_name" content="Zrongl">
+<meta property="og:description" content="从接口功能与结构相对应的角度解释sqlite，使得对sqlite的理解更加深入">
+<meta property="og:image" content="http://zrongl.github.io/2016/09/21/160922-sqlite3/160922-sqlite3-00.png">
+<meta property="og:updated_time" content="2016-10-09T10:55:20.000Z">
+<meta name="twitter:card" content="summary">
+<meta name="twitter:title" content="Sqlite3">
+<meta name="twitter:description" content="从接口功能与结构相对应的角度解释sqlite，使得对sqlite的理解更加深入">
+<meta name="twitter:image" content="http://zrongl.github.io/2016/09/21/160922-sqlite3/160922-sqlite3-00.png">
+
+
+
+<script type="text/javascript" id="hexo.configuration">
+  var NexT = window.NexT || {};
+  var CONFIG = {
+    scheme: 'Mist',
+    sidebar: {"position":"left","display":"post"},
+    fancybox: true,
+    motion: true,
+    duoshuo: {
+      userId: '0',
+      author: '博主'
+    }
+  };
+</script>
+
+
+
+
+  <link rel="canonical" href="http://zrongl.github.io/2016/09/21/160922-sqlite3/"/>
+
+
+  <title> Sqlite3 | Zrongl </title>
+</head>
+
+<body itemscope itemtype="//schema.org/WebPage" lang="zh-tw">
+
+  
+
+
+
+
+
+
+
+
+
+
+  
+  
+    
+  
+
+  <div class="container one-collumn sidebar-position-left page-post-detail ">
+    <div class="headband"></div>
+
+    <header id="header" class="header" itemscope itemtype="//schema.org/WPHeader">
+      <div class="header-inner"><div class="site-meta ">
+  
+
+  <div class="custom-logo-site-title">
+    <a href="/"  class="brand" rel="start">
+      <span class="logo-line-before"><i></i></span>
+      <span class="site-title">Zrongl</span>
+      <span class="logo-line-after"><i></i></span>
+    </a>
+  </div>
+  <p class="site-subtitle"></p>
+</div>
+
+<div class="site-nav-toggle">
+  <button>
+    <span class="btn-bar"></span>
+    <span class="btn-bar"></span>
+    <span class="btn-bar"></span>
+  </button>
+</div>
+
+<nav class="site-nav">
+  
+
+  
+    <ul id="menu" class="menu">
+      
+        
+        <li class="menu-item menu-item-home">
+          <a href="/" rel="section">
+            
+              <i class="menu-item-icon fa fa-fw fa-home"></i> <br />
+            
+            首頁
+          </a>
+        </li>
+      
+        
+        <li class="menu-item menu-item-archives">
+          <a href="/archives" rel="section">
+            
+              <i class="menu-item-icon fa fa-fw fa-archive"></i> <br />
+            
+            歸檔
+          </a>
+        </li>
+      
+        
+        <li class="menu-item menu-item-tags">
+          <a href="/tags" rel="section">
+            
+              <i class="menu-item-icon fa fa-fw fa-tags"></i> <br />
+            
+            標籤
+          </a>
+        </li>
+      
+
+      
+    </ul>
+  
+
+  
+</nav>
+
+ </div>
+    </header>
+
+    <main id="main" class="main">
+      <div class="main-inner">
+        <div class="content-wrap">
+          <div id="content" class="content">
+            
+
+  <div id="posts" class="posts-expand">
+    
+
+  
+  
+
+  
+  
+  
+
+  <article class="post post-type-normal " itemscope itemtype="//schema.org/Article">
+
+    
+      <header class="post-header">
+
+        
+        
+          <h1 class="post-title" itemprop="name headline">
+            
+            
+              
+                Sqlite3
+              
+            
+          </h1>
+        
+
+        <div class="post-meta">
+          <span class="post-time">
+            <span class="post-meta-item-icon">
+              <i class="fa fa-calendar-o"></i>
+            </span>
+            <span class="post-meta-item-text">發表於</span>
+            <time itemprop="dateCreated" datetime="2016-09-21T00:00:00+08:00" content="2016-09-21">
+              2016-09-21
+            </time>
+          </span>
+
+          
+            <span class="post-category" >
+              &nbsp; | &nbsp;
+              <span class="post-meta-item-icon">
+                <i class="fa fa-folder-o"></i>
+              </span>
+              <span class="post-meta-item-text">分類於</span>
+              
+                <span itemprop="about" itemscope itemtype="https://schema.org/Thing">
+                  <a href="/categories/Linux/" itemprop="url" rel="index">
+                    <span itemprop="name">Linux</span>
+                  </a>
+                </span>
+
+                
+                
+
+              
+            </span>
+          
+
+          
+            
+          
+
+          
+
+          
+          
+
+          
+        </div>
+      </header>
+    
+
+
+    <div class="post-body" itemprop="articleBody">
+
+      
+      
+
+      
+        <h3 id="1-体系结构"><a href="#1-体系结构" class="headerlink" title="1.体系结构"></a>1.体系结构</h3><p>SQLite 拥有一个简洁的、模块化的体系结构，并引进了一些独特的方法进行关系型数据库管理。它由可以划分为3个子系统(编译器(Compiler)、核心(Core)、后端(Backend))的8个独立模块组成(详见下图)。这些模块将查询过程划分为几个独立的任务，就像在流水线上工作一样。在体系结构栈的顶部编译查询语句，在中部执行，在底部处理存储并与操作系统交互。</p>
+<img src="/2016/09/21/160922-sqlite3/160922-sqlite3-00.png" alt="Sqlite体系结构" title="Sqlite体系结构">
+<p>下面让我们根据不同模块展开介绍。</p>
+<ul>
+<li><p>接口(Interface)</p>
+<p>   接口处于栈的顶端，由SQLite C API组成。程序、脚本语言还有与SQLite交互的库文件最终都是通过它与SQLite交互的。从表面上理解，这里是开发者、管理员等与SQLite通信的地方。</p>
+</li>
+<li><p>编译器(Compiler)</p>
+<p>   编译过程从词法分析器(Tokenizer)和语法分析器(Parser)开始。它们协同处理文本形式的结构化查询语句(Structured Query Language,  SQL)，分析其语法有效性，然后转化为底层能更方便地处理的层次化数据结构。SQLite词法分析器是手动编码实现的，它的语法分析器是由SQLite特定的语法分析生成器Lemon(专门有一本书讲解此生成器)产生的。<br>   代码生成器(Code Generator)将语法树翻译成一种SQLite专用的汇编代码，这些汇编语言由一些最终由虚拟机执行的指令组成。代码生成器的唯一工作是将语法树转换为完全由这种汇编语言编写的微程序并交给虚拟机处理。</p>
+</li>
+<li><p>虚拟机(Virtual Machine)</p>
+<p>   架构栈的中心部分是虚拟机(Virtual Machine)，也叫做虚拟数据库引擎(Virtual DataBase Engine,VDBE)。VDBE是基于寄存器的虚拟机，在字节码上工作，这使得它可以独立顶层操作系统、CPU和系统体系结构。VDBE的字节代码(称为虚拟机语言)由100多个被称为操作码(opcodes)的可能的任务构成，所有这些操作都是围绕数据库进行的。</p>
+<p>   VDBE是一个专为数据处理设计的虚拟机。它的指令集中所有的指令或者用来完成具体的数据库操作(比如打开一个表的游标、做记录、提取一列或者开始一个事务等)，或者以某种方式控制栈为完成这些操作做准备。SQLite中的所有SQL语句—-从选择和更新记录到创建表、视图以及索引—-都是首先编译成虚拟机语言，形成一个独立的定义了如何完成给定的命令的指令集。<br>   VDBE是SQLite的核心，它之前的所有模块都是用于创建VDBE程序的，它之后的所有模块都是用于执行VDBE程序的，每次执行一条指令。</p>
+</li>
+<li><p>后端(Backend)</p>
+<p>   后端由B-tree、页缓存(page cache)以及操作系统接口组成。B-tree和pager一起作为信息代理。它们使用的数据源是数据库页，这些页是具有相同大小的数据块、就像用于运输的集装箱。页里面的”货物”是表示信息的大量位(bit)，这些信息包括记录、字段和索引项等。B-tree和pager不需要知道信息的内容，它们只负责移动和排列这些页。</p>
+<p>   B-tree的职责就是排序。它维护着多个页之间错综复杂的关系，这些关系能保证快速定位并找到一切有联系的数据。B-tree将页面组织成树状结构(这也是它叫做B-tree的原因)，这种组织结构很适合搜索，页面就是树的叶子。<br>   pager(SQLite的一种数据结构)帮助B-tree管理页面，它负责传输。pager根据B-tree的请求从磁盘读取页面或者向磁盘写入页面。磁盘操作是目前计算机必须做的工作中最慢的事情之一。因此pager试图通过将频繁使用的页面缓存在内存中来加速这一操作，从而最小化与硬盘直接交互所花费的时间。pager的功能描述页包含事务管理、数据库锁以及崩溃恢复，其中许多功能是通过OS接口(OS Interface)实现的。<br>   像文件锁一样的很多事情在不同的操作系统上实现是不同的。OS接口(OS Interface)为SQLite其他模块提供了屏蔽这些差异的抽象层。最终的结果就是其他模块看到的是一个一致的对外的系统接口。所以，pager不用担心在Windows上以一种方式锁文件，而在其他不同操作系统上(例如UNIX)上使用另一种方式。这就使得SQLite很容易移植到不同的操作系统上。</p>
+</li>
+</ul>
+<ul>
+<li>OS接口(OS Interface)的下面就是具体要存取的数据。</li>
+</ul>
+<p>总体来看，SQLite分为三个子系统，里面包含了八个独立模块:</p>
+<ul>
+<li>接口(Interface)</li>
+<li>词法分析器(Tokenizer)</li>
+<li>语法分析器(Parser)</li>
+<li>代码生成器(Code Generator)</li>
+<li>虚拟机(Virtual Machine)</li>
+<li>B-Tree</li>
+<li>Pager</li>
+<li>OS接口(OS Interface)</li>
+</ul>
+<h3 id="2-接口应用"><a href="#2-接口应用" class="headerlink" title="2.接口应用"></a>2.接口应用</h3><figure class="highlight plain"><table><tr><td class="gutter"><pre><div class="line">1</div><div class="line">2</div><div class="line">3</div><div class="line">4</div><div class="line">5</div><div class="line">6</div><div class="line">7</div><div class="line">8</div><div class="line">9</div><div class="line">10</div><div class="line">11</div><div class="line">12</div><div class="line">13</div><div class="line">14</div><div class="line">15</div><div class="line">16</div><div class="line">17</div><div class="line">18</div><div class="line">19</div><div class="line">20</div><div class="line">21</div><div class="line">22</div><div class="line">23</div><div class="line">24</div><div class="line">25</div><div class="line">26</div><div class="line">27</div><div class="line">28</div><div class="line">29</div><div class="line">30</div><div class="line">31</div><div class="line">32</div><div class="line">33</div><div class="line">34</div><div class="line">35</div><div class="line">36</div><div class="line">37</div><div class="line">38</div><div class="line">39</div><div class="line">40</div><div class="line">41</div><div class="line">42</div><div class="line">43</div><div class="line">44</div><div class="line">45</div><div class="line">46</div><div class="line">47</div><div class="line">48</div><div class="line">49</div><div class="line">50</div><div class="line">51</div><div class="line">52</div><div class="line">53</div><div class="line">54</div><div class="line">55</div></pre></td><td class="code"><pre><div class="line">&#123;</div><div class="line">    // 分配资源，初始化一些必要的数据结构</div><div class="line">    sqlite3_initialize();</div><div class="line">    sqlite3 *db = NULL;</div><div class="line">    // 以指定方式打开path路径下的数据库文件，并返回数据库指针</div><div class="line">    sqlite3_open_v2(path, &amp;db, SQLITE_OPEN_CREATE | SQLITE_OPEN_READWRITE, NULL);</div><div class="line">    </div><div class="line">    // 创建名称为dbtable的表，</div><div class="line">    // 字段包括key,size,inline_data,modification_time,last_access_time,extended_data</div><div class="line">    NSString *sql = @&quot;pragma journal_mode = wal;\</div><div class="line">                    pragma synchronous = normal;\</div><div class="line">                    create table if not exists dbtable (key text, size integer, inline_data blob, modification_time integer, last_access_time integer, extended_data blob, primary key(key));\</div><div class="line">                    create index if not exists last_access_time_idx on dbtable(last_access_time);&quot;;</div><div class="line">    </div><div class="line">    char *error = NULL;</div><div class="line">    int rc = sqlite3_exec(_db, sql.UTF8String, NULL, NULL, &amp;error);</div><div class="line">    if (error) &#123;</div><div class="line">        sqlite3_free(error);</div><div class="line">    &#125;</div><div class="line">    </div><div class="line">    NSString *sql = @&quot;select * from dbtable where key = ?1;&quot;;</div><div class="line">    NSArray *keys = @[@&quot;1&quot;, @&quot;2&quot;, @&quot;3&quot;];</div><div class="line">    sqlite3_stmt *stmt = NULL;</div><div class="line">    // 将一个SQL命令字符串转换成能在VDBE中运行的一系列操作码，存储在sqlite3_stmt类型结构体中</div><div class="line">    sqlite3_prepare_v2(db, sql.UTF8String, -1, &amp;stmt, NULL);</div><div class="line">    </div><div class="line">    for (NSString *key in keys) &#123;</div><div class="line">        // 绑定SQL中指定位置的参数</div><div class="line">        // sql语句变为&quot;select * from dbtable where key = 1;&quot;</div><div class="line">        sqlite3_bind_text(stmt, 1, key.UTF8String, -1, NULL);</div><div class="line">        // 每次调用都会返回结果集中的其中一行(返回SQLITE_ROW)，直到再没有有效数据行了(返回SQLITE_OK)</div><div class="line">        while (SQLITE_ROW == sqlite3_step(stmt)) &#123;</div><div class="line">            // 获取执行结果的列数</div><div class="line">            int col_count = sqlite3_column_count(stmt);</div><div class="line">            // 逐列的获取数据</div><div class="line">            while(col_count-- &gt;= 0)&#123;</div><div class="line">                // 根据类型使用对应的&quot;sqlite3_column_xxx&quot;函数取值</div><div class="line">                int col_data = sqlite3_column_int(stmt, col_count);</div><div class="line">            &#125;</div><div class="line">        &#125;</div><div class="line">        // 重置stmt结构的状态，尽量对stmt进行复用，提高性能</div><div class="line">        sqlite3_reset(stmt);</div><div class="line">        // 清楚绑定参数信息，方便再次进行参数绑定</div><div class="line">        sqlite3_clear_bindings(stmt);</div><div class="line">    &#125;</div><div class="line">    // 释放申请的stmt结构的内存</div><div class="line">    sqlite3_finalize(stmt);</div><div class="line">    stmt = NULL;</div><div class="line">    </div><div class="line">    // 关闭数据库连接，释放数据结构所关联的内存，删除所有的临时数据项</div><div class="line">    // 如果遇到返回SQLITE_BUSY或SQLITE_LOCKED的情况，需要执行完所有的stmt后再关闭，参见fmdb</div><div class="line">    sqlite3_close(_db);</div><div class="line">    // 释放由sqlite3_initialize分配的资源</div><div class="line">    sqlite3_shutdown();</div><div class="line">&#125;</div></pre></td></tr></table></figure>
+<ul>
+<li><code>sqlite3_prepare_v2</code>函数的功能是由编译器中的词法分析器(Tokenizer)、语法分析器(Parser)和代码生成器(Code Generator)三个子模块来完成的，最终将生成的操作码(Operation code)存储在<code>sqlite3_stmt</code>结构中。</li>
+<li><code>sqlite3_step</code>函数的功能是通过虚拟数据库引擎(Virtual DataBase Engine,VDBE)读取stmt中的操作码，调动后台子模块来完成指定的查询或修改操作，并最终返回查询结果。</li>
+</ul>
+
+      
+    </div>
+
+    <div>
+      
+        
+
+      
+    </div>
+
+    <div>
+      
+        
+
+      
+    </div>
+
+    <footer class="post-footer">
+      
+
+      
+        <div class="post-nav">
+          <div class="post-nav-next post-nav-item">
+            
+              <a href="/2016/08/01/160801-oc-copy-operation/" rel="next" title="iOS copy操作那些坑">
+                <i class="fa fa-chevron-left"></i> iOS copy操作那些坑
+              </a>
+            
+          </div>
+
+          <div class="post-nav-prev post-nav-item">
+            
+          </div>
+        </div>
+      
+
+      
+      
+    </footer>
+  </article>
+
+
+
+    <div class="post-spread">
+      
+    </div>
+  </div>
+
+
+          </div>
+          
+
+
+          
+  <div class="comments" id="comments">
+    
+  </div>
+
+
+        </div>
+        
+          
+  
+  <div class="sidebar-toggle">
+    <div class="sidebar-toggle-line-wrap">
+      <span class="sidebar-toggle-line sidebar-toggle-line-first"></span>
+      <span class="sidebar-toggle-line sidebar-toggle-line-middle"></span>
+      <span class="sidebar-toggle-line sidebar-toggle-line-last"></span>
+    </div>
+  </div>
+
+  <aside id="sidebar" class="sidebar">
+    <div class="sidebar-inner">
+
+      
+
+      
+        <ul class="sidebar-nav motion-element">
+          <li class="sidebar-nav-toc sidebar-nav-active" data-target="post-toc-wrap" >
+            文章目錄
+          </li>
+          <li class="sidebar-nav-overview" data-target="site-overview">
+            本站概覽
+          </li>
+        </ul>
+      
+
+      <section class="site-overview sidebar-panel ">
+        <div class="site-author motion-element" itemprop="author" itemscope itemtype="//schema.org/Person">
+          <img class="site-author-image" itemprop="image"
+               src="/images/avatar.gif"
+               alt="ronglei" />
+          <p class="site-author-name" itemprop="name">ronglei</p>
+          <p class="site-description motion-element" itemprop="description"></p>
+        </div>
+        <nav class="site-state motion-element">
+          <div class="site-state-item site-state-posts">
+            <a href="/archives">
+              <span class="site-state-item-count">21</span>
+              <span class="site-state-item-name">文章</span>
+            </a>
+          </div>
+
+          
+            <div class="site-state-item site-state-categories">
+              
+                <span class="site-state-item-count">8</span>
+                <span class="site-state-item-name">分類</span>
+              
+            </div>
+          
+
+          
+            <div class="site-state-item site-state-tags">
+              <a href="/tags">
+                <span class="site-state-item-count">5</span>
+                <span class="site-state-item-name">標籤</span>
+              </a>
+            </div>
+          
+
+        </nav>
+
+        
+
+        <div class="links-of-author motion-element">
+          
+        </div>
+
+        
+        
+
+        
+        
+
+      </section>
+
+      
+        <section class="post-toc-wrap motion-element sidebar-panel sidebar-panel-active">
+          <div class="post-toc">
+            
+              
+            
+            
+              <div class="post-toc-content"><ol class="nav"><li class="nav-item nav-level-3"><a class="nav-link" href="#1-体系结构"><span class="nav-number">1.</span> <span class="nav-text">1.体系结构</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#2-接口应用"><span class="nav-number">2.</span> <span class="nav-text">2.接口应用</span></a></li></ol></div>
+            
+          </div>
+        </section>
+      
+
+    </div>
+  </aside>
+
+
+        
+      </div>
+    </main>
+
+    <footer id="footer" class="footer">
+      <div class="footer-inner">
+        <div class="copyright" >
+  
+  &copy; 
+  <span itemprop="copyrightYear">2016</span>
+  <span class="with-love">
+    <i class="fa fa-heart"></i>
+  </span>
+  <span class="author" itemprop="copyrightHolder">ronglei</span>
+</div>
+
+<div class="powered-by">
+  由 <a class="theme-link" href="https://hexo.io">Hexo</a> 強力驅動
+</div>
+
+<div class="theme-info">
+  主題 -
+  <a class="theme-link" href="https://github.com/iissnan/hexo-theme-next">
+    NexT.Mist
+  </a>
+</div>
+
+        
+
+        
+      </div>
+    </footer>
+
+    <div class="back-to-top">
+      <i class="fa fa-arrow-up"></i>
+    </div>
+  </div>
+
+  
+
+<script type="text/javascript">
+  if (Object.prototype.toString.call(window.Promise) !== '[object Function]') {
+    window.Promise = null;
+  }
+</script>
+
+
+
+
+
+
+
+
+
+  
+
+
+
+  
+  <script type="text/javascript" src="/vendors/jquery/index.js?v=2.1.3"></script>
+
+  
+  <script type="text/javascript" src="/vendors/fastclick/lib/fastclick.min.js?v=1.0.6"></script>
+
+  
+  <script type="text/javascript" src="/vendors/jquery_lazyload/jquery.lazyload.js?v=1.9.7"></script>
+
+  
+  <script type="text/javascript" src="/vendors/velocity/velocity.min.js?v=1.2.1"></script>
+
+  
+  <script type="text/javascript" src="/vendors/velocity/velocity.ui.min.js?v=1.2.1"></script>
+
+  
+  <script type="text/javascript" src="/vendors/fancybox/source/jquery.fancybox.pack.js?v=2.1.5"></script>
+
+
+  
+
+
+  <script type="text/javascript" src="/js/src/utils.js?v=5.0.2"></script>
+
+  <script type="text/javascript" src="/js/src/motion.js?v=5.0.2"></script>
+
+
+
+  
+  
+
+  
+  <script type="text/javascript" src="/js/src/scrollspy.js?v=5.0.2"></script>
+<script type="text/javascript" src="/js/src/post-details.js?v=5.0.2"></script>
+
+
+
+  
+
+
+  <script type="text/javascript" src="/js/src/bootstrap.js?v=5.0.2"></script>
+
+
+
+  
+
+
+
+  
+
+
+
+
+  
+  
+
+  
+
+  
+
+  
+
+</body>
+</html>

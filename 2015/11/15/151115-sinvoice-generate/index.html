@@ -1,0 +1,633 @@
+<!doctype html>
+
+
+
+  
+
+
+<html class="theme-next mist use-motion">
+<head>
+  <meta charset="UTF-8"/>
+<meta http-equiv="X-UA-Compatible" content="IE=edge,chrome=1" />
+<meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1"/>
+
+
+
+<meta http-equiv="Cache-Control" content="no-transform" />
+<meta http-equiv="Cache-Control" content="no-siteapp" />
+
+
+
+
+
+
+
+
+
+
+
+
+  
+  
+  <link href="/vendors/fancybox/source/jquery.fancybox.css?v=2.1.5" rel="stylesheet" type="text/css" />
+
+
+
+
+  
+  
+  
+  
+
+  
+    
+    
+  
+
+  
+
+  
+
+  
+
+  
+
+  
+    
+    
+    <link href="//fonts.googleapis.com/css?family=Lato:300,300italic,400,400italic,700,700italic&subset=latin,latin-ext" rel="stylesheet" type="text/css">
+  
+
+
+
+
+
+
+<link href="/vendors/font-awesome/css/font-awesome.min.css?v=4.4.0" rel="stylesheet" type="text/css" />
+
+<link href="/css/main.css?v=5.0.2" rel="stylesheet" type="text/css" />
+
+
+  <meta name="keywords" content="Hexo, NexT" />
+
+
+
+
+
+
+
+
+  <link rel="shortcut icon" type="image/x-icon" href="/favicon.ico?v=5.0.2" />
+
+
+
+
+
+
+<meta name="description" content="声音是如何用一个数组去表示的呢？表示声音的这个数组又是如何去拼凑而成的呢？正是为了搞清这两个问题才有了这篇文章。">
+<meta property="og:type" content="article">
+<meta property="og:title" content="从数据到声音">
+<meta property="og:url" content="http://zrongl.github.io/2015/11/15/151115-sinvoice-generate/index.html">
+<meta property="og:site_name" content="Zrongl">
+<meta property="og:description" content="声音是如何用一个数组去表示的呢？表示声音的这个数组又是如何去拼凑而成的呢？正是为了搞清这两个问题才有了这篇文章。">
+<meta property="og:updated_time" content="2016-10-09T10:52:00.000Z">
+<meta name="twitter:card" content="summary">
+<meta name="twitter:title" content="从数据到声音">
+<meta name="twitter:description" content="声音是如何用一个数组去表示的呢？表示声音的这个数组又是如何去拼凑而成的呢？正是为了搞清这两个问题才有了这篇文章。">
+
+
+
+<script type="text/javascript" id="hexo.configuration">
+  var NexT = window.NexT || {};
+  var CONFIG = {
+    scheme: 'Mist',
+    sidebar: {"position":"left","display":"post"},
+    fancybox: true,
+    motion: true,
+    duoshuo: {
+      userId: '0',
+      author: '博主'
+    }
+  };
+</script>
+
+
+
+
+  <link rel="canonical" href="http://zrongl.github.io/2015/11/15/151115-sinvoice-generate/"/>
+
+
+  <title> 从数据到声音 | Zrongl </title>
+</head>
+
+<body itemscope itemtype="//schema.org/WebPage" lang="zh-tw">
+
+  
+
+
+
+
+
+
+
+
+
+
+  
+  
+    
+  
+
+  <div class="container one-collumn sidebar-position-left page-post-detail ">
+    <div class="headband"></div>
+
+    <header id="header" class="header" itemscope itemtype="//schema.org/WPHeader">
+      <div class="header-inner"><div class="site-meta ">
+  
+
+  <div class="custom-logo-site-title">
+    <a href="/"  class="brand" rel="start">
+      <span class="logo-line-before"><i></i></span>
+      <span class="site-title">Zrongl</span>
+      <span class="logo-line-after"><i></i></span>
+    </a>
+  </div>
+  <p class="site-subtitle"></p>
+</div>
+
+<div class="site-nav-toggle">
+  <button>
+    <span class="btn-bar"></span>
+    <span class="btn-bar"></span>
+    <span class="btn-bar"></span>
+  </button>
+</div>
+
+<nav class="site-nav">
+  
+
+  
+    <ul id="menu" class="menu">
+      
+        
+        <li class="menu-item menu-item-home">
+          <a href="/" rel="section">
+            
+              <i class="menu-item-icon fa fa-fw fa-home"></i> <br />
+            
+            首頁
+          </a>
+        </li>
+      
+        
+        <li class="menu-item menu-item-archives">
+          <a href="/archives" rel="section">
+            
+              <i class="menu-item-icon fa fa-fw fa-archive"></i> <br />
+            
+            歸檔
+          </a>
+        </li>
+      
+        
+        <li class="menu-item menu-item-tags">
+          <a href="/tags" rel="section">
+            
+              <i class="menu-item-icon fa fa-fw fa-tags"></i> <br />
+            
+            標籤
+          </a>
+        </li>
+      
+
+      
+    </ul>
+  
+
+  
+</nav>
+
+ </div>
+    </header>
+
+    <main id="main" class="main">
+      <div class="main-inner">
+        <div class="content-wrap">
+          <div id="content" class="content">
+            
+
+  <div id="posts" class="posts-expand">
+    
+
+  
+  
+
+  
+  
+  
+
+  <article class="post post-type-normal " itemscope itemtype="//schema.org/Article">
+
+    
+      <header class="post-header">
+
+        
+        
+          <h1 class="post-title" itemprop="name headline">
+            
+            
+              
+                从数据到声音
+              
+            
+          </h1>
+        
+
+        <div class="post-meta">
+          <span class="post-time">
+            <span class="post-meta-item-icon">
+              <i class="fa fa-calendar-o"></i>
+            </span>
+            <span class="post-meta-item-text">發表於</span>
+            <time itemprop="dateCreated" datetime="2015-11-15T00:00:00+08:00" content="2015-11-15">
+              2015-11-15
+            </time>
+          </span>
+
+          
+            <span class="post-category" >
+              &nbsp; | &nbsp;
+              <span class="post-meta-item-icon">
+                <i class="fa fa-folder-o"></i>
+              </span>
+              <span class="post-meta-item-text">分類於</span>
+              
+                <span itemprop="about" itemscope itemtype="https://schema.org/Thing">
+                  <a href="/categories/Linux/" itemprop="url" rel="index">
+                    <span itemprop="name">Linux</span>
+                  </a>
+                </span>
+
+                
+                
+
+              
+            </span>
+          
+
+          
+            
+          
+
+          
+
+          
+          
+
+          
+        </div>
+      </header>
+    
+
+
+    <div class="post-body" itemprop="articleBody">
+
+      
+      
+
+      
+        <blockquote>
+<p>本文源于对于声波支付的调研，后来通过东拼西凑整合了一个SinVoice项目，本文对该项目的发声部分进行深入的解析，虽然和声波支付相去甚远，但从中我也学到了不少有关音频的入门知识，当然由于本人知识有限存在纰漏的地方望大家请谅解^_^。</p>
+</blockquote>
+<h3 id="一、基础知识"><a href="#一、基础知识" class="headerlink" title="一、基础知识"></a>一、基础知识</h3><h4 id="1、声音三特征"><a href="#1、声音三特征" class="headerlink" title="1、声音三特征"></a>1、声音三特征</h4><ul>
+<li>音调：就是高音(青藏高原)和低音(赵忠祥)，与振动的频率有关，频率越高，音调越高；频率越低，音调越低</li>
+<li>响度：就是音量，由声源振动的幅度决定的，振幅越大，响度越大；振幅越小，响度越小</li>
+<li>音色：跟材料和结构有关．当材料的结构发生变化时，音色发生变化</li>
+</ul>
+<h4 id="2、概念的理解很重要"><a href="#2、概念的理解很重要" class="headerlink" title="2、概念的理解很重要"></a>2、概念的理解很重要</h4><ul>
+<li>采样频率[Hz]：计算机对模拟信号进行取样时，(每秒钟采样点个数)每秒从连续信号中提取并组成离散信号的采样点个数</li>
+<li>频率[Hz]：自然声音一秒钟完成周期性变化的次数，描述周期运动频繁程度的量</li>
+<li><strong>采样间隔</strong>[s]：<ul>
+<li>采样频率的倒数，即每个采样点之间的时间间隔</li>
+<li>频率的倒数，即完成一次周期性变化所需时间</li>
+</ul>
+</li>
+<li>采样精度[Bit]：表示每个样本点所需的比特位数，如：8bit(0~255级)，16bit(0~65535级)，采样精度越大，所能表现的声音越丰富，区分相似声音的能力越强。</li>
+</ul>
+
+<p> 如上图：我们可以看到对同一声波(振幅和频率相同)进行采样时，采样精度越高，模拟出来的声波越接近原始声波。要强调的一点是，采样精度表达的是振幅的平分份数，假设该声波的振幅为n，对于采样点s9而言，当采样精度为4bit时，s9的幅值为n*15/16；当采样精度为2x4bit时，s9的幅值为n*31/32；所以采样精度越高采样点幅值越接近原始声波的幅值。</p>
+<ul>
+<li>比特率[Bps]：每秒传输的比特数模拟信号转换为数字信号后，单位时间内的二进制数据量<br><br><code>比特率 = 采样率 x 采样精度 x 声道数</code></li>
+</ul>
+<h4 id="3、香农采样定理的理解"><a href="#3、香农采样定理的理解" class="headerlink" title="3、香农采样定理的理解"></a>3、香农采样定理的理解</h4><p>为了不失真地恢复模拟信号，采样频率(Fs)应该不小于模拟信号频谱中最高频率(Fmax)的2倍：<br></p>
+<p><code>Fs ≥ 2Fmax</code></p>
+<p>设想有一个频率为F的自然声波(模拟信号)，如果对该模拟信号进行采样时，采样频率也是F的话，也就是说采样间隔为<code>1/F</code>，如下图：</p>
+
+<p>如上图，采样频率是F时模拟出来的只是一条直线，而不是一条波。<br><br>当采样频率变为声波频率的2倍时，如下图：</p>
+
+<p>我们看出采样频率为2F时，模拟出来的是一条锯齿波，虽然跟原本的采样对象有些差距，但是波形是相似的。<br><br>而人耳能听到的声音范围在20Hz～20000Hz，所以根据香农采样定理，我们的采样对象的频率范围是20Hz～20000Hz，最高频率的2倍就是40000Hz，为了留一点安全系数，再考虑到工程上的习惯，最终选择了44.1kHz这个数值作为标准采样频率。当然生活中常见声音的范围一般在200Hz~6000Hz之间，所以为了节省空间或宽带也存在采样率为22500Hz的情况。</p>
+<h3 id="二、声音数据生成"><a href="#二、声音数据生成" class="headerlink" title="二、声音数据生成"></a>二、声音数据生成</h3><p>项目中<em>SinPlayer.m</em> 文件主要负责生成声音数据并进行播放，我们的声音数组就是在<code>gen:dur:</code>方法中生成的：</p>
+<figure class="highlight plain"><table><tr><td class="gutter"><pre><div class="line">1</div><div class="line">2</div><div class="line">3</div><div class="line">4</div><div class="line">5</div><div class="line">6</div><div class="line">7</div><div class="line">8</div><div class="line">9</div><div class="line">10</div><div class="line">11</div><div class="line">12</div><div class="line">13</div><div class="line">14</div><div class="line">15</div><div class="line">16</div><div class="line">17</div><div class="line">18</div><div class="line">19</div><div class="line">20</div><div class="line">21</div><div class="line">22</div><div class="line">23</div><div class="line">24</div></pre></td><td class="code"><pre><div class="line">/**</div><div class="line"> *  根据频率和持续时间生成采样点数据</div><div class="line"> *</div><div class="line"> *  @param genRate  生成的声波的频率</div><div class="line"> *  @param dur      声波播放时长</div><div class="line"> *</div><div class="line"> */</div><div class="line">- (void)gen:(int)genRate dur:(int)dur</div><div class="line">&#123;</div><div class="line">    int buffSize = 0;</div><div class="line">    int n = BITS_16/2; // 振幅</div><div class="line">    int totalCount = (dur*44100)/1000; // 持续时间为dur毫秒的声音的采样点个数</div><div class="line">    double per = (genRate/(double)44100)*2*M_PI; // 频率为genRate的波采样点之间角度间隔</div><div class="line">    double d = 0;</div><div class="line">    </div><div class="line">    for (int i = 0; i &lt; totalCount; i++) &#123;</div><div class="line">        int outPrint = (int)(sin(d)*n);</div><div class="line">        _playState.mCode[_playState.mCodeLength + buffSize++] = (SignedByte)outPrint;</div><div class="line">        _playState.mCode[_playState.mCodeLength + buffSize++] = (SignedByte)(outPrint &gt;&gt; 8);</div><div class="line">        </div><div class="line">        d+=per;</div><div class="line">    &#125;</div><div class="line">    _playState.mCodeLength += totalCount * 2;</div><div class="line">&#125;</div></pre></td></tr></table></figure>
+<p>下面我们逐一对一下几句代码进行解释：</p>
+<figure class="highlight plain"><table><tr><td class="gutter"><pre><div class="line">1</div></pre></td><td class="code"><pre><div class="line">int totalCount = (dur*44100)/1000;</div></pre></td></tr></table></figure>
+<p>44100是我们将要对我们产生的声音进行采样的频率，所以每一毫秒采样点的数量为44100/1000，我们想要使得频率为<code>genRate</code>的声波持续dur毫秒的话，就需要准备(dur*44100)/1000个采样点数据，对这么多个采样点数据进行播放的持续时间就是<code>dur</code>毫秒；</p>
+<figure class="highlight plain"><table><tr><td class="gutter"><pre><div class="line">1</div></pre></td><td class="code"><pre><div class="line">double per = (genRate/(double)44100)*2*M_PI;</div></pre></td></tr></table></figure>
+<p>根据频率的定义：频率表示一秒钟内完成周期性变化的次数，而一个周期的角度变化是2π，即:360°，所以对于频率44100的声波在每一个采样时间间隔1/44100内对应的角度变化为360°，对于频率为<code>genRate</code>的声波每一个采样时间间隔1/44100内对应的角度变化则为(gentRate/44100)*2π。<br><br>为了便于理解，请看下图：</p>
+
+<p>各个采样点的数据有了，接下来就是对其进行存储，如下图：</p>
+
+<p>通过之前的属性设置代码得知，我们生成声音的采样精度是16bit，因此每个采样点数据位数为16位，而mCode类型是char*占8bit大小，利用mCode存储采样数据时，需要将第一个采样点数据的低8位和高8位分别存储到mCode[0]和mCode[1]的位置，之后的以此类推，这就是下面代码中实现的，pcm音频数据存储过程：</p>
+<figure class="highlight plain"><table><tr><td class="gutter"><pre><div class="line">1</div><div class="line">2</div><div class="line">3</div><div class="line">4</div><div class="line">5</div><div class="line">6</div><div class="line">7</div><div class="line">8</div></pre></td><td class="code"><pre><div class="line">for (int i = 0; i &lt; totalCount; i++) &#123;</div><div class="line">    int outPrint = (int)(sin(d)*n);</div><div class="line">    _playState.mCode[_playState.mCodeLength + buffSize++] = (SignedByte)outPrint;</div><div class="line">    _playState.mCode[_playState.mCodeLength + buffSize++] = (SignedByte)(outPrint &gt;&gt; 8);</div><div class="line">    </div><div class="line">    d+=per;</div><div class="line">&#125;</div><div class="line">_playState.mCodeLength += totalCount * 2;</div></pre></td></tr></table></figure>
+<h3 id="三、AudioQueue播放声音数据"><a href="#三、AudioQueue播放声音数据" class="headerlink" title="三、AudioQueue播放声音数据"></a>三、AudioQueue播放声音数据</h3><p>有关AudioQueue的使用，苹果文档已经说的很明白了，如图：</p>
+
+<p>播放的过程：</p>
+<ul>
+<li>1、利用AudioQueueNewOutput()方法创建audio queue，设置回调函数及其传入参数，调用自定义的callback函数向buffer中填充数据，并将填充后的buffer，放置到buffer queue中，准备播放</li>
+<li>2、调用AudioQueueStart()，开始播放</li>
+<li>3、audio queue播放buffer queue第一个被填充的buffer中的数据</li>
+<li>4、audio queue返回已播放完的buffer以供复用，并播放下一个buffer中的数据</li>
+<li>5、audio queue将播放完的buffer返回给callback函数，并继续向该buffer中添加要播放的数据</li>
+<li>6、callback函数调用AudioQueueEnqueueBuffer()方法将填充好数据的buffer放置到待播放buffer队列中</li>
+</ul>
+<p>从这个过程中可以看出我们需要自定义一个函数来实现向buffer中装填上面我们准备好的音频数据，然后将其放置到buffer queue中等待进行播放，代码如下：</p>
+<figure class="highlight plain"><table><tr><td class="gutter"><pre><div class="line">1</div><div class="line">2</div><div class="line">3</div><div class="line">4</div><div class="line">5</div><div class="line">6</div><div class="line">7</div><div class="line">8</div><div class="line">9</div><div class="line">10</div><div class="line">11</div><div class="line">12</div><div class="line">13</div><div class="line">14</div><div class="line">15</div><div class="line">16</div><div class="line">17</div><div class="line">18</div><div class="line">19</div><div class="line">20</div><div class="line">21</div><div class="line">22</div><div class="line">23</div><div class="line">24</div><div class="line">25</div><div class="line">26</div><div class="line">27</div><div class="line">28</div><div class="line">29</div><div class="line">30</div><div class="line">31</div><div class="line">32</div><div class="line">33</div><div class="line">34</div><div class="line">35</div><div class="line">36</div><div class="line">37</div><div class="line">38</div><div class="line">39</div><div class="line">40</div><div class="line">41</div><div class="line">42</div><div class="line">43</div><div class="line">44</div><div class="line">45</div><div class="line">46</div><div class="line">47</div><div class="line">48</div><div class="line">49</div><div class="line">50</div><div class="line">51</div><div class="line">52</div><div class="line">53</div><div class="line">54</div><div class="line">55</div><div class="line">56</div><div class="line">57</div><div class="line">58</div><div class="line">59</div><div class="line">60</div><div class="line">61</div><div class="line">62</div><div class="line">63</div><div class="line">64</div><div class="line">65</div><div class="line">66</div><div class="line">67</div><div class="line">68</div><div class="line">69</div><div class="line">70</div><div class="line">71</div><div class="line">72</div><div class="line">73</div><div class="line">74</div><div class="line">75</div><div class="line">76</div><div class="line">77</div><div class="line">78</div><div class="line">79</div><div class="line">80</div><div class="line">81</div><div class="line">82</div><div class="line">83</div><div class="line">84</div><div class="line">85</div><div class="line">86</div><div class="line">87</div><div class="line">88</div><div class="line">89</div><div class="line">90</div></pre></td><td class="code"><pre><div class="line">- (void)play:(NSString *)msg</div><div class="line">&#123;</div><div class="line">    [self _setupAudioFormat];</div><div class="line">    _playState.mCurrentPacket = 0;</div><div class="line">    _playState.mCodeLength = 0;</div><div class="line">    [self encodeMessage:msg];</div><div class="line">    [self _deriveBufferSize:1000];</div><div class="line">    </div><div class="line">    OSStatus status = noErr;</div><div class="line">    /*!</div><div class="line">     @function   AudioQueueNewOutput</div><div class="line">     @abstract   创建一个新的audio queue用于播放音频数据，</div><div class="line">     调用了AudioQueueStart()才会开始播放</div><div class="line">     当第一个buffer中的数据播放完之后，才会调用callback</div><div class="line">     </div><div class="line">     @param      inFormat</div><div class="line">     指向描述将被播放的音频数据格式的结构体指针，对于线性PCM来说，只有隔行扫描的格式能够被支持。</div><div class="line">     @param      inCallbackProc</div><div class="line">     指向一个回调函数，当audio queue播放玩一个buffer后会将该buffer传给这个回调函数</div><div class="line">     @param      inUserData</div><div class="line">     自定义结构体的指针，会传递给回调函数</div><div class="line">     @param      inCallbackRunLoop</div><div class="line">     回调函数将被在执行在inCallbackRunLoop指定的事件循环中</div><div class="line">     如果值为NULL，回调函数将被安排在audio queue的内部线程中执行</div><div class="line">     @param      inCallbackRunLoopMode</div><div class="line">     指定RunLoopMode，默认为kCFRunLoopCommonModes</div><div class="line">     @param      inFlags</div><div class="line">     保留，传0</div><div class="line">     @param      outAQ</div><div class="line">     返回的时候，该变量会指向新创建的audio queue对象</div><div class="line">     </div><div class="line">     @result     An OSStatus result code.</div><div class="line">     */</div><div class="line">    status = AudioQueueNewOutput(&amp;_playState.mDataFormat,</div><div class="line">                                 HandleOutputBuffer,</div><div class="line">                                 &amp;_playState,</div><div class="line">                                 CFRunLoopGetCurrent(),</div><div class="line">                                 kCFRunLoopCommonModes,</div><div class="line">                                 0,</div><div class="line">                                 &amp;_playState.mQueue);</div><div class="line">    </div><div class="line">    ADAssert(noErr == status, @&quot;Could not create queue.&quot;);</div><div class="line">    </div><div class="line">    _playState.mIsRunning = YES;</div><div class="line">    //向buffer aqueue中添加三个audio queue buffer准备开始播放</div><div class="line">    for (int i = 0; i &lt; kNumberBuffers; i++) &#123;</div><div class="line">        // 为mBuffers[i]申请bufferByteSize大小的内存</div><div class="line">        status = AudioQueueAllocateBuffer(_playState.mQueue, _playState.bufferByteSize, &amp;_playState.mBuffers[i]);</div><div class="line">        ADAssert(noErr == status, @&quot;Could not allocate buffers.&quot;);</div><div class="line">        HandleOutputBuffer(&amp;_playState, _playState.mQueue, _playState.mBuffers[i]);</div><div class="line">    &#125;</div><div class="line">    </div><div class="line">    status = AudioQueueStart(_playState.mQueue, NULL);</div><div class="line">    ADAssert(noErr == status, @&quot;Could not start playing.&quot;);</div><div class="line">&#125;</div><div class="line"></div><div class="line">/**</div><div class="line"> *  AudioQueueOutputCallback</div><div class="line"> *</div><div class="line"> *  @param inUserData  AudioQueueNewOutput()函数中自定义的结构体指针inUserData</div><div class="line"> *  @param inAQ        指向audio queue对象的指针</div><div class="line"> *  @param inBuffer    等待填充数据并放置进buffer queue的buffer</div><div class="line"> */</div><div class="line">void HandleOutputBuffer(void * inUserData,</div><div class="line">                        AudioQueueRef inAQ,</div><div class="line">                        AudioQueueBufferRef inBuffer) &#123;</div><div class="line">    AQPlayState * pPlayState = (AQPlayState *)inUserData;</div><div class="line">    </div><div class="line">    if ( ! pPlayState-&gt;mIsRunning) &#123;</div><div class="line">        return;</div><div class="line">    &#125;</div><div class="line">    </div><div class="line">    // inBuffer表示已经播放完的audio queue buffer(已经开始播放后)</div><div class="line">    // 等待往里面添加下面要播放的audio data后,重新放到buffer queue的队尾</div><div class="line">    UInt32 numBytesToPlay = inBuffer-&gt;mAudioDataBytesCapacity;</div><div class="line">    UInt32 numPackets = numBytesToPlay/pPlayState-&gt;mDataFormat.mBytesPerPacket;</div><div class="line">    </div><div class="line">	SInt8 * buffer = (SInt8 *)inBuffer-&gt;mAudioData;</div><div class="line">    </div><div class="line">    // 每个buffer中有添加 44100个采样点数据</div><div class="line">	for(long i = (long)pPlayState-&gt;mCurrentPacket; i &lt; pPlayState-&gt;mCurrentPacket + numPackets; i++) &#123;</div><div class="line">        long idx = i % pPlayState-&gt;mCodeLength;</div><div class="line">        // 循环播放code</div><div class="line">		buffer[i-pPlayState-&gt;mCurrentPacket] = pPlayState-&gt;mCode[idx];</div><div class="line">	&#125;</div><div class="line">    </div><div class="line">    inBuffer-&gt;mAudioDataByteSize = numPackets;</div><div class="line">    AudioQueueEnqueueBuffer(pPlayState-&gt;mQueue, inBuffer, 0, NULL);</div><div class="line">    pPlayState-&gt;mCurrentPacket += numPackets;</div><div class="line">&#125;</div></pre></td></tr></table></figure>
+      
+    </div>
+
+    <div>
+      
+        
+
+      
+    </div>
+
+    <div>
+      
+        
+
+      
+    </div>
+
+    <footer class="post-footer">
+      
+
+      
+        <div class="post-nav">
+          <div class="post-nav-next post-nav-item">
+            
+              <a href="/2015/10/25/151025-c4/" rel="next" title="编译器项目c4的学习(原创)">
+                <i class="fa fa-chevron-left"></i> 编译器项目c4的学习(原创)
+              </a>
+            
+          </div>
+
+          <div class="post-nav-prev post-nav-item">
+            
+              <a href="/2015/12/29/151229-aticle-share/" rel="prev" title="文章分享">
+                文章分享 <i class="fa fa-chevron-right"></i>
+              </a>
+            
+          </div>
+        </div>
+      
+
+      
+      
+    </footer>
+  </article>
+
+
+
+    <div class="post-spread">
+      
+    </div>
+  </div>
+
+
+          </div>
+          
+
+
+          
+  <div class="comments" id="comments">
+    
+  </div>
+
+
+        </div>
+        
+          
+  
+  <div class="sidebar-toggle">
+    <div class="sidebar-toggle-line-wrap">
+      <span class="sidebar-toggle-line sidebar-toggle-line-first"></span>
+      <span class="sidebar-toggle-line sidebar-toggle-line-middle"></span>
+      <span class="sidebar-toggle-line sidebar-toggle-line-last"></span>
+    </div>
+  </div>
+
+  <aside id="sidebar" class="sidebar">
+    <div class="sidebar-inner">
+
+      
+
+      
+        <ul class="sidebar-nav motion-element">
+          <li class="sidebar-nav-toc sidebar-nav-active" data-target="post-toc-wrap" >
+            文章目錄
+          </li>
+          <li class="sidebar-nav-overview" data-target="site-overview">
+            本站概覽
+          </li>
+        </ul>
+      
+
+      <section class="site-overview sidebar-panel ">
+        <div class="site-author motion-element" itemprop="author" itemscope itemtype="//schema.org/Person">
+          <img class="site-author-image" itemprop="image"
+               src="/images/avatar.gif"
+               alt="ronglei" />
+          <p class="site-author-name" itemprop="name">ronglei</p>
+          <p class="site-description motion-element" itemprop="description"></p>
+        </div>
+        <nav class="site-state motion-element">
+          <div class="site-state-item site-state-posts">
+            <a href="/archives">
+              <span class="site-state-item-count">21</span>
+              <span class="site-state-item-name">文章</span>
+            </a>
+          </div>
+
+          
+            <div class="site-state-item site-state-categories">
+              
+                <span class="site-state-item-count">8</span>
+                <span class="site-state-item-name">分類</span>
+              
+            </div>
+          
+
+          
+            <div class="site-state-item site-state-tags">
+              <a href="/tags">
+                <span class="site-state-item-count">5</span>
+                <span class="site-state-item-name">標籤</span>
+              </a>
+            </div>
+          
+
+        </nav>
+
+        
+
+        <div class="links-of-author motion-element">
+          
+        </div>
+
+        
+        
+
+        
+        
+
+      </section>
+
+      
+        <section class="post-toc-wrap motion-element sidebar-panel sidebar-panel-active">
+          <div class="post-toc">
+            
+              
+            
+            
+              <div class="post-toc-content"><ol class="nav"><li class="nav-item nav-level-3"><a class="nav-link" href="#一、基础知识"><span class="nav-number">1.</span> <span class="nav-text">一、基础知识</span></a><ol class="nav-child"><li class="nav-item nav-level-4"><a class="nav-link" href="#1、声音三特征"><span class="nav-number">1.1.</span> <span class="nav-text">1、声音三特征</span></a></li><li class="nav-item nav-level-4"><a class="nav-link" href="#2、概念的理解很重要"><span class="nav-number">1.2.</span> <span class="nav-text">2、概念的理解很重要</span></a></li><li class="nav-item nav-level-4"><a class="nav-link" href="#3、香农采样定理的理解"><span class="nav-number">1.3.</span> <span class="nav-text">3、香农采样定理的理解</span></a></li></ol></li><li class="nav-item nav-level-3"><a class="nav-link" href="#二、声音数据生成"><span class="nav-number">2.</span> <span class="nav-text">二、声音数据生成</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#三、AudioQueue播放声音数据"><span class="nav-number">3.</span> <span class="nav-text">三、AudioQueue播放声音数据</span></a></li></ol></div>
+            
+          </div>
+        </section>
+      
+
+    </div>
+  </aside>
+
+
+        
+      </div>
+    </main>
+
+    <footer id="footer" class="footer">
+      <div class="footer-inner">
+        <div class="copyright" >
+  
+  &copy; 
+  <span itemprop="copyrightYear">2016</span>
+  <span class="with-love">
+    <i class="fa fa-heart"></i>
+  </span>
+  <span class="author" itemprop="copyrightHolder">ronglei</span>
+</div>
+
+<div class="powered-by">
+  由 <a class="theme-link" href="https://hexo.io">Hexo</a> 強力驅動
+</div>
+
+<div class="theme-info">
+  主題 -
+  <a class="theme-link" href="https://github.com/iissnan/hexo-theme-next">
+    NexT.Mist
+  </a>
+</div>
+
+        
+
+        
+      </div>
+    </footer>
+
+    <div class="back-to-top">
+      <i class="fa fa-arrow-up"></i>
+    </div>
+  </div>
+
+  
+
+<script type="text/javascript">
+  if (Object.prototype.toString.call(window.Promise) !== '[object Function]') {
+    window.Promise = null;
+  }
+</script>
+
+
+
+
+
+
+
+
+
+  
+
+
+
+  
+  <script type="text/javascript" src="/vendors/jquery/index.js?v=2.1.3"></script>
+
+  
+  <script type="text/javascript" src="/vendors/fastclick/lib/fastclick.min.js?v=1.0.6"></script>
+
+  
+  <script type="text/javascript" src="/vendors/jquery_lazyload/jquery.lazyload.js?v=1.9.7"></script>
+
+  
+  <script type="text/javascript" src="/vendors/velocity/velocity.min.js?v=1.2.1"></script>
+
+  
+  <script type="text/javascript" src="/vendors/velocity/velocity.ui.min.js?v=1.2.1"></script>
+
+  
+  <script type="text/javascript" src="/vendors/fancybox/source/jquery.fancybox.pack.js?v=2.1.5"></script>
+
+
+  
+
+
+  <script type="text/javascript" src="/js/src/utils.js?v=5.0.2"></script>
+
+  <script type="text/javascript" src="/js/src/motion.js?v=5.0.2"></script>
+
+
+
+  
+  
+
+  
+  <script type="text/javascript" src="/js/src/scrollspy.js?v=5.0.2"></script>
+<script type="text/javascript" src="/js/src/post-details.js?v=5.0.2"></script>
+
+
+
+  
+
+
+  <script type="text/javascript" src="/js/src/bootstrap.js?v=5.0.2"></script>
+
+
+
+  
+
+
+
+  
+
+
+
+
+  
+  
+
+  
+
+  
+
+  
+
+</body>
+</html>
