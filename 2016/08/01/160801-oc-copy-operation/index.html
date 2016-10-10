@@ -86,13 +86,13 @@
 
 <meta name="description" content="面试过程中经常问到的，也是iOS最基础的一个最基础知识点——对copy的理解">
 <meta property="og:type" content="article">
-<meta property="og:title" content="iOS copy操作那些坑">
+<meta property="og:title" content="iOS Copy操作那些坑">
 <meta property="og:url" content="http://zrongl.github.io/2016/08/01/160801-oc-copy-operation/index.html">
-<meta property="og:site_name" content="Zrongl">
+<meta property="og:site_name" content="荣雷的博客">
 <meta property="og:description" content="面试过程中经常问到的，也是iOS最基础的一个最基础知识点——对copy的理解">
-<meta property="og:updated_time" content="2016-10-09T10:53:24.000Z">
+<meta property="og:updated_time" content="2016-10-10T09:52:32.000Z">
 <meta name="twitter:card" content="summary">
-<meta name="twitter:title" content="iOS copy操作那些坑">
+<meta name="twitter:title" content="iOS Copy操作那些坑">
 <meta name="twitter:description" content="面试过程中经常问到的，也是iOS最基础的一个最基础知识点——对copy的理解">
 
 
@@ -117,7 +117,7 @@
   <link rel="canonical" href="http://zrongl.github.io/2016/08/01/160801-oc-copy-operation/"/>
 
 
-  <title> iOS copy操作那些坑 | Zrongl </title>
+  <title> iOS Copy操作那些坑 | 荣雷的博客 </title>
 </head>
 
 <body itemscope itemtype="//schema.org/WebPage" lang="zh-tw">
@@ -148,7 +148,7 @@
   <div class="custom-logo-site-title">
     <a href="/"  class="brand" rel="start">
       <span class="logo-line-before"><i></i></span>
-      <span class="site-title">Zrongl</span>
+      <span class="site-title">荣雷的博客</span>
       <span class="logo-line-after"><i></i></span>
     </a>
   </div>
@@ -237,7 +237,7 @@
             
             
               
-                iOS copy操作那些坑
+                iOS Copy操作那些坑
               
             
           </h1>
@@ -277,6 +277,13 @@
 
           
             
+              <span class="post-comments-count">
+                &nbsp; | &nbsp;
+                <a href="/2016/08/01/160801-oc-copy-operation/#comments" itemprop="discussionUrl">
+                  <span class="post-comments-count ds-thread-count" data-thread-key="2016/08/01/160801-oc-copy-operation/" itemprop="commentsCount"></span>
+                </a>
+              </span>
+            
           
 
           
@@ -296,24 +303,28 @@
       
 
       
-        <h3 id="1-容器类行NSArray等"><a href="#1-容器类行NSArray等" class="headerlink" title="1.容器类行NSArray等"></a>1.容器类行NSArray等</h3><p>由于对于NSString苹果做了一些特殊的优化，我们先从未被优化的容器类NSArray(或NSDictionary、NSSet等)入手，看如下代码：</p>
-<figure class="highlight plain"><table><tr><td class="gutter"><pre><div class="line">1</div><div class="line">2</div><div class="line">3</div><div class="line">4</div><div class="line">5</div><div class="line">6</div><div class="line">7</div><div class="line">8</div></pre></td><td class="code"><pre><div class="line">&#123;</div><div class="line">	NSArray *array = [NSArray arrayWithObject:@&quot;1&quot;];</div><div class="line">	NSArray *array1 = [array copy];</div><div class="line">	NSArray *array2 = [array mutableCopy];</div><div class="line">	NSMutableArray *array3 = [array copy];</div><div class="line">	NSMutableArray *array4 = [array mutableCopy];</div><div class="line">	NSLog(@&quot;\narrayWithObject array:\n%@:%p\n%@:%p\n%@:%p\n%@:%p\n%@:%p&quot;, array.class, array, array1.class, array1, array2.class, array2, array3.class, array3, array4.class, array4);</div><div class="line">&#125;</div></pre></td></tr></table></figure>
-<figure class="highlight plain"><table><tr><td class="gutter"><pre><div class="line">1</div><div class="line">2</div><div class="line">3</div><div class="line">4</div><div class="line">5</div><div class="line">6</div><div class="line">7</div></pre></td><td class="code"><pre><div class="line">对应输出为：</div><div class="line">arrayWithObject array:</div><div class="line">__NSArrayI:0x7faee1500290</div><div class="line">__NSArrayI:0x7faee1500290</div><div class="line">__NSArrayM:0x7faee15225d0</div><div class="line">__NSArrayI:0x7faee1500290</div><div class="line">__NSArrayM:0x7faee1522240</div></pre></td></tr></table></figure>
-<figure class="highlight plain"><table><tr><td class="gutter"><pre><div class="line">1</div><div class="line">2</div><div class="line">3</div><div class="line">4</div><div class="line">5</div><div class="line">6</div><div class="line">7</div><div class="line">8</div></pre></td><td class="code"><pre><div class="line">&#123;</div><div class="line">    NSMutableArray *array = [NSMutableArray arrayWithObject:@&quot;1&quot;];</div><div class="line">    NSArray *array1 = [array copy];</div><div class="line">    NSArray *array2 = [array mutableCopy];</div><div class="line">    NSMutableArray *array3 = [array copy];</div><div class="line">    NSMutableArray *array4 = [array mutableCopy];</div><div class="line">    NSLog(@&quot;\narrayWithObject mutable array:\n%@:%p\n%@:%p\n%@:%p\n%@:%p\n%@:%p&quot;, array.class, array, array1.class, array1, array2.class, array2, array3.class, array3, array4.class, array4);</div><div class="line">&#125;</div></pre></td></tr></table></figure>
-<figure class="highlight plain"><table><tr><td class="gutter"><pre><div class="line">1</div><div class="line">2</div><div class="line">3</div><div class="line">4</div><div class="line">5</div><div class="line">6</div><div class="line">7</div></pre></td><td class="code"><pre><div class="line">对应输出为：</div><div class="line">arrayWithObject mutable array:</div><div class="line">__NSArrayM:0x7faee15225d0</div><div class="line">__NSArrayI:0x7faee151a540</div><div class="line">__NSArrayM:0x7faee1522240</div><div class="line">__NSArrayI:0x7faee150fb80</div><div class="line">__NSArrayM:0x7faee15222d0</div></pre></td></tr></table></figure>
-<p>通过以上代码及输出我们可以得出：<br><br>对于非mutable类型的NSArray进行copy操作只是对引用计数进行+1操作，类似于retain，也就是所谓的浅拷贝，返回的类型是非mutable类型的NSArray；进行mutableCopy操作才会重新申请内存创建对象，也就是所谓的深拷贝，返回的类型是mutable类型的NSArray；<br><br>对于mutable类型的NSArray无论进行copy操作时，会重新申请内存创建对象，进行深拷贝，返回的类型是非mutable类型的NSArray；进行mutableCopy操作时，也会重新申请内存创建对象，进行深拷贝，返回的类型是mutable类型的NSArray。<br></p>
+        <h3 id="容器类行NSArray等"><a href="#容器类行NSArray等" class="headerlink" title="容器类行NSArray等"></a>容器类行NSArray等</h3><h4 id="操作对象为不可变数组"><a href="#操作对象为不可变数组" class="headerlink" title="操作对象为不可变数组"></a>操作对象为不可变数组</h4><p>由于对于NSString苹果做了一些特殊的优化，我们先从未被优化的容器类NSArray(或NSDictionary、NSSet等)入手，看如下代码：</p>
+<figure class="highlight cpp"><table><tr><td class="gutter"><pre><div class="line">1</div><div class="line">2</div><div class="line">3</div><div class="line">4</div><div class="line">5</div><div class="line">6</div><div class="line">7</div><div class="line">8</div></pre></td><td class="code"><pre><div class="line">&#123;</div><div class="line">	NSArray *<span class="built_in">array</span> = [NSArray arrayWithObject:@<span class="string">"1"</span>];</div><div class="line">	NSArray *array1 = [<span class="built_in">array</span> copy];</div><div class="line">	NSArray *array2 = [<span class="built_in">array</span> mutableCopy];</div><div class="line">	NSMutableArray *array3 = [<span class="built_in">array</span> copy];</div><div class="line">	NSMutableArray *array4 = [<span class="built_in">array</span> mutableCopy];</div><div class="line">	NSLog(@<span class="string">"\narrayWithObject array:\n%@:%p\n%@:%p\n%@:%p\n%@:%p\n%@:%p"</span>, <span class="built_in">array</span>.<span class="keyword">class</span>, <span class="built_in">array</span>, array1.<span class="keyword">class</span>, array1, array2.<span class="keyword">class</span>, array2, array3.<span class="keyword">class</span>, array3, array4.<span class="keyword">class</span>, array4);</div><div class="line">&#125;</div></pre></td></tr></table></figure>
+<figure class="highlight groovy"><table><tr><td class="gutter"><pre><div class="line">1</div><div class="line">2</div><div class="line">3</div><div class="line">4</div><div class="line">5</div><div class="line">6</div><div class="line">7</div></pre></td><td class="code"><pre><div class="line">对应输出为：</div><div class="line">arrayWithObject <span class="string">array:</span></div><div class="line"><span class="string">__NSArrayI:</span><span class="number">0x7faee1500290</span></div><div class="line"><span class="string">__NSArrayI:</span><span class="number">0x7faee1500290</span></div><div class="line"><span class="string">__NSArrayM:</span><span class="number">0x7faee15225d0</span></div><div class="line"><span class="string">__NSArrayI:</span><span class="number">0x7faee1500290</span></div><div class="line"><span class="string">__NSArrayM:</span><span class="number">0x7faee1522240</span></div></pre></td></tr></table></figure>
+<p>对于非mutable类型的NSArray进行copy操作只是对引用计数进行+1操作，类似于retain，也就是所谓的浅拷贝，返回的类型是非mutable类型的NSArray；进行mutableCopy操作才会重新申请内存创建对象，也就是所谓的深拷贝，返回的类型是mutable类型的NSArray；</p>
+<h4 id="操作对象为可变数组"><a href="#操作对象为可变数组" class="headerlink" title="操作对象为可变数组"></a>操作对象为可变数组</h4><figure class="highlight cpp"><table><tr><td class="gutter"><pre><div class="line">1</div><div class="line">2</div><div class="line">3</div><div class="line">4</div><div class="line">5</div><div class="line">6</div><div class="line">7</div><div class="line">8</div></pre></td><td class="code"><pre><div class="line">&#123;</div><div class="line">    NSMutableArray *<span class="built_in">array</span> = [NSMutableArray arrayWithObject:@<span class="string">"1"</span>];</div><div class="line">    NSArray *array1 = [<span class="built_in">array</span> copy];</div><div class="line">    NSArray *array2 = [<span class="built_in">array</span> mutableCopy];</div><div class="line">    NSMutableArray *array3 = [<span class="built_in">array</span> copy];</div><div class="line">    NSMutableArray *array4 = [<span class="built_in">array</span> mutableCopy];</div><div class="line">    NSLog(@<span class="string">"\narrayWithObject mutable array:\n%@:%p\n%@:%p\n%@:%p\n%@:%p\n%@:%p"</span>, <span class="built_in">array</span>.<span class="keyword">class</span>, <span class="built_in">array</span>, array1.<span class="keyword">class</span>, array1, array2.<span class="keyword">class</span>, array2, array3.<span class="keyword">class</span>, array3, array4.<span class="keyword">class</span>, array4);</div><div class="line">&#125;</div></pre></td></tr></table></figure>
+<figure class="highlight groovy"><table><tr><td class="gutter"><pre><div class="line">1</div><div class="line">2</div><div class="line">3</div><div class="line">4</div><div class="line">5</div><div class="line">6</div><div class="line">7</div></pre></td><td class="code"><pre><div class="line">对应输出为：</div><div class="line">arrayWithObject mutable <span class="string">array:</span></div><div class="line"><span class="string">__NSArrayM:</span><span class="number">0x7faee15225d0</span></div><div class="line"><span class="string">__NSArrayI:</span><span class="number">0x7faee151a540</span></div><div class="line"><span class="string">__NSArrayM:</span><span class="number">0x7faee1522240</span></div><div class="line"><span class="string">__NSArrayI:</span><span class="number">0x7faee150fb80</span></div><div class="line"><span class="string">__NSArrayM:</span><span class="number">0x7faee15222d0</span></div></pre></td></tr></table></figure>
+<p>对于mutable类型的NSArray无论进行copy操作时，会重新申请内存创建对象，进行深拷贝，返回的类型是非mutable类型的NSArray；进行mutableCopy操作时，也会重新申请内存创建对象，进行深拷贝，返回的类型是mutable类型的NSArray。</p>
 <p>根据以上结论，我们观察如下属性声明：</p>
-<figure class="highlight plain"><table><tr><td class="gutter"><pre><div class="line">1</div><div class="line">2</div><div class="line">3</div><div class="line">4</div><div class="line">5</div><div class="line">6</div><div class="line">7</div><div class="line">8</div><div class="line">9</div></pre></td><td class="code"><pre><div class="line">@property(nonatomic, copy)NSMutableArray *array;</div><div class="line">//该属性对应的setter方法为：</div><div class="line">- (void)setArray:(NSMutableArray *)array</div><div class="line">&#123;</div><div class="line">    if (_array != array)&#123;</div><div class="line">        [_array release];</div><div class="line">        _array = [array copy];</div><div class="line">    &#125;</div><div class="line">&#125;</div></pre></td></tr></table></figure>
+<figure class="highlight objectivec"><table><tr><td class="gutter"><pre><div class="line">1</div><div class="line">2</div><div class="line">3</div><div class="line">4</div><div class="line">5</div><div class="line">6</div><div class="line">7</div><div class="line">8</div><div class="line">9</div></pre></td><td class="code"><pre><div class="line"><span class="keyword">@property</span>(<span class="keyword">nonatomic</span>, <span class="keyword">copy</span>)<span class="built_in">NSMutableArray</span> *array;</div><div class="line"><span class="comment">//该属性对应的setter方法为：</span></div><div class="line">- (<span class="keyword">void</span>)setArray:(<span class="built_in">NSMutableArray</span> *)array</div><div class="line">&#123;</div><div class="line">    <span class="keyword">if</span> (_array != array)&#123;</div><div class="line">        [_array release];</div><div class="line">        _array = [array <span class="keyword">copy</span>];</div><div class="line">    &#125;</div><div class="line">&#125;</div></pre></td></tr></table></figure>
 <p>此处需要说明的是，无论你用什么类型的NSArray进行赋值，最终执行的都是copy操作，返回的都是非mutable类型的NSArray，而不是声明的mutable类型，进行赋值操作后不能再调用mutable类型的remove/add方法，否则会因为未找到消息而出现崩溃。</p>
-<h3 id="2-字符串类型NSString"><a href="#2-字符串类型NSString" class="headerlink" title="2.字符串类型NSString"></a>2.字符串类型NSString</h3><p>接下来我们看一下对NSString类型进行copy/mutableCopy操作，会出现什么结果，我们逐一对一下情况进行分析：</p>
-<figure class="highlight plain"><table><tr><td class="gutter"><pre><div class="line">1</div><div class="line">2</div><div class="line">3</div><div class="line">4</div><div class="line">5</div><div class="line">6</div><div class="line">7</div><div class="line">8</div></pre></td><td class="code"><pre><div class="line">&#123;</div><div class="line">    NSString *string = @&quot;1&quot;;</div><div class="line">    NSString *string1 = [string copy];</div><div class="line">    NSString *string2 = [string mutableCopy];</div><div class="line">    NSMutableString *string3 = [string copy];</div><div class="line">    NSMutableString *string4 = [string mutableCopy];</div><div class="line">    NSLog(@&quot;\nconst string:\n%@:%p\n%@:%p\n%@:%p\n%@:%p\n%@:%p&quot;, string.class, string, string1.class, string1, string2.class, string2, string3.class, string3, string4.class ,string4);</div><div class="line">&#125;</div></pre></td></tr></table></figure>
-<figure class="highlight plain"><table><tr><td class="gutter"><pre><div class="line">1</div><div class="line">2</div><div class="line">3</div><div class="line">4</div><div class="line">5</div><div class="line">6</div><div class="line">7</div></pre></td><td class="code"><pre><div class="line">对应输出为：</div><div class="line">const string:</div><div class="line">__NSCFConstantString:0x103713318</div><div class="line">__NSCFConstantString:0x103713318</div><div class="line">__NSCFString:0x7febf348ff70</div><div class="line">__NSCFConstantString:0x103713318</div><div class="line">__NSCFString:0x7febf340fe00</div></pre></td></tr></table></figure>
-<p>根据以上输出我们可以得出：<br><br>通过<code>@&quot;&quot;</code>初始化的NSString的真正类型是<code>__NSCFConstantString</code>，我们暂且称该类型的字符串为<strong>常量字符串</strong>，同时观察该类型的内存地址<code>0x103713318</code>，我们可以猜测他说被分配在了常量区（类似于C语言中的const常量），而对常量字符串进行copy操作时，只是进行了简单的指针指向操作，不会引起计数+1，也不会重新创建对象，这是因为常量字符串只有在程序结束的时候才会被释放（至于苹果对该类型的常量字符串做了何等的优化有待我们继续深入探究），所以当我们用<code>__weak</code>声明的对象指向常量字符串时，不会因为常量字符串没有被强引用而引起编译器警告；而对常量字符串进行mutableCopy操作时，会重新申请内存创建对象，进行深拷贝，返回的类型是<code>__NSCFString</code>类型的字符串，即为NSMutableString类型。</p>
-<figure class="highlight plain"><table><tr><td class="gutter"><pre><div class="line">1</div><div class="line">2</div><div class="line">3</div><div class="line">4</div><div class="line">5</div><div class="line">6</div><div class="line">7</div><div class="line">8</div></pre></td><td class="code"><pre><div class="line">&#123;</div><div class="line">    NSString *string = [NSString stringWithFormat:@&quot;%i&quot;, 1];</div><div class="line">    NSString *string1 = [string copy];</div><div class="line">    NSString *string2 = [string mutableCopy];</div><div class="line">    NSMutableString *string3 = [string copy];</div><div class="line">    NSMutableString *string4 = [string mutableCopy];</div><div class="line">    NSLog(@&quot;\nstringWithFormat string:\n%@:%p\n%@:%p\n%@:%p\n%@:%p\n%@:%p&quot;, string.class, string, string1.class, string1, string2.class, string2, string3.class, string3, string4.class ,string4);</div><div class="line">&#125;</div></pre></td></tr></table></figure>
-<figure class="highlight plain"><table><tr><td class="gutter"><pre><div class="line">1</div><div class="line">2</div><div class="line">3</div><div class="line">4</div><div class="line">5</div><div class="line">6</div><div class="line">7</div></pre></td><td class="code"><pre><div class="line">对应输出为：</div><div class="line">stringWithFormat string:</div><div class="line">NSTaggedPointerString:0xa000000000000311</div><div class="line">NSTaggedPointerString:0xa000000000000311</div><div class="line">__NSCFString:0x7febf481d320</div><div class="line">NSTaggedPointerString:0xa000000000000311</div><div class="line">__NSCFString:0x7febf481c320</div></pre></td></tr></table></figure>
-<figure class="highlight plain"><table><tr><td class="gutter"><pre><div class="line">1</div><div class="line">2</div><div class="line">3</div><div class="line">4</div><div class="line">5</div><div class="line">6</div><div class="line">7</div><div class="line">8</div></pre></td><td class="code"><pre><div class="line">&#123;</div><div class="line">    NSMutableString *string = [NSMutableString stringWithFormat:@&quot;%i&quot;, 1];</div><div class="line">    NSString *string1 = [string copy];</div><div class="line">    NSString *string2 = [string mutableCopy];</div><div class="line">    NSMutableString *string3 = [string copy];</div><div class="line">    NSMutableString *string4 = [string mutableCopy];</div><div class="line">    NSLog(@&quot;\nstringWithFormat mutable string:\n%@:%p\n%@:%p\n%@:%p\n%@:%p\n%@:%p&quot;, string.class, string, string1.class, string1, string2.class, string2, string3.class, string3, string4.class ,string4);</div><div class="line">&#125;</div></pre></td></tr></table></figure>
-<figure class="highlight plain"><table><tr><td class="gutter"><pre><div class="line">1</div><div class="line">2</div><div class="line">3</div><div class="line">4</div><div class="line">5</div><div class="line">6</div><div class="line">7</div></pre></td><td class="code"><pre><div class="line">对应输出为：</div><div class="line">stringWithFormat mutable string:</div><div class="line">__NSCFString:0x7febf4900120</div><div class="line">NSTaggedPointerString:0xa000000000000311</div><div class="line">__NSCFString:0x7febf49001e0</div><div class="line">NSTaggedPointerString:0xa000000000000311</div><div class="line">__NSCFString:0x7febf4900220</div></pre></td></tr></table></figure>
-<p>根据以上输出我们可以得出：<br><br>通过<code>stringWithFormat</code>创建的字符串的真实类型是<code>NSTaggedPointerString</code>，观察该类型字符串的内存地址为<code>0xa000000000000311</code>，这是一个很高位的地址，我们暂且将该种类型的字符串成为非mutable类型字符串；<br><br>通过<code>stringWithFormat</code>创建的字符串的真实类型是<code>__NSCFString</code>，观察该类型字符串内存地址为<code>0x7febf4900120</code>，更像是被分配到了堆区，我们暂且称该类字符串为mutable类型字符串；<br><br>在对非mutable类型字符串（即<code>NSTaggedPointerString</code>）进行copy操作时，会引起引用计数+1，并返回非mutable类型的字符串；对其进行mutableCopy操作时，会重新申请内存创建对象，并返回mutable类型的字符串；<br><br>在对mutable类型的字符串（即<code>__NSCFString</code>）进行copy操作时，也只会引起引用计数+1，并返回非mutable类型的字符串（注意此时与容器类型的区别）；而对其进行mutableCopy操作时，会重新申请内存创建对象，并返回mutable类型的字符串；</p>
+<h3 id="字符串类型NSString"><a href="#字符串类型NSString" class="headerlink" title="字符串类型NSString"></a>字符串类型NSString</h3><p>接下来我们看一下对NSString类型进行copy/mutableCopy操作，会出现什么结果，我们逐一对一下情况进行分析：</p>
+<h4 id="操作对象为常亮字符串"><a href="#操作对象为常亮字符串" class="headerlink" title="操作对象为常亮字符串"></a>操作对象为常亮字符串</h4><figure class="highlight applescript"><table><tr><td class="gutter"><pre><div class="line">1</div><div class="line">2</div><div class="line">3</div><div class="line">4</div><div class="line">5</div><div class="line">6</div><div class="line">7</div><div class="line">8</div></pre></td><td class="code"><pre><div class="line">&#123;</div><div class="line">    NSString *<span class="built_in">string</span> = @<span class="string">"1"</span>;</div><div class="line">    NSString *string1 = [<span class="built_in">string</span> <span class="keyword">copy</span>];</div><div class="line">    NSString *string2 = [<span class="built_in">string</span> mutableCopy];</div><div class="line">    NSMutableString *string3 = [<span class="built_in">string</span> <span class="keyword">copy</span>];</div><div class="line">    NSMutableString *string4 = [<span class="built_in">string</span> mutableCopy];</div><div class="line">    NSLog(@<span class="string">"\nconst string:\n%@:%p\n%@:%p\n%@:%p\n%@:%p\n%@:%p"</span>, <span class="built_in">string</span>.<span class="built_in">class</span>, <span class="built_in">string</span>, string1.<span class="built_in">class</span>, string1, string2.<span class="built_in">class</span>, string2, string3.<span class="built_in">class</span>, string3, string4.<span class="built_in">class</span> ,string4);</div><div class="line">&#125;</div></pre></td></tr></table></figure>
+<figure class="highlight groovy"><table><tr><td class="gutter"><pre><div class="line">1</div><div class="line">2</div><div class="line">3</div><div class="line">4</div><div class="line">5</div><div class="line">6</div><div class="line">7</div></pre></td><td class="code"><pre><div class="line">对应输出为：</div><div class="line">const <span class="string">string:</span></div><div class="line"><span class="string">__NSCFConstantString:</span><span class="number">0x103713318</span></div><div class="line"><span class="string">__NSCFConstantString:</span><span class="number">0x103713318</span></div><div class="line"><span class="string">__NSCFString:</span><span class="number">0x7febf348ff70</span></div><div class="line"><span class="string">__NSCFConstantString:</span><span class="number">0x103713318</span></div><div class="line"><span class="string">__NSCFString:</span><span class="number">0x7febf340fe00</span></div></pre></td></tr></table></figure>
+<p>通过<code>@&quot;&quot;</code>初始化的NSString的真正类型是<code>__NSCFConstantString</code>，我们暂且称该类型的字符串为<strong>常量字符串</strong>，同时观察该类型的内存地址<code>0x103713318</code>，我们可以猜测他说被分配在了常量区（类似于C语言中的const常量），而对常量字符串进行copy操作时，只是进行了简单的指针指向操作，不会引起计数+1，也不会重新创建对象，这是因为常量字符串只有在程序结束的时候才会被释放（至于苹果对该类型的常量字符串做了何等的优化有待我们继续深入探究），所以当我们用<code>__weak</code>声明的对象指向常量字符串时，不会因为常量字符串没有被强引用而引起编译器警告；而对常量字符串进行mutableCopy操作时，会重新申请内存创建对象，进行深拷贝，返回的类型是<code>__NSCFString</code>类型的字符串，即为NSMutableString类型。</p>
+<h4 id="操作对象为非可变字符串"><a href="#操作对象为非可变字符串" class="headerlink" title="操作对象为非可变字符串"></a>操作对象为非可变字符串</h4><figure class="highlight applescript"><table><tr><td class="gutter"><pre><div class="line">1</div><div class="line">2</div><div class="line">3</div><div class="line">4</div><div class="line">5</div><div class="line">6</div><div class="line">7</div><div class="line">8</div></pre></td><td class="code"><pre><div class="line">&#123;</div><div class="line">    NSString *<span class="built_in">string</span> = [NSString stringWithFormat:@<span class="string">"%i"</span>, <span class="number">1</span>];</div><div class="line">    NSString *string1 = [<span class="built_in">string</span> <span class="keyword">copy</span>];</div><div class="line">    NSString *string2 = [<span class="built_in">string</span> mutableCopy];</div><div class="line">    NSMutableString *string3 = [<span class="built_in">string</span> <span class="keyword">copy</span>];</div><div class="line">    NSMutableString *string4 = [<span class="built_in">string</span> mutableCopy];</div><div class="line">    NSLog(@<span class="string">"\nstringWithFormat string:\n%@:%p\n%@:%p\n%@:%p\n%@:%p\n%@:%p"</span>, <span class="built_in">string</span>.<span class="built_in">class</span>, <span class="built_in">string</span>, string1.<span class="built_in">class</span>, string1, string2.<span class="built_in">class</span>, string2, string3.<span class="built_in">class</span>, string3, string4.<span class="built_in">class</span> ,string4);</div><div class="line">&#125;</div></pre></td></tr></table></figure>
+<figure class="highlight groovy"><table><tr><td class="gutter"><pre><div class="line">1</div><div class="line">2</div><div class="line">3</div><div class="line">4</div><div class="line">5</div><div class="line">6</div><div class="line">7</div></pre></td><td class="code"><pre><div class="line">对应输出为：</div><div class="line">stringWithFormat <span class="string">string:</span></div><div class="line"><span class="string">NSTaggedPointerString:</span><span class="number">0xa000000000000311</span></div><div class="line"><span class="string">NSTaggedPointerString:</span><span class="number">0xa000000000000311</span></div><div class="line"><span class="string">__NSCFString:</span><span class="number">0x7febf481d320</span></div><div class="line"><span class="string">NSTaggedPointerString:</span><span class="number">0xa000000000000311</span></div><div class="line"><span class="string">__NSCFString:</span><span class="number">0x7febf481c320</span></div></pre></td></tr></table></figure>
+<p>通过<code>stringWithFormat</code>创建的字符串的真实类型是<code>NSTaggedPointerString</code>，观察该类型字符串的内存地址为<code>0xa000000000000311</code>，这是一个很高位的地址，我们暂且将该种类型的字符串成为非mutable类型字符串；</p>
+<p>在对非mutable类型字符串（即<code>NSTaggedPointerString</code>）进行copy操作时，会引起引用计数+1，并返回非mutable类型的字符串；对其进行mutableCopy操作时，会重新申请内存创建对象，并返回mutable类型的字符串；</p>
+<h4 id="操作对象为可变字符串"><a href="#操作对象为可变字符串" class="headerlink" title="操作对象为可变字符串"></a>操作对象为可变字符串</h4><figure class="highlight applescript"><table><tr><td class="gutter"><pre><div class="line">1</div><div class="line">2</div><div class="line">3</div><div class="line">4</div><div class="line">5</div><div class="line">6</div><div class="line">7</div><div class="line">8</div></pre></td><td class="code"><pre><div class="line">&#123;</div><div class="line">    NSMutableString *<span class="built_in">string</span> = [NSMutableString stringWithFormat:@<span class="string">"%i"</span>, <span class="number">1</span>];</div><div class="line">    NSString *string1 = [<span class="built_in">string</span> <span class="keyword">copy</span>];</div><div class="line">    NSString *string2 = [<span class="built_in">string</span> mutableCopy];</div><div class="line">    NSMutableString *string3 = [<span class="built_in">string</span> <span class="keyword">copy</span>];</div><div class="line">    NSMutableString *string4 = [<span class="built_in">string</span> mutableCopy];</div><div class="line">    NSLog(@<span class="string">"\nstringWithFormat mutable string:\n%@:%p\n%@:%p\n%@:%p\n%@:%p\n%@:%p"</span>, <span class="built_in">string</span>.<span class="built_in">class</span>, <span class="built_in">string</span>, string1.<span class="built_in">class</span>, string1, string2.<span class="built_in">class</span>, string2, string3.<span class="built_in">class</span>, string3, string4.<span class="built_in">class</span> ,string4);</div><div class="line">&#125;</div></pre></td></tr></table></figure>
+<figure class="highlight groovy"><table><tr><td class="gutter"><pre><div class="line">1</div><div class="line">2</div><div class="line">3</div><div class="line">4</div><div class="line">5</div><div class="line">6</div><div class="line">7</div></pre></td><td class="code"><pre><div class="line">对应输出为：</div><div class="line">stringWithFormat mutable <span class="string">string:</span></div><div class="line"><span class="string">__NSCFString:</span><span class="number">0x7febf4900120</span></div><div class="line"><span class="string">NSTaggedPointerString:</span><span class="number">0xa000000000000311</span></div><div class="line"><span class="string">__NSCFString:</span><span class="number">0x7febf49001e0</span></div><div class="line"><span class="string">NSTaggedPointerString:</span><span class="number">0xa000000000000311</span></div><div class="line"><span class="string">__NSCFString:</span><span class="number">0x7febf4900220</span></div></pre></td></tr></table></figure>
+<p>通过<code>stringWithFormat</code>创建的字符串的真实类型是<code>__NSCFString</code>，观察该类型字符串内存地址为<code>0x7febf4900120</code>，更像是被分配到了堆区，我们暂且称该类字符串为mutable类型字符串；</p>
+<p>在对mutable类型的字符串（即<code>__NSCFString</code>）进行copy操作时，也只会引起引用计数+1，并返回非mutable类型的字符串（注意此时与容器类型的区别）；而对其进行mutableCopy操作时，会重新申请内存创建对象，并返回mutable类型的字符串；</p>
 
       
     </div>
@@ -364,6 +375,25 @@
 
     <div class="post-spread">
       
+        <div class="ds-share flat" data-thread-key="2016/08/01/160801-oc-copy-operation/"
+     data-title="iOS Copy操作那些坑"
+     data-content=""
+     data-url="http://zrongl.github.io/2016/08/01/160801-oc-copy-operation/">
+  <div class="ds-share-inline">
+    <ul  class="ds-share-icons-16">
+
+      <li data-toggle="ds-share-icons-more"><a class="ds-more" href="javascript:void(0);">分享到：</a></li>
+      <li><a class="ds-weibo" href="javascript:void(0);" data-service="weibo">微博</a></li>
+      <li><a class="ds-qzone" href="javascript:void(0);" data-service="qzone">QQ空间</a></li>
+      <li><a class="ds-qqt" href="javascript:void(0);" data-service="qqt">腾讯微博</a></li>
+      <li><a class="ds-wechat" href="javascript:void(0);" data-service="wechat">微信</a></li>
+
+    </ul>
+    <div class="ds-share-icons-more">
+    </div>
+  </div>
+</div>
+      
     </div>
   </div>
 
@@ -374,6 +404,10 @@
 
           
   <div class="comments" id="comments">
+    
+      <div class="ds-thread" data-thread-key="2016/08/01/160801-oc-copy-operation/"
+           data-title="iOS Copy操作那些坑" data-url="http://zrongl.github.io/2016/08/01/160801-oc-copy-operation/">
+      </div>
     
   </div>
 
@@ -410,8 +444,8 @@
         <div class="site-author motion-element" itemprop="author" itemscope itemtype="//schema.org/Person">
           <img class="site-author-image" itemprop="image"
                src="/images/avatar.png"
-               alt="ronglei" />
-          <p class="site-author-name" itemprop="name">ronglei</p>
+               alt="Zrongl" />
+          <p class="site-author-name" itemprop="name">Zrongl</p>
           <p class="site-description motion-element" itemprop="description"></p>
         </div>
         <nav class="site-state motion-element">
@@ -456,7 +490,7 @@
               
             
             
-              <div class="post-toc-content"><ol class="nav"><li class="nav-item nav-level-3"><a class="nav-link" href="#1-容器类行NSArray等"><span class="nav-number">1.</span> <span class="nav-text">1.容器类行NSArray等</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#2-字符串类型NSString"><span class="nav-number">2.</span> <span class="nav-text">2.字符串类型NSString</span></a></li></ol></div>
+              <div class="post-toc-content"><ol class="nav"><li class="nav-item nav-level-3"><a class="nav-link" href="#容器类行NSArray等"><span class="nav-number">1.</span> <span class="nav-text">容器类行NSArray等</span></a><ol class="nav-child"><li class="nav-item nav-level-4"><a class="nav-link" href="#操作对象为不可变数组"><span class="nav-number">1.1.</span> <span class="nav-text">操作对象为不可变数组</span></a></li><li class="nav-item nav-level-4"><a class="nav-link" href="#操作对象为可变数组"><span class="nav-number">1.2.</span> <span class="nav-text">操作对象为可变数组</span></a></li></ol></li><li class="nav-item nav-level-3"><a class="nav-link" href="#字符串类型NSString"><span class="nav-number">2.</span> <span class="nav-text">字符串类型NSString</span></a><ol class="nav-child"><li class="nav-item nav-level-4"><a class="nav-link" href="#操作对象为常亮字符串"><span class="nav-number">2.1.</span> <span class="nav-text">操作对象为常亮字符串</span></a></li><li class="nav-item nav-level-4"><a class="nav-link" href="#操作对象为非可变字符串"><span class="nav-number">2.2.</span> <span class="nav-text">操作对象为非可变字符串</span></a></li><li class="nav-item nav-level-4"><a class="nav-link" href="#操作对象为可变字符串"><span class="nav-number">2.3.</span> <span class="nav-text">操作对象为可变字符串</span></a></li></ol></li></ol></div>
             
           </div>
         </section>
@@ -479,7 +513,7 @@
   <span class="with-love">
     <i class="fa fa-heart"></i>
   </span>
-  <span class="author" itemprop="copyrightHolder">ronglei</span>
+  <span class="author" itemprop="copyrightHolder">Zrongl</span>
 </div>
 
 <div class="powered-by">
@@ -577,9 +611,30 @@
 
   
 
+  
+    
+  
 
+  <script type="text/javascript">
+    var duoshuoQuery = {short_name:"zrongl"};
+    (function() {
+      var ds = document.createElement('script');
+      ds.type = 'text/javascript';ds.async = true;
+      ds.id = 'duoshuo-script';
+      ds.src = (document.location.protocol == 'https:' ? 'https:' : 'http:') + '//static.duoshuo.com/embed.js';
+      ds.charset = 'UTF-8';
+      (document.getElementsByTagName('head')[0]
+      || document.getElementsByTagName('body')[0]).appendChild(ds);
+    })();
+  </script>
 
   
+    
+    <script src="/vendors/ua-parser-js/dist/ua-parser.min.js?v=0.7.9"></script>
+    <script src="/js/src/hook-duoshuo.js"></script>
+  
+
+
 
 
 

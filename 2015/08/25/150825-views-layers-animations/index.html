@@ -88,14 +88,14 @@
 <meta property="og:type" content="article">
 <meta property="og:title" content="视图，层和动画">
 <meta property="og:url" content="http://zrongl.github.io/2015/08/25/150825-views-layers-animations/index.html">
-<meta property="og:site_name" content="Zrongl">
+<meta property="og:site_name" content="荣雷的博客">
 <meta property="og:description" content="深入探索视图，图层及动画的含义及其关系">
 <meta property="og:image" content="http://zrongl.github.io/2015/08/25/150825-views-layers-animations/150825-views-layers-animations-00.png">
 <meta property="og:image" content="http://zrongl.github.io/2015/08/25/150825-views-layers-animations/150825-views-layers-animations-01.png">
 <meta property="og:image" content="http://zrongl.github.io/2015/08/25/150825-views-layers-animations/150825-views-layers-animations-02.png">
 <meta property="og:image" content="http://zrongl.github.io/2015/08/25/150825-views-layers-animations/150825-views-layers-animations-03.png">
 <meta property="og:image" content="http://zrongl.github.io/2015/08/25/150825-views-layers-animations/150825-views-layers-animations-04.png">
-<meta property="og:updated_time" content="2016-10-09T10:22:30.000Z">
+<meta property="og:updated_time" content="2016-10-10T10:09:55.000Z">
 <meta name="twitter:card" content="summary">
 <meta name="twitter:title" content="视图，层和动画">
 <meta name="twitter:description" content="深入探索视图，图层及动画的含义及其关系">
@@ -123,7 +123,7 @@
   <link rel="canonical" href="http://zrongl.github.io/2015/08/25/150825-views-layers-animations/"/>
 
 
-  <title> 视图，层和动画 | Zrongl </title>
+  <title> 视图，层和动画 | 荣雷的博客 </title>
 </head>
 
 <body itemscope itemtype="//schema.org/WebPage" lang="zh-tw">
@@ -154,7 +154,7 @@
   <div class="custom-logo-site-title">
     <a href="/"  class="brand" rel="start">
       <span class="logo-line-before"><i></i></span>
-      <span class="site-title">Zrongl</span>
+      <span class="site-title">荣雷的博客</span>
       <span class="logo-line-after"><i></i></span>
     </a>
   </div>
@@ -283,6 +283,13 @@
 
           
             
+              <span class="post-comments-count">
+                &nbsp; | &nbsp;
+                <a href="/2015/08/25/150825-views-layers-animations/#comments" itemprop="discussionUrl">
+                  <span class="post-comments-count ds-thread-count" data-thread-key="2015/08/25/150825-views-layers-animations/" itemprop="commentsCount"></span>
+                </a>
+              </span>
+            
           
 
           
@@ -310,7 +317,7 @@
 <li>Changes总是在CA::Transaction::commit()执行时时发生的</li>
 </ul>
 <img src="/2015/08/25/150825-views-layers-animations/150825-views-layers-animations-00.png" alt="视图与图层的关系" title="视图与图层的关系">
-<h3 id="1、UIView"><a href="#1、UIView" class="headerlink" title="1、UIView"></a>1、UIView</h3><h4 id="介绍"><a href="#介绍" class="headerlink" title="介绍"></a>介绍</h4><p><strong>UIView</strong>类定义了屏幕上的一个矩形区域并提供一系列接口管理这片区域的内容。在运行的时候，视图对象对这片区域内显示的内容进行渲染，并对该片区域内的交互操作进行处理。<strong>UIView</strong>类提供了基本的行为利用背景色对该片区域进行填充。更多精彩的内容你可以通过添加子视图，并实现必要的自定义绘制和事件处理来实现。UIKit framework还包含一系列的标准子类，从button到各种复杂的tables。比如：<strong>UILabel</strong> 对象在contents中绘制字符串；<strong>UIImageView</strong>对象在contents中绘制图片。<br><br>由于视图对象是与用户交互的主要方式，它包括以下多种职责：<br></p>
+<h3 id="UIView"><a href="#UIView" class="headerlink" title="UIView"></a>UIView</h3><h4 id="介绍"><a href="#介绍" class="headerlink" title="介绍"></a>介绍</h4><p><strong>UIView</strong>类定义了屏幕上的一个矩形区域并提供一系列接口管理这片区域的内容。在运行的时候，视图对象对这片区域内显示的内容进行渲染，并对该片区域内的交互操作进行处理。<strong>UIView</strong>类提供了基本的行为利用背景色对该片区域进行填充。更多精彩的内容你可以通过添加子视图，并实现必要的自定义绘制和事件处理来实现。UIKit framework还包含一系列的标准子类，从button到各种复杂的tables。比如：<strong>UILabel</strong> 对象在contents中绘制字符串；<strong>UIImageView</strong>对象在contents中绘制图片。<br><br>由于视图对象是与用户交互的主要方式，它包括以下多种职责：<br></p>
 <ul>
 <li>绘制和动画<ul>
 <li>视图利用UIKit，Core Graphics和OpenGL ES技术在矩形区域内绘制内容</li>
@@ -337,7 +344,7 @@
 <blockquote>
 <p><font color="#ff0000">注意：</font><br><br>如果你不需要对视图进行自定义绘制就不要在视图的子类中写一个空的<em>-drawRect:</em>方法这样会造成CPU资源和内存资源的浪费。一点重载了该方法系统首先会为我们准备一个图形上下文环境，待该方法执行完之后，系统会将我们绘制的内容”拷贝”到backing store中以供使用。</p>
 </blockquote>
-<h3 id="2、CALayer"><a href="#2、CALayer" class="headerlink" title="2、CALayer"></a>2、CALayer</h3><h4 id="介绍-1"><a href="#介绍-1" class="headerlink" title="介绍"></a>介绍<br></h4><p><strong>CALayer</strong>类管理着基于图像(屏幕上一切我们能看到)的内容，并能够对图像内容添加动画。layer可以用于给视图提供backing store(通常在视图需要自定义绘制的时候，即自定义<code>-drawRect:</code> 方法时)，当然也可以在不需要显示内容的视图中被使用。layer的主要工作就是管理你提供的可视内容，同时layer也有自己的可视属性可以被设置，如backgourd color，border，shadow等。除了管理可视内容，layer还维护着可视内容的几何信息(如position，size，transform)。对于没有关联视图的layer，修改它的属性后就会以动画的形式进行动态的改变，这就是隐式动画。视图在创建的时候会默认与一个CALayer进行关联，修改该这个与视图相关联的layer的属性的时候是不会触发动画的。<font color="#ff0000">从某种角度来说，layer只是动画信息的一个载体，它记录了动画执行的起始值和最终值以及其它信息，CATransaction::commit将这些信息通过IPC传递给render server后就由系统完成动画的渲染。</font><br><br>上面有关视图的功能的介绍中，绘制和动画还有布局和子视图管理其实都是由layer来完成的，由此我们可以看出UIView区别于layer的真正的职责之一是对手机屏幕touch事件的处理，那么为什么会有这样的职责分工呢，这里主要区别于基于鼠标点击来触发事件的Mac OS，我们可以推测每一个NSView在创建的时候也会关联一个layer用来处理有关内容显示的操作，而NSView则只需专心处理鼠标的点击事件。虽然layer已经向UIView暴露了一些影响视图显示的属性，如backgourd color，frame，size等。此外它还隐藏了一些未暴露的功能：</p>
+<h3 id="CALayer"><a href="#CALayer" class="headerlink" title="CALayer"></a>CALayer</h3><h4 id="介绍-1"><a href="#介绍-1" class="headerlink" title="介绍"></a>介绍</h4><p><strong>CALayer</strong>类管理着基于图像(屏幕上一切我们能看到)的内容，并能够对图像内容添加动画。layer可以用于给视图提供backing store(通常在视图需要自定义绘制的时候，即自定义<code>-drawRect:</code> 方法时)，当然也可以在不需要显示内容的视图中被使用。layer的主要工作就是管理你提供的可视内容，同时layer也有自己的可视属性可以被设置，如backgourd color，border，shadow等。除了管理可视内容，layer还维护着可视内容的几何信息(如position，size，transform)。对于没有关联视图的layer，修改它的属性后就会以动画的形式进行动态的改变，这就是隐式动画。视图在创建的时候会默认与一个CALayer进行关联，修改该这个与视图相关联的layer的属性的时候是不会触发动画的。<font color="#ff0000">从某种角度来说，layer只是动画信息的一个载体，它记录了动画执行的起始值和最终值以及其它信息，CATransaction::commit将这些信息通过IPC传递给render server后就由系统完成动画的渲染。</font><br><br>上面有关视图的功能的介绍中，绘制和动画还有布局和子视图管理其实都是由layer来完成的，由此我们可以看出UIView区别于layer的真正的职责之一是对手机屏幕touch事件的处理，那么为什么会有这样的职责分工呢，这里主要区别于基于鼠标点击来触发事件的Mac OS，我们可以推测每一个NSView在创建的时候也会关联一个layer用来处理有关内容显示的操作，而NSView则只需专心处理鼠标的点击事件。虽然layer已经向UIView暴露了一些影响视图显示的属性，如backgourd color，frame，size等。此外它还隐藏了一些未暴露的功能：</p>
 <ul>
 <li>阴影，圆角，带颜色的边框</li>
 <li>Transform 3D变换 </li>
@@ -371,7 +378,7 @@
 <p><strong>隐式动画:</strong><br><br>自动触发的动画就是所谓的隐式动画，CALayer的属性改变都会以动画的方式呈现，除非采用某种方式去禁掉，比如拥有backing layer的UIView，或直接通过setDisableActions:方法，我们在后面会讲到。<br></p>
 <p><strong>渲染服务进程（render server）:</strong><br><br>渲染服务进程是由iOS系统控制的，它与应用共用CPU资源，在iOS5和之前的版本是SpringBoard进程（同时管理着iOS的主屏）。在iOS6之后的版本中叫做BackBoard。玩儿过越狱的同学应该熟悉这个名字，系统启动完成后会首先启动该进程进行屏幕渲染，所有的应用都可以通过事务向该进程提交动画请求，之后的工作就由该进程借助GPU来完成。</p>
 </blockquote>
-<h3 id="3、Animation"><a href="#3、Animation" class="headerlink" title="3、Animation"></a>3、Animation</h3><h4 id="Transaction"><a href="#Transaction" class="headerlink" title="Transaction"></a>Transaction</h4><p>事务（Transctions）是CoreAnimation的将多个对图层树的操作批量转换成对渲染树的原子级更新操作的实现机制。每一个对图层树的修改操作都需要一个事务的参与，任何动画都是由事务提交给渲染进程来完成的。<br><br>CoreAnimation支持两种形式的事务，显式（explicit）的事务和隐式（implicit）的事务：<br><br>显式的事务是指在修改图层树之前插入<code>[CATransaction begin]</code>代码，之后插入<code>[CATransation commit]</code>代码。<br><br>隐式事务是在图层树的属性被其他线程(非执行中的事务线程)修改时，CoreAnimation自动创建的。隐式的事务会在线程的下一次run-loop循环被提交。然而在没有启动runloop或runloop被阻塞的线程中，有必要利用显示的事务去对渲染树进行及时的更新，以保证动画能够流畅的运行。<br></p>
+<h3 id="Animation"><a href="#Animation" class="headerlink" title="Animation"></a>Animation</h3><h4 id="Transaction"><a href="#Transaction" class="headerlink" title="Transaction"></a>Transaction</h4><p>事务（Transctions）是CoreAnimation的将多个对图层树的操作批量转换成对渲染树的原子级更新操作的实现机制。每一个对图层树的修改操作都需要一个事务的参与，任何动画都是由事务提交给渲染进程来完成的。<br><br>CoreAnimation支持两种形式的事务，显式（explicit）的事务和隐式（implicit）的事务：<br><br>显式的事务是指在修改图层树之前插入<code>[CATransaction begin]</code>代码，之后插入<code>[CATransation commit]</code>代码。<br><br>隐式事务是在图层树的属性被其他线程(非执行中的事务线程)修改时，CoreAnimation自动创建的。隐式的事务会在线程的下一次run-loop循环被提交。然而在没有启动runloop或runloop被阻塞的线程中，有必要利用显示的事务去对渲染树进行及时的更新，以保证动画能够流畅的运行。<br></p>
 <blockquote>
 <p><strong><font color="#ff0000">猜测：</font></strong><br><br>任何形式的创建动画的方式（CAAnimation及其子类的动画实现或UIView的<code>animateWithDuration</code>方法），都会被转换为事务，然后提交给渲染服务进程去渲染，最终每一帧的渲染结构显示到屏幕上，就完成了一个<strong>animation</strong>。</p>
 </blockquote>
@@ -384,9 +391,9 @@
 </ul>
 <p>所以一轮完整的搜索结束之后，-actionForKey:要么返回空（这种情况下将不会有动画发生），要么是CAAction协议对应的对象，最后CALayer拿这个结果去对先前和当前的值做动画。<br></p>
 <p>于是这就解释了UIKit是如何禁用隐式动画的：每个UIView对它关联的图层都扮演了一个委托，并且提供了-actionForLayer:forKey的实现方法。当不在一个动画块的实现中，UIView对所有图层行为返回nil，但是在动画block范围之内，它就返回了一个非空值。基于这点我们做个实现：</p>
-<figure class="highlight plain"><table><tr><td class="gutter"><pre><div class="line">1</div><div class="line">2</div><div class="line">3</div><div class="line">4</div><div class="line">5</div><div class="line">6</div><div class="line">7</div><div class="line">8</div><div class="line">9</div><div class="line">10</div><div class="line">11</div><div class="line">12</div></pre></td><td class="code"><pre><div class="line">- (void)viewDidLoad</div><div class="line">&#123;</div><div class="line">    [super viewDidLoad];</div><div class="line">    //test layer action when outside of animation block</div><div class="line">    NSLog(@&quot;Outside: %@&quot;, [self.layerView actionForLayer:self.layerView.layer forKey:@&quot;backgroundColor&quot;]);</div><div class="line">    //begin animation block</div><div class="line">    [UIView beginAnimations:nil context:nil];</div><div class="line">    //test layer action when inside of animation block</div><div class="line">    NSLog(@&quot;Inside: %@&quot;, [self.layerView actionForLayer:self.layerView.layer forKey:@&quot;backgroundColor&quot;]);</div><div class="line">    //end animation block</div><div class="line">    [UIView commitAnimations];</div><div class="line">&#125;</div></pre></td></tr></table></figure>
+<figure class="highlight objectivec"><table><tr><td class="gutter"><pre><div class="line">1</div><div class="line">2</div><div class="line">3</div><div class="line">4</div><div class="line">5</div><div class="line">6</div><div class="line">7</div><div class="line">8</div><div class="line">9</div><div class="line">10</div><div class="line">11</div><div class="line">12</div></pre></td><td class="code"><pre><div class="line">- (<span class="keyword">void</span>)viewDidLoad</div><div class="line">&#123;</div><div class="line">    [<span class="keyword">super</span> viewDidLoad];</div><div class="line">    <span class="comment">//test layer action when outside of animation block</span></div><div class="line">    <span class="built_in">NSLog</span>(<span class="string">@"Outside: %@"</span>, [<span class="keyword">self</span>.layerView actionForLayer:<span class="keyword">self</span>.layerView.layer forKey:<span class="string">@"backgroundColor"</span>]);</div><div class="line">    <span class="comment">//begin animation block</span></div><div class="line">    [<span class="built_in">UIView</span> beginAnimations:<span class="literal">nil</span> context:<span class="literal">nil</span>];</div><div class="line">    <span class="comment">//test layer action when inside of animation block</span></div><div class="line">    <span class="built_in">NSLog</span>(<span class="string">@"Inside: %@"</span>, [<span class="keyword">self</span>.layerView actionForLayer:<span class="keyword">self</span>.layerView.layer forKey:<span class="string">@"backgroundColor"</span>]);</div><div class="line">    <span class="comment">//end animation block</span></div><div class="line">    [<span class="built_in">UIView</span> commitAnimations];</div><div class="line">&#125;</div></pre></td></tr></table></figure>
 <p>我们发现控制台的输出为:</p>
-<figure class="highlight plain"><table><tr><td class="gutter"><pre><div class="line">1</div><div class="line">2</div></pre></td><td class="code"><pre><div class="line">$ Outside: null</div><div class="line">$ Inside: CABasicAnimation: 0x757f090</div></pre></td></tr></table></figure>
+<figure class="highlight groovy"><table><tr><td class="gutter"><pre><div class="line">1</div><div class="line">2</div></pre></td><td class="code"><pre><div class="line">$ <span class="string">Outside:</span> <span class="literal">null</span></div><div class="line">$ <span class="string">Inside:</span> <span class="string">CABasicAnimation:</span> <span class="number">0x757f090</span></div></pre></td></tr></table></figure>
 <p>于是我们可以预言，当属性在动画块之外发生改变，UIView直接通过返回nil来禁用隐式动画。但如果在动画块范围之内，根据动画具体类型返回相应的属性，在这个例子就是CABasicAnimation。</p>
 <h4 id="显式动画"><a href="#显式动画" class="headerlink" title="显式动画"></a>显式动画</h4><p>除了UIView的<code>animateWithDuration</code>方法可以添加基本的动画，我们还可以利用CAAnimation的子类创建各种不同类型的动画，如图</p>
 <img src="/2015/08/25/150825-views-layers-animations/150825-views-layers-animations-03.png" alt="显示动画类及其关系" title="显示动画类及其关系">
@@ -462,6 +469,25 @@
 
     <div class="post-spread">
       
+        <div class="ds-share flat" data-thread-key="2015/08/25/150825-views-layers-animations/"
+     data-title="视图，层和动画"
+     data-content=""
+     data-url="http://zrongl.github.io/2015/08/25/150825-views-layers-animations/">
+  <div class="ds-share-inline">
+    <ul  class="ds-share-icons-16">
+
+      <li data-toggle="ds-share-icons-more"><a class="ds-more" href="javascript:void(0);">分享到：</a></li>
+      <li><a class="ds-weibo" href="javascript:void(0);" data-service="weibo">微博</a></li>
+      <li><a class="ds-qzone" href="javascript:void(0);" data-service="qzone">QQ空间</a></li>
+      <li><a class="ds-qqt" href="javascript:void(0);" data-service="qqt">腾讯微博</a></li>
+      <li><a class="ds-wechat" href="javascript:void(0);" data-service="wechat">微信</a></li>
+
+    </ul>
+    <div class="ds-share-icons-more">
+    </div>
+  </div>
+</div>
+      
     </div>
   </div>
 
@@ -472,6 +498,10 @@
 
           
   <div class="comments" id="comments">
+    
+      <div class="ds-thread" data-thread-key="2015/08/25/150825-views-layers-animations/"
+           data-title="视图，层和动画" data-url="http://zrongl.github.io/2015/08/25/150825-views-layers-animations/">
+      </div>
     
   </div>
 
@@ -508,8 +538,8 @@
         <div class="site-author motion-element" itemprop="author" itemscope itemtype="//schema.org/Person">
           <img class="site-author-image" itemprop="image"
                src="/images/avatar.png"
-               alt="ronglei" />
-          <p class="site-author-name" itemprop="name">ronglei</p>
+               alt="Zrongl" />
+          <p class="site-author-name" itemprop="name">Zrongl</p>
           <p class="site-description motion-element" itemprop="description"></p>
         </div>
         <nav class="site-state motion-element">
@@ -554,7 +584,7 @@
               
             
             
-              <div class="post-toc-content"><ol class="nav"><li class="nav-item nav-level-3"><a class="nav-link" href="#1、UIView"><span class="nav-number">1.</span> <span class="nav-text">1、UIView</span></a><ol class="nav-child"><li class="nav-item nav-level-4"><a class="nav-link" href="#介绍"><span class="nav-number">1.1.</span> <span class="nav-text">介绍</span></a></li><li class="nav-item nav-level-4"><a class="nav-link" href="#drawRect"><span class="nav-number">1.2.</span> <span class="nav-text">drawRect</span></a></li></ol></li><li class="nav-item nav-level-3"><a class="nav-link" href="#2、CALayer"><span class="nav-number">2.</span> <span class="nav-text">2、CALayer</span></a><ol class="nav-child"><li class="nav-item nav-level-4"><a class="nav-link" href="#介绍-1"><span class="nav-number">2.1.</span> <span class="nav-text">介绍</span></a></li><li class="nav-item nav-level-4"><a class="nav-link" href="#contents"><span class="nav-number">2.2.</span> <span class="nav-text">contents</span></a></li><li class="nav-item nav-level-4"><a class="nav-link" href="#presentationLayer-and-modelLayer"><span class="nav-number">2.3.</span> <span class="nav-text">presentationLayer and modelLayer</span></a></li></ol></li><li class="nav-item nav-level-3"><a class="nav-link" href="#3、Animation"><span class="nav-number">3.</span> <span class="nav-text">3、Animation</span></a><ol class="nav-child"><li class="nav-item nav-level-4"><a class="nav-link" href="#Transaction"><span class="nav-number">3.1.</span> <span class="nav-text">Transaction</span></a></li><li class="nav-item nav-level-4"><a class="nav-link" href="#隐式动画"><span class="nav-number">3.2.</span> <span class="nav-text">隐式动画</span></a></li><li class="nav-item nav-level-4"><a class="nav-link" href="#显式动画"><span class="nav-number">3.3.</span> <span class="nav-text">显式动画</span></a></li><li class="nav-item nav-level-4"><a class="nav-link" href="#动画的执行过程"><span class="nav-number">3.4.</span> <span class="nav-text">动画的执行过程</span></a></li></ol></li><li class="nav-item nav-level-3"><a class="nav-link" href="#Reference"><span class="nav-number">4.</span> <span class="nav-text">Reference</span></a></li></ol></div>
+              <div class="post-toc-content"><ol class="nav"><li class="nav-item nav-level-3"><a class="nav-link" href="#UIView"><span class="nav-number">1.</span> <span class="nav-text">UIView</span></a><ol class="nav-child"><li class="nav-item nav-level-4"><a class="nav-link" href="#介绍"><span class="nav-number">1.1.</span> <span class="nav-text">介绍</span></a></li><li class="nav-item nav-level-4"><a class="nav-link" href="#drawRect"><span class="nav-number">1.2.</span> <span class="nav-text">drawRect</span></a></li></ol></li><li class="nav-item nav-level-3"><a class="nav-link" href="#CALayer"><span class="nav-number">2.</span> <span class="nav-text">CALayer</span></a><ol class="nav-child"><li class="nav-item nav-level-4"><a class="nav-link" href="#介绍-1"><span class="nav-number">2.1.</span> <span class="nav-text">介绍</span></a></li><li class="nav-item nav-level-4"><a class="nav-link" href="#contents"><span class="nav-number">2.2.</span> <span class="nav-text">contents</span></a></li><li class="nav-item nav-level-4"><a class="nav-link" href="#presentationLayer-and-modelLayer"><span class="nav-number">2.3.</span> <span class="nav-text">presentationLayer and modelLayer</span></a></li></ol></li><li class="nav-item nav-level-3"><a class="nav-link" href="#Animation"><span class="nav-number">3.</span> <span class="nav-text">Animation</span></a><ol class="nav-child"><li class="nav-item nav-level-4"><a class="nav-link" href="#Transaction"><span class="nav-number">3.1.</span> <span class="nav-text">Transaction</span></a></li><li class="nav-item nav-level-4"><a class="nav-link" href="#隐式动画"><span class="nav-number">3.2.</span> <span class="nav-text">隐式动画</span></a></li><li class="nav-item nav-level-4"><a class="nav-link" href="#显式动画"><span class="nav-number">3.3.</span> <span class="nav-text">显式动画</span></a></li><li class="nav-item nav-level-4"><a class="nav-link" href="#动画的执行过程"><span class="nav-number">3.4.</span> <span class="nav-text">动画的执行过程</span></a></li></ol></li><li class="nav-item nav-level-3"><a class="nav-link" href="#Reference"><span class="nav-number">4.</span> <span class="nav-text">Reference</span></a></li></ol></div>
             
           </div>
         </section>
@@ -577,7 +607,7 @@
   <span class="with-love">
     <i class="fa fa-heart"></i>
   </span>
-  <span class="author" itemprop="copyrightHolder">ronglei</span>
+  <span class="author" itemprop="copyrightHolder">Zrongl</span>
 </div>
 
 <div class="powered-by">
@@ -675,9 +705,30 @@
 
   
 
+  
+    
+  
 
+  <script type="text/javascript">
+    var duoshuoQuery = {short_name:"zrongl"};
+    (function() {
+      var ds = document.createElement('script');
+      ds.type = 'text/javascript';ds.async = true;
+      ds.id = 'duoshuo-script';
+      ds.src = (document.location.protocol == 'https:' ? 'https:' : 'http:') + '//static.duoshuo.com/embed.js';
+      ds.charset = 'UTF-8';
+      (document.getElementsByTagName('head')[0]
+      || document.getElementsByTagName('body')[0]).appendChild(ds);
+    })();
+  </script>
 
   
+    
+    <script src="/vendors/ua-parser-js/dist/ua-parser.min.js?v=0.7.9"></script>
+    <script src="/js/src/hook-duoshuo.js"></script>
+  
+
+
 
 
 
