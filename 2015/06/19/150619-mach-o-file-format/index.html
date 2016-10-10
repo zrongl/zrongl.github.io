@@ -5,7 +5,7 @@
   
 
 
-<html class="theme-next mist use-motion">
+<html class="theme-next pisces use-motion">
 <head>
   <meta charset="UTF-8"/>
 <meta http-equiv="X-UA-Compatible" content="IE=edge,chrome=1" />
@@ -86,14 +86,14 @@
 
 <meta name="description" content="介绍MacOSX平台下Mach-O(Mach object)文件格式，类似于Windows平台下的PE文件格式或Linux平台下的ELF文件格式，了解Mach-O文件格式是深入理解Objective-C的runtime加载运行的机制的基础">
 <meta property="og:type" content="article">
-<meta property="og:title" content="Mach-O文件格式与otool工具的使用(原创)">
+<meta property="og:title" content="Mach-O文件格式与otool工具的使用">
 <meta property="og:url" content="http://zrongl.github.io/2015/06/19/150619-mach-o-file-format/index.html">
 <meta property="og:site_name" content="Zrongl">
 <meta property="og:description" content="介绍MacOSX平台下Mach-O(Mach object)文件格式，类似于Windows平台下的PE文件格式或Linux平台下的ELF文件格式，了解Mach-O文件格式是深入理解Objective-C的runtime加载运行的机制的基础">
 <meta property="og:image" content="http://zrongl.github.io/2015/06/19/150619-mach-o-file-format/150619-mach-o-file-format-00.png">
-<meta property="og:updated_time" content="2016-10-09T10:03:01.000Z">
+<meta property="og:updated_time" content="2016-10-10T02:32:18.000Z">
 <meta name="twitter:card" content="summary">
-<meta name="twitter:title" content="Mach-O文件格式与otool工具的使用(原创)">
+<meta name="twitter:title" content="Mach-O文件格式与otool工具的使用">
 <meta name="twitter:description" content="介绍MacOSX平台下Mach-O(Mach object)文件格式，类似于Windows平台下的PE文件格式或Linux平台下的ELF文件格式，了解Mach-O文件格式是深入理解Objective-C的runtime加载运行的机制的基础">
 <meta name="twitter:image" content="http://zrongl.github.io/2015/06/19/150619-mach-o-file-format/150619-mach-o-file-format-00.png">
 
@@ -102,7 +102,7 @@
 <script type="text/javascript" id="hexo.configuration">
   var NexT = window.NexT || {};
   var CONFIG = {
-    scheme: 'Mist',
+    scheme: 'Pisces',
     sidebar: {"position":"left","display":"post"},
     fancybox: true,
     motion: true,
@@ -119,7 +119,7 @@
   <link rel="canonical" href="http://zrongl.github.io/2015/06/19/150619-mach-o-file-format/"/>
 
 
-  <title> Mach-O文件格式与otool工具的使用(原创) | Zrongl </title>
+  <title> Mach-O文件格式与otool工具的使用 | Zrongl </title>
 </head>
 
 <body itemscope itemtype="//schema.org/WebPage" lang="zh-tw">
@@ -191,6 +191,16 @@
           </a>
         </li>
       
+        
+        <li class="menu-item menu-item-categories">
+          <a href="/categories" rel="section">
+            
+              <i class="menu-item-icon fa fa-fw fa-th"></i> <br />
+            
+            分類
+          </a>
+        </li>
+      
 
       
     </ul>
@@ -229,7 +239,7 @@
             
             
               
-                Mach-O文件格式与otool工具的使用(原创)
+                Mach-O文件格式与otool工具的使用
               
             
           </h1>
@@ -255,8 +265,8 @@
               <span class="post-meta-item-text">分類於</span>
               
                 <span itemprop="about" itemscope itemtype="https://schema.org/Thing">
-                  <a href="/categories/translation/" itemprop="url" rel="index">
-                    <span itemprop="name">translation</span>
+                  <a href="/categories/iOS/" itemprop="url" rel="index">
+                    <span itemprop="name">iOS</span>
                   </a>
                 </span>
 
@@ -484,10 +494,10 @@
 
           
             <div class="site-state-item site-state-categories">
-              
+              <a href="/categories">
                 <span class="site-state-item-count">5</span>
                 <span class="site-state-item-name">分類</span>
-              
+              </a>
             </div>
           
 
@@ -549,7 +559,7 @@
 <div class="theme-info">
   主題 -
   <a class="theme-link" href="https://github.com/iissnan/hexo-theme-next">
-    NexT.Mist
+    NexT.Pisces
   </a>
 </div>
 
@@ -614,6 +624,13 @@
 
   
   
+
+
+  <script type="text/javascript" src="/js/src/affix.js?v=5.0.2"></script>
+
+  <script type="text/javascript" src="/js/src/schemes/pisces.js?v=5.0.2"></script>
+
+
 
   
   <script type="text/javascript" src="/js/src/scrollspy.js?v=5.0.2"></script>
