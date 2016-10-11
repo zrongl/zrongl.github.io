@@ -84,16 +84,16 @@
 
 
 
-<meta name="description" content="面试过程中经常问到的，也是iOS最基础的一个最基础知识点——对copy的理解">
+<meta name="description" content="copy与mutableCopy操作在面试过程中经常被问到，而要想充分的理解这两种操作，不仅要从方法本身入手，还有区分操作对象的类型：容器类还是字符串类型；可变类型还是不可变类型。">
 <meta property="og:type" content="article">
 <meta property="og:title" content="iOS Copy操作那些坑">
 <meta property="og:url" content="http://zrongl.github.io/2016/08/01/160801-oc-copy-operation/index.html">
 <meta property="og:site_name" content="荣雷的博客">
-<meta property="og:description" content="面试过程中经常问到的，也是iOS最基础的一个最基础知识点——对copy的理解">
-<meta property="og:updated_time" content="2016-10-10T09:52:32.000Z">
+<meta property="og:description" content="copy与mutableCopy操作在面试过程中经常被问到，而要想充分的理解这两种操作，不仅要从方法本身入手，还有区分操作对象的类型：容器类还是字符串类型；可变类型还是不可变类型。">
+<meta property="og:updated_time" content="2016-10-11T07:17:14.000Z">
 <meta name="twitter:card" content="summary">
 <meta name="twitter:title" content="iOS Copy操作那些坑">
-<meta name="twitter:description" content="面试过程中经常问到的，也是iOS最基础的一个最基础知识点——对copy的理解">
+<meta name="twitter:description" content="copy与mutableCopy操作在面试过程中经常被问到，而要想充分的理解这两种操作，不仅要从方法本身入手，还有区分操作对象的类型：容器类还是字符串类型；可变类型还是不可变类型。">
 
 
 
@@ -309,7 +309,7 @@
 <p>对于非mutable类型的NSArray进行copy操作只是对引用计数进行+1操作，类似于retain，也就是所谓的浅拷贝，返回的类型是非mutable类型的NSArray；进行mutableCopy操作才会重新申请内存创建对象，也就是所谓的深拷贝，返回的类型是mutable类型的NSArray；</p>
 <h4 id="操作对象为可变数组"><a href="#操作对象为可变数组" class="headerlink" title="操作对象为可变数组"></a>操作对象为可变数组</h4><figure class="highlight cpp"><table><tr><td class="gutter"><pre><div class="line">1</div><div class="line">2</div><div class="line">3</div><div class="line">4</div><div class="line">5</div><div class="line">6</div><div class="line">7</div><div class="line">8</div></pre></td><td class="code"><pre><div class="line">&#123;</div><div class="line">    NSMutableArray *<span class="built_in">array</span> = [NSMutableArray arrayWithObject:@<span class="string">"1"</span>];</div><div class="line">    NSArray *array1 = [<span class="built_in">array</span> copy];</div><div class="line">    NSArray *array2 = [<span class="built_in">array</span> mutableCopy];</div><div class="line">    NSMutableArray *array3 = [<span class="built_in">array</span> copy];</div><div class="line">    NSMutableArray *array4 = [<span class="built_in">array</span> mutableCopy];</div><div class="line">    NSLog(@<span class="string">"\narrayWithObject mutable array:\n%@:%p\n%@:%p\n%@:%p\n%@:%p\n%@:%p"</span>, <span class="built_in">array</span>.<span class="keyword">class</span>, <span class="built_in">array</span>, array1.<span class="keyword">class</span>, array1, array2.<span class="keyword">class</span>, array2, array3.<span class="keyword">class</span>, array3, array4.<span class="keyword">class</span>, array4);</div><div class="line">&#125;</div></pre></td></tr></table></figure>
 <figure class="highlight groovy"><table><tr><td class="gutter"><pre><div class="line">1</div><div class="line">2</div><div class="line">3</div><div class="line">4</div><div class="line">5</div><div class="line">6</div><div class="line">7</div></pre></td><td class="code"><pre><div class="line">对应输出为：</div><div class="line">arrayWithObject mutable <span class="string">array:</span></div><div class="line"><span class="string">__NSArrayM:</span><span class="number">0x7faee15225d0</span></div><div class="line"><span class="string">__NSArrayI:</span><span class="number">0x7faee151a540</span></div><div class="line"><span class="string">__NSArrayM:</span><span class="number">0x7faee1522240</span></div><div class="line"><span class="string">__NSArrayI:</span><span class="number">0x7faee150fb80</span></div><div class="line"><span class="string">__NSArrayM:</span><span class="number">0x7faee15222d0</span></div></pre></td></tr></table></figure>
-<p>对于mutable类型的NSArray无论进行copy操作时，会重新申请内存创建对象，进行深拷贝，返回的类型是非mutable类型的NSArray；进行mutableCopy操作时，也会重新申请内存创建对象，进行深拷贝，返回的类型是mutable类型的NSArray。</p>
+<p>对于mutable类型的NSArray进行copy操作时，会重新申请内存创建对象，进行深拷贝，返回的类型是非mutable类型的NSArray；进行mutableCopy操作时，也会重新申请内存创建对象，进行深拷贝，返回的类型是mutable类型的NSArray。</p>
 <p>根据以上结论，我们观察如下属性声明：</p>
 <figure class="highlight objectivec"><table><tr><td class="gutter"><pre><div class="line">1</div><div class="line">2</div><div class="line">3</div><div class="line">4</div><div class="line">5</div><div class="line">6</div><div class="line">7</div><div class="line">8</div><div class="line">9</div></pre></td><td class="code"><pre><div class="line"><span class="keyword">@property</span>(<span class="keyword">nonatomic</span>, <span class="keyword">copy</span>)<span class="built_in">NSMutableArray</span> *array;</div><div class="line"><span class="comment">//该属性对应的setter方法为：</span></div><div class="line">- (<span class="keyword">void</span>)setArray:(<span class="built_in">NSMutableArray</span> *)array</div><div class="line">&#123;</div><div class="line">    <span class="keyword">if</span> (_array != array)&#123;</div><div class="line">        [_array release];</div><div class="line">        _array = [array <span class="keyword">copy</span>];</div><div class="line">    &#125;</div><div class="line">&#125;</div></pre></td></tr></table></figure>
 <p>此处需要说明的是，无论你用什么类型的NSArray进行赋值，最终执行的都是copy操作，返回的都是非mutable类型的NSArray，而不是声明的mutable类型，进行赋值操作后不能再调用mutable类型的remove/add方法，否则会因为未找到消息而出现崩溃。</p>
