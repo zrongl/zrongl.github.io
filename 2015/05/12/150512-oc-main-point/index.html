@@ -93,7 +93,7 @@
 <meta property="og:image" content="http://zrongl.github.io/2015/05/12/150512-oc-main-point/150512-oc-main-point-00.png">
 <meta property="og:image" content="http://zrongl.github.io/2015/05/12/150512-oc-main-point/150512-oc-main-point-01.png">
 <meta property="og:image" content="http://zrongl.github.io/2015/05/12/150512-oc-main-point/150512-oc-main-point-02.png">
-<meta property="og:updated_time" content="2016-10-10T10:39:29.000Z">
+<meta property="og:updated_time" content="2017-07-09T03:46:29.000Z">
 <meta name="twitter:card" content="summary">
 <meta name="twitter:title" content="OC知识要点">
 <meta name="twitter:description" content="面试之前过一遍神清气爽！">
@@ -310,7 +310,7 @@
         <h3 id="Object-C-runtime"><a href="#Object-C-runtime" class="headerlink" title="Object-C runtime"></a>Object-C runtime</h3><p>Object-C动态运行时特性是用C和汇编实现的,可以使得程序在运行时才去创建，访问，修改类或对象的属性，方法或协议。</p>
 <h3 id="对象、类和元类"><a href="#对象、类和元类" class="headerlink" title="对象、类和元类"></a>对象、类和元类</h3><img src="/2015/05/12/150512-oc-main-point/150512-oc-main-point-00.png" alt="实例、对象、类的继承关系" title="实例、对象、类的继承关系">
 <h3 id="Method、SEL和IMP"><a href="#Method、SEL和IMP" class="headerlink" title="Method、SEL和IMP"></a>Method、SEL和IMP</h3><p>Mehtod是一个函数整体的总称，包括方法名，返回值，参数及实现。<br>SEL本质上是<code>char *</code>指针，代表方法的名称。<br>IMP本质上是函数指针，指向方法的地址。<br>每一个Object-C对象结构中都维护有一个方法列表，其中方法是以key-value的形式存在的，key就是SEL，而value则是IMP，所以OC中同一对象中不能存在名字相同的方法，即使它们有不同的传入参数。</p>
-<h3 id="消息传递"><a href="#消息传递" class="headerlink" title="消息传递"></a>消息传递</h3><p>自己类的cacheList -&gt; mehtodList -&gt;<br>父类们的cacheList -&gt; mehtodList -&gt;<br>最终查找到共同的父类NSObject，仍为查找到方法-&gt;<br>resolveInstanceMethod(可在此为类临时添加方法) -&gt;<br>forwardingTargetForSelector(可以指定一个类去接收这个消息) -&gt;<br>methodSignatureForSelector(可以指定一个NSMethodSignature对象代替该方法) -&gt;<br>forwardInvocation(可以将该消息发送给指定对象去执行) -&gt;<br>doesNotRecognizeSelector(可在此记录crash信息)unsignatured selecter crash</p>
+<h3 id="消息传递"><a href="#消息传递" class="headerlink" title="消息传递"></a>消息传递</h3><p>自己类的cacheList -&gt; mehtodList -&gt;<br>父类们的cacheList -&gt; mehtodList -&gt;<br>最终查找到共同的父类NSObject，仍未查找到方法-&gt;<br>resolveInstanceMethod(可在此为类临时添加方法) -&gt;<br>forwardingTargetForSelector(可以指定一个类去接收这个消息) -&gt;<br>methodSignatureForSelector(可以指定一个NSMethodSignature对象代替该方法) -&gt;<br>forwardInvocation(可以将该消息发送给指定对象去执行) -&gt;<br>doesNotRecognizeSelector(可在此记录crash信息)unsignatured selecter crash</p>
 <blockquote>
 <p>JSPath在创建多参数IMP的时候，就是在forwardInvocation方法获取方法的所有参数信息的。</p>
 </blockquote>
@@ -321,13 +321,15 @@
 <li>之后调用objc-runtime-new.mm -&gt; <code>map_images</code>加载map到内存</li>
 <li>之后调用objc-runtime-new.mm-&gt; <code>_read_images</code>初始化内存中的map, 这个时候将会load所有的类，协议还有Category。</li>
 </ol>
+<p>更详细的介绍请参阅：<a href="https://tech.meituan.com/DiveIntoCategory.html" target="_blank" rel="external">深入理解Objective-C：Category</a></p>
 <h3 id="Associate"><a href="#Associate" class="headerlink" title="Associate"></a>Associate</h3><p>通过<strong>类别</strong>和<strong>访问器</strong>，再结合<strong>联合存储</strong>技术，我们可以为类增加属性。即在categray文件中声明属性及其访问器，并用<code>objc_setAssociatedObject</code>和<code>objc_getAssociatedObject</code>方法去设置和读取属性。<br>实现原理：</p>
 <ol>
-<li>有一个单例的<code>AssociationsHashMap</code>实例</li>
-<li><code>AssociationsHashMap</code>实例用于保存一个个的<code>ObjectAssociationMap</code>对象</li>
-<li>每个类都拥有一个<code>ObjectAssociationMap</code>实例，每个类通过联合存储模式保存的键值对也都保存在<code>ObjectAssociationMap</code>实例中。</li>
-<li>Key对应的值无所谓，我们需要的是key的地址。</li>
+<li><code>AssociationsManager</code> 通过持有一个自旋锁保证对单例<code>AssociationsHashMap</code> 的操作是线程安全的，即每次只会有一个线程对 <code>AssociationsHashMap</code> 进行操作</li>
+<li><code>AssociationsHashMap</code>单例中保存着一个个的<code>ObjectAssociationMap</code>对象</li>
+<li>每个<code>ObjectAssociationMap</code>对象都保有一个从<code>key</code>到关联对象 <code>ObjcAssociation</code>的映射</li>
+<li>最关键的 <code>ObjcAssociation</code> 包含了 <code>policy</code>(OBJC_ASSOCIATION_RETAIN_NONATOMIC属性修饰符) 以及 <code>value</code>(存储的值)</li>
 </ol>
+<p>更详细的描述参阅：<a href="http://draveness.me/ao.html" target="_blank" rel="external">关联对象 AssociatedObject 完全解析</a></p>
 <p>内存释放:<br>被关联的对象在生命周期内要比对象本身释放的晚很多<br>对象的内存销毁时间表:<a href="https://github.com/ChenYilong" target="_blank" rel="external">https://github.com/ChenYilong</a></p>
 <ol>
 <li>调用 -release ：引用计数变为零<ul>
@@ -356,7 +358,7 @@
 </li>
 </ol>
 <h3 id="KVO"><a href="#KVO" class="headerlink" title="KVO"></a>KVO</h3><p>键值观察建立对对象成员变量的观察，当变量值发生改变时会触发相应的观察事件<br><strong>实现原理:</strong><br>当某个类的对象第一次被观察时，<strong>系统就会在运行期动态地创建该类的一个派生类</strong>，在这个派生类中重写基类中任何被观察属性的 setter 方法。<br><strong>派生类在被重写的 setter 方法实现真正的通知机制</strong>，就如前面手动实现键值观察那样。这么做是基于设置属性会调用 setter 方法，而通过重写就获得了 KVO 需要的通知机制。当然前提是要通过遵循 KVO 的属性设置方式来变更属性值，如果仅是直接修改属性对应的成员变量，是无法实现 KVO 的。<br>同时派生类还重写了 class 方法以“欺骗”外部调用者它就是起初的那个类。然后系统将这个对象的 isa 指针指向这个新诞生的派生类，因此这个对象就成为该派生类的对象了，因而在该对象上对 setter 的调用就会调用重写的 setter，从而激活键值通知机制。此外，派生类还重写了 dealloc 方法来释放资源。<br><strong><code>NSNotification的通知回调会在发出post的线程中同步执行</code></strong></p>
-<p>更详细的介绍请参阅<a href="http://blog.csdn.net/kesalin/article/details/8194240" target="_blank" rel="external">这篇文章</a></p>
+<p>更详细的介绍请参阅<a href="http://blog.csdn.net/kesalin/article/details/8194240" target="_blank" rel="external">详解键值观察（KVO）及其实现机理</a></p>
 <h3 id="内存管理"><a href="#内存管理" class="headerlink" title="内存管理"></a>内存管理</h3><p>Object-C是用引用计数来维护和管理内存，遵循谁创建谁释放的原则。<br>clang规定了四种所有权限定符包括：</p>
 <ul>
 <li>__autoreleasing</li>
@@ -394,12 +396,14 @@
 <li>MRC情况下，<code>__block</code>修饰符可以解除Block循环引用的问题</li>
 </ul>
 <figure class="highlight nimrod"><table><tr><td class="gutter"><pre><div class="line">1</div><div class="line">2</div><div class="line">3</div><div class="line">4</div><div class="line">5</div></pre></td><td class="code"><pre><div class="line">__block id tmp = self;</div><div class="line"><span class="built_in">void</span>(^<span class="keyword">block</span>)(<span class="built_in">void</span>) = ^&#123;</div><div class="line">    tmp = <span class="keyword">nil</span>;</div><div class="line">&#125;;</div><div class="line"><span class="keyword">block</span>();</div></pre></td></tr></table></figure>
-<p>在不允许使用<code>__weak</code>修饰符的情况下(MRC)，避免使用<code>__unsafe_unretained</code>修饰符，但是前提是Block必须被执行。</p>
 <ul>
 <li><code>_NSConcreteMallocBlock</code> 保存在堆中的block，当引用计数为0时会被销毁</li>
 </ul>
+<blockquote>
+<p>在ARC环境下，我们常常会使用weak 的修饰符来修饰一个变量，防止其在block中被循环引用，但是有些特殊情况下，我们在block中又使用strong 来修饰这个在block外刚刚用__weak修饰的变量，为什么会有这样奇怪的写法呢?<br>在block中调用self会引起循环引用，但是在block中需要对weakSelf进行strong,<strong>保证代码在执行到block中，self不会被释放，当block执行完后，会自动释放该strongSelf</strong></p>
+</blockquote>
 <p>更详细的介绍请参阅：<br><a href="http://my.oschina.net/joanfen/blog/317644" target="_blank" rel="external">Block的应用</a><br><a href="https://www.zybuluo.com/MicroCai/note/51116" target="_blank" rel="external">Block的实现</a></p>
-<h3 id="Runloop"><a href="#Runloop" class="headerlink" title="Runloop"></a>Runloop</h3><p>Runloop是iOS中实现的一种事件驱动模型<br><strong>主线程</strong>的Runloop默认是启动的，它主要执行更新用户界面的操作。<br><strong>子线程</strong>的Runloop默认是关闭的，所以在子线程的runloop中添加了一个时间源后，需要手动启动子线程的runloop才能对时间源进行监听和触发。如果想保持子线程长时间运行不退出，可以启动线程的runloop向其中添加一些长时间或周期性的事件源，如：<code>performSelecter``NSTimer``NSURLConection</code>等<br>iOS系统中的Runloop可以运行在以下几种模式中：</p>
+<h3 id="Runloop"><a href="#Runloop" class="headerlink" title="Runloop"></a>Runloop</h3><p>Runloop是iOS中实现的一种事件驱动模型<br><strong>主线程</strong>的Runloop默认是启动的，它主要执行更新用户界面的操作。<br><strong>子线程</strong>的Runloop默认是关闭的，所以在子线程的runloop中添加了一个时间源后，需要手动启动子线程的runloop才能对时间源进行监听和触发。如果想保持子线程长时间运行不退出，可以启动线程的runloop向其中添加一些长时间或周期性的事件源，如：<code>performSelecter</code> <code>NSTimer</code> <code>NSURLConection</code> 等<br>iOS系统中的Runloop可以运行在以下几种模式中：</p>
 <ul>
 <li><code>NSRunLoopDefaultMode</code><br>默认模式中几乎包含了所有输入源(NSConnection除外),一般情况下应使用此模式。</li>
 <li><code>NSRunLoopCommonModes</code><br>这是一个伪模式，其为一组run loop mode的集合，将输入源加入此模式意味着在Common Modes中包含的所有输入源都可以处理。</li>
