@@ -317,7 +317,7 @@
 <li>Layer的属性的设置及动画的处理是借由render server完成的</li>
 <li>Changes总是在CA::Transaction::commit()执行时时发生的</li>
 </ul>
-<img src="/2015/08/25/150825-views-layers-animations/150825-views-layers-animations-00.png" alt="视图与图层的关系" title="视图与图层的关系">
+<img src="/2015/08/25/150825-views-layers-animations/150825-views-layers-animations-00.png" title="视图与图层的关系">
 <h3 id="UIView"><a href="#UIView" class="headerlink" title="UIView"></a>UIView</h3><h4 id="介绍"><a href="#介绍" class="headerlink" title="介绍"></a>介绍</h4><p><strong>UIView</strong>类定义了屏幕上的一个矩形区域并提供一系列接口管理这片区域的内容。在运行的时候，视图对象对这片区域内显示的内容进行渲染，并对该片区域内的交互操作进行处理。<strong>UIView</strong>类提供了基本的行为利用背景色对该片区域进行填充。更多精彩的内容你可以通过添加子视图，并实现必要的自定义绘制和事件处理来实现。UIKit framework还包含一系列的标准子类，从button到各种复杂的tables。比如：<strong>UILabel</strong> 对象在contents中绘制字符串；<strong>UIImageView</strong>对象在contents中绘制图片。<br><br>由于视图对象是与用户交互的主要方式，它包括以下多种职责：<br></p>
 <ul>
 <li>绘制和动画<ul>
@@ -371,9 +371,9 @@
 <p><strong>modelLayer :</strong><br><br>处于preentation tree中的layer调用此方法时，会返回与该layer相对应的model tree中的layer。这个方法只有在动画发生的工程中才会有返回值。</p>
 </blockquote>
 <p>我们知道视图可以包含自己的子视图，以此类推，各个视图之间有组织的形成了一种树状的结构，而视图的布局及层次实际上就是与视图相关联的layer的布局及层次，例如：</p>
-<img src="/2015/08/25/150825-views-layers-animations/150825-views-layers-animations-01.png" alt="图层A层次布局" title="图层A层次布局">
+<img src="/2015/08/25/150825-views-layers-animations/150825-views-layers-animations-01.png" title="图层A层次布局">
 <p>上图的层次结构为：</p>
-<img src="/2015/08/25/150825-views-layers-animations/150825-views-layers-animations-02.png" alt="图层A层次关系" title="图层A层次关系">
+<img src="/2015/08/25/150825-views-layers-animations/150825-views-layers-animations-02.png" title="图层A层次关系">
 <p>我们暂且称这样一种层次结构为<strong>图层树(layer tree)</strong>，当我们修改LayerC的frame属性之后，会自动触发动画，LayerC的子图层LayerD和LayerE也会跟着父图层做出相应的动画，动画的渲染目标的状态值是由CATrasaction通过IPC向<strong>渲染服务进程</strong>提交的，但这个所谓的目标状态值并不是单一的某个layer的属性，而是由多个图层组成的一组层级结构，我们称之为<strong>模型树(model tree)</strong>，当修改LayerC的frame属性后，LayerC会作为模型树的一部分提交给渲染进程，这个模型树记录了各个layer的各个属性的目标值，渲染进程按照该模型树中layer的属性渲染出每个修改过状态值的layer在每一帧动画中所要呈现的图形，渲染完成后的层次结构称为<strong>呈现树(presentation tree)</strong>，<em>presentation layer</em> 与<em>model layer</em> 分别对应呈现树与模型树中的特定layer。</p>
 <blockquote>
 <p><strong>隐式动画:</strong><br><br>自动触发的动画就是所谓的隐式动画，CALayer的属性改变都会以动画的方式呈现，除非采用某种方式去禁掉，比如拥有backing layer的UIView，或直接通过setDisableActions:方法，我们在后面会讲到。<br></p>
@@ -392,20 +392,20 @@
 </ul>
 <p>所以一轮完整的搜索结束之后，-actionForKey:要么返回空（这种情况下将不会有动画发生），要么是CAAction协议对应的对象，最后CALayer拿这个结果去对先前和当前的值做动画。<br></p>
 <p>于是这就解释了UIKit是如何禁用隐式动画的：每个UIView对它关联的图层都扮演了一个委托，并且提供了-actionForLayer:forKey的实现方法。当不在一个动画块的实现中，UIView对所有图层行为返回nil，但是在动画block范围之内，它就返回了一个非空值。基于这点我们做个实现：</p>
-<figure class="highlight objectivec"><table><tr><td class="gutter"><pre><div class="line">1</div><div class="line">2</div><div class="line">3</div><div class="line">4</div><div class="line">5</div><div class="line">6</div><div class="line">7</div><div class="line">8</div><div class="line">9</div><div class="line">10</div><div class="line">11</div><div class="line">12</div></pre></td><td class="code"><pre><div class="line">- (<span class="keyword">void</span>)viewDidLoad</div><div class="line">&#123;</div><div class="line">    [<span class="keyword">super</span> viewDidLoad];</div><div class="line">    <span class="comment">//test layer action when outside of animation block</span></div><div class="line">    <span class="built_in">NSLog</span>(<span class="string">@"Outside: %@"</span>, [<span class="keyword">self</span>.layerView actionForLayer:<span class="keyword">self</span>.layerView.layer forKey:<span class="string">@"backgroundColor"</span>]);</div><div class="line">    <span class="comment">//begin animation block</span></div><div class="line">    [<span class="built_in">UIView</span> beginAnimations:<span class="literal">nil</span> context:<span class="literal">nil</span>];</div><div class="line">    <span class="comment">//test layer action when inside of animation block</span></div><div class="line">    <span class="built_in">NSLog</span>(<span class="string">@"Inside: %@"</span>, [<span class="keyword">self</span>.layerView actionForLayer:<span class="keyword">self</span>.layerView.layer forKey:<span class="string">@"backgroundColor"</span>]);</div><div class="line">    <span class="comment">//end animation block</span></div><div class="line">    [<span class="built_in">UIView</span> commitAnimations];</div><div class="line">&#125;</div></pre></td></tr></table></figure>
+<figure class="highlight objectivec"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br></pre></td><td class="code"><pre><span class="line">- (<span class="keyword">void</span>)viewDidLoad</span><br><span class="line">&#123;</span><br><span class="line">    [<span class="keyword">super</span> viewDidLoad];</span><br><span class="line">    <span class="comment">//test layer action when outside of animation block</span></span><br><span class="line">    <span class="built_in">NSLog</span>(<span class="string">@"Outside: %@"</span>, [<span class="keyword">self</span>.layerView actionForLayer:<span class="keyword">self</span>.layerView.layer forKey:<span class="string">@"backgroundColor"</span>]);</span><br><span class="line">    <span class="comment">//begin animation block</span></span><br><span class="line">    [<span class="built_in">UIView</span> beginAnimations:<span class="literal">nil</span> context:<span class="literal">nil</span>];</span><br><span class="line">    <span class="comment">//test layer action when inside of animation block</span></span><br><span class="line">    <span class="built_in">NSLog</span>(<span class="string">@"Inside: %@"</span>, [<span class="keyword">self</span>.layerView actionForLayer:<span class="keyword">self</span>.layerView.layer forKey:<span class="string">@"backgroundColor"</span>]);</span><br><span class="line">    <span class="comment">//end animation block</span></span><br><span class="line">    [<span class="built_in">UIView</span> commitAnimations];</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
 <p>我们发现控制台的输出为:</p>
-<figure class="highlight groovy"><table><tr><td class="gutter"><pre><div class="line">1</div><div class="line">2</div></pre></td><td class="code"><pre><div class="line">$ <span class="string">Outside:</span> <span class="literal">null</span></div><div class="line">$ <span class="string">Inside:</span> <span class="string">CABasicAnimation:</span> <span class="number">0x757f090</span></div></pre></td></tr></table></figure>
+<figure class="highlight yaml"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br></pre></td><td class="code"><pre><span class="line"><span class="string">$</span> <span class="attr">Outside:</span> <span class="literal">null</span></span><br><span class="line"><span class="string">$</span> <span class="attr">Inside:</span> <span class="attr">CABasicAnimation:</span> <span class="number">0x757f090</span></span><br></pre></td></tr></table></figure>
 <p>于是我们可以预言，当属性在动画块之外发生改变，UIView直接通过返回nil来禁用隐式动画。但如果在动画块范围之内，根据动画具体类型返回相应的属性，在这个例子就是CABasicAnimation。</p>
 <h4 id="显式动画"><a href="#显式动画" class="headerlink" title="显式动画"></a>显式动画</h4><p>除了UIView的<code>animateWithDuration</code>方法可以添加基本的动画，我们还可以利用CAAnimation的子类创建各种不同类型的动画，如图</p>
-<img src="/2015/08/25/150825-views-layers-animations/150825-views-layers-animations-03.png" alt="显示动画类及其关系" title="显示动画类及其关系">
-<p>更详细介绍参阅<a href="https://github.com/AttackOnDobby/iOS-Core-Animation-Advanced-Techniques/blob/master/8-%E6%98%BE%E5%BC%8F%E5%8A%A8%E7%94%BB/%E6%98%BE%E5%BC%8F%E5%8A%A8%E7%94%BB.md" target="_blank" rel="external">这篇文章</a></p>
+<img src="/2015/08/25/150825-views-layers-animations/150825-views-layers-animations-03.png" title="显示动画类及其关系">
+<p>更详细介绍参阅<a href="https://github.com/AttackOnDobby/iOS-Core-Animation-Advanced-Techniques/blob/master/8-%E6%98%BE%E5%BC%8F%E5%8A%A8%E7%94%BB/%E6%98%BE%E5%BC%8F%E5%8A%A8%E7%94%BB.md" target="_blank" rel="noopener">这篇文章</a></p>
 <h4 id="动画的执行过程"><a href="#动画的执行过程" class="headerlink" title="动画的执行过程"></a>动画的执行过程</h4><p>大概分为以下几个阶段(来源于WWDC-2012)：<br></p>
 <ol>
 <li>创建动画对象并更新视图树的布局和显示</li>
 <li>准备向渲染服务线程提交打包的动画数据</li>
 <li>渲染服务进程对每一帧内容进行渲染并显示在屏幕上</li>
 </ol>
-<img src="/2015/08/25/150825-views-layers-animations/150825-views-layers-animations-04.png" alt="动画执行阶段" title="动画执行阶段">
+<img src="/2015/08/25/150825-views-layers-animations/150825-views-layers-animations-04.png" title="动画执行阶段">
 <p>当运行一段动画的时候，具体过程可以分为以下几步：<br></p>
 <ul>
 <li><strong>Layout</strong> - 这是准备你的视图/图层的层级关系，以及设置图层属性（位置，背景色，边框等等）的阶段。</li>
@@ -419,7 +419,7 @@
 <li>在屏幕上渲染可见的三角形</li>
 </ul>
 <p>所以一共有六个阶段；最后两个阶段在动画过程中不停地重复。前五个阶段都在软件层面处理（通过CPU），只有最后一个被GPU执行。而且，你真正只能控制前两个阶段：布局和显示。Core Animation框架在内部处理剩下的事务，你也控制不了它。</p>
-<h3 id="Reference"><a href="#Reference" class="headerlink" title="Reference"></a>Reference</h3><p><a href="https://github.com/AttackOnDobby/iOS-Core-Animation-Advanced-Techniques" target="_blank" rel="external">https://github.com/AttackOnDobby/iOS-Core-Animation-Advanced-Techniques</a></p>
+<h3 id="Reference"><a href="#Reference" class="headerlink" title="Reference"></a>Reference</h3><p><a href="https://github.com/AttackOnDobby/iOS-Core-Animation-Advanced-Techniques" target="_blank" rel="noopener">https://github.com/AttackOnDobby/iOS-Core-Animation-Advanced-Techniques</a></p>
 
       
     </div>

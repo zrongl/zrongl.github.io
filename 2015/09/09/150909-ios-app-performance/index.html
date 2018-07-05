@@ -309,7 +309,7 @@
       
 
       
-        <h3 id="性能调优工作流程"><a href="#性能调优工作流程" class="headerlink" title="性能调优工作流程"></a>性能调优工作流程</h3><img src="/2015/09/09/150909-ios-app-performance/150909-ios-app-performance-00.png" alt="调优流程" title="调优流程">
+        <h3 id="性能调优工作流程"><a href="#性能调优工作流程" class="headerlink" title="性能调优工作流程"></a>性能调优工作流程</h3><img src="/2015/09/09/150909-ios-app-performance/150909-ios-app-performance-00.png" title="调优流程">
 <p>通过上图我们可以看出性能调试的过程：</p>
 <ol>
 <li>重现性能问题(如：反应慢，动画卡顿等)，利用Profile工具或经验查找问题原因</li>
@@ -355,19 +355,19 @@
 <h4 id="如何衡量启动时间"><a href="#如何衡量启动时间" class="headerlink" title="如何衡量启动时间"></a>如何衡量启动时间</h4><h4 id="输出系统时间"><a href="#输出系统时间" class="headerlink" title="输出系统时间"></a>输出系统时间</h4><ul>
 <li>在<code>main()</code>函数中记录系统开始启动的时间</li>
 </ul>
-<figure class="highlight cpp"><table><tr><td class="gutter"><pre><div class="line">1</div><div class="line">2</div></pre></td><td class="code"><pre><div class="line"><span class="function"><span class="keyword">int</span> <span class="title">main</span><span class="params">(<span class="keyword">int</span> argc, <span class="keyword">char</span> **argv)</span> </span>&#123;     StartTime = CFAbsoluteTimeGetCurrent();</div><div class="line">     ...</div></pre></td></tr></table></figure>
+<figure class="highlight cpp"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br></pre></td><td class="code"><pre><span class="line"><span class="function"><span class="keyword">int</span> <span class="title">main</span><span class="params">(<span class="keyword">int</span> argc, <span class="keyword">char</span> **argv)</span> </span>&#123;     StartTime = CFAbsoluteTimeGetCurrent();</span><br><span class="line">     ...</span><br></pre></td></tr></table></figure>
 <ul>
 <li>应用启动完成时输出启动所用的时间</li>
 </ul>
-<figure class="highlight objectivec"><table><tr><td class="gutter"><pre><div class="line">1</div></pre></td><td class="code"><pre><div class="line">- (<span class="keyword">void</span>)applicationDidFinishLaunching:(<span class="built_in">UIApplication</span> *)app &#123;     <span class="built_in">dispatch_async</span>(dispatch_get_main_queue(), ^&#123;        <span class="built_in">NSLog</span>(<span class="string">@"Launched in %f sec"</span>, <span class="built_in">CFAbsoluteTimeGetCurrent</span>() - StartTime);     &#125;);</div></pre></td></tr></table></figure>
+<figure class="highlight objectivec"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">- (<span class="keyword">void</span>)applicationDidFinishLaunching:(<span class="built_in">UIApplication</span> *)app &#123;     <span class="built_in">dispatch_async</span>(dispatch_get_main_queue(), ^&#123;        <span class="built_in">NSLog</span>(<span class="string">@"Launched in %f sec"</span>, <span class="built_in">CFAbsoluteTimeGetCurrent</span>() - StartTime);     &#125;);</span><br></pre></td></tr></table></figure>
 <h4 id="利用Time-Profile确定启动时间"><a href="#利用Time-Profile确定启动时间" class="headerlink" title="利用Time Profile确定启动时间"></a>利用Time Profile确定启动时间</h4><ul>
 <li>切换到Sample List找到<code>main()</code>函数，即为启动开始的时间，如下图：</li>
 </ul>
-<img src="/2015/09/09/150909-ios-app-performance/150909-ios-app-performance-01.png" alt="main函数开始" title="main函数开始">
+<img src="/2015/09/09/150909-ios-app-performance/150909-ios-app-performance-01.png" title="main函数开始">
 <ul>
 <li>找到<code>didFinishLaunchWithOptions</code>，即为启动结束的时间，如图：</li>
 </ul>
-<img src="/2015/09/09/150909-ios-app-performance/150909-ios-app-performance-02.png" alt="didFinishLaunchWithOptions函数结束" title="didFinishLaunchWithOptions函数结束">
+<img src="/2015/09/09/150909-ios-app-performance/150909-ios-app-performance-02.png" title="didFinishLaunchWithOptions函数结束">
 <h4 id="应用启动步骤"><a href="#应用启动步骤" class="headerlink" title="应用启动步骤"></a>应用启动步骤</h4><h4 id="链接和加载"><a href="#链接和加载" class="headerlink" title="链接和加载"></a>链接和加载</h4><p><strong>介绍：</strong><br><br>链接加载发生在Time Profiler中的dyld阶段，该阶段library将被映射进相应的内存空间，然后进行绑定和修复，最后进行一些静态变量的初始化。<br></p>
 <p><strong>建议：</strong><br></p>
 <ul>
@@ -375,7 +375,7 @@
 <li>被标记为Optinal的framework需要额外的判断工作，所以不要把所有系统版本都需要的framework标记为Optinal</li>
 </ul>
 <h4 id="UIKit初始化"><a href="#UIKit初始化" class="headerlink" title="UIKit初始化"></a>UIKit初始化</h4><p><strong>介绍：</strong><br><br>该阶段会对与视图相关的内容进行初始化如：Fonts，status bar，user defaults，main nib等<br><br>这些内容的初始化是在以下过程中完成的：</p>
-<figure class="highlight objectivec"><table><tr><td class="gutter"><pre><div class="line">1</div></pre></td><td class="code"><pre><div class="line"><span class="built_in">UIApplicationInitialize</span><span class="built_in">UIApplicationInstantiateSingleton</span>-[<span class="built_in">UIApplication</span> _createStatusBarWithRequestedStyle: ...]-[<span class="built_in">UIApplication</span> _loadMainNibFileNamed:bundle:]</div></pre></td></tr></table></figure>
+<figure class="highlight objectivec"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line"><span class="built_in">UIApplicationInitialize</span><span class="built_in">UIApplicationInstantiateSingleton</span>-[<span class="built_in">UIApplication</span> _createStatusBarWithRequestedStyle: ...]-[<span class="built_in">UIApplication</span> _loadMainNibFileNamed:bundle:]</span><br></pre></td></tr></table></figure>
 <p><strong>建议：</strong><br></p>
 <ul>
 <li>尽量减少不必要的控件添加到nib中</li>
@@ -395,7 +395,7 @@
 <h4 id="第一次动画事物"><a href="#第一次动画事物" class="headerlink" title="第一次动画事物"></a>第一次动画事物</h4><p><strong>介绍：</strong><br><br>由于应用启动准备任务完成之后，最终会将应用的内容呈现在屏幕上，而呈现的方式就是一个视图从小到大的动画，所以这一步的优化就变成了针对动画的优化</p>
 <p>针对于动画的优化下一章节我们将详细讲解。</p>
 <h3 id="绘图和动画"><a href="#绘图和动画" class="headerlink" title="绘图和动画"></a>绘图和动画</h3><h4 id="影响动画性能的因素"><a href="#影响动画性能的因素" class="headerlink" title="影响动画性能的因素"></a>影响动画性能的因素</h4><p>根据<a href="http://zrongl.github.io/ios/2015/08/25/views-layers-and-animations.html">这篇文章</a>的介绍，动画执行过程中我们能够控制的阶段是下图高亮的阶段：</p>
-<img src="/2015/09/09/150909-ios-app-performance/150909-ios-app-performance-03.png" alt="我们能够控制的阶段" title="我们能够控制的阶段">
+<img src="/2015/09/09/150909-ios-app-performance/150909-ios-app-performance-03.png" title="我们能够控制的阶段">
 <p>引起动画性能问题的因素主要有以下两点：</p>
 <ul>
 <li>布局<ul>

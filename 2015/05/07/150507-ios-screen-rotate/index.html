@@ -322,7 +322,7 @@
 <li>window调整viewcontroller中view的<code>bounds</code>。这会引起view重新布局它的subviews,触发viewcontroller的<code>viewWillLayoutSubviews</code>方法.<br>当该方法运行后,你可以访问应用的<code>statusBarOrientation</code>属性来判断当前用户界面的方向,以对view进行相应的布局处理.</li>
 <li>当前正在显示的viewcontroller的<code>willAnimateRotationToInterfaceOrientation:duration:</code>方法被调用,准备开始旋转动画<br><strong>5.</strong> 执行旋转动画<br><strong>6.</strong> viewcontroller的<code>didRatateFromInterfaceOrientation:</code>方法被调用.</li>
 </ol>
-<img src="/2015/05/07/150507-ios-screen-rotate/150507-ios-screen-rotate-00.png" alt="旋转过程对应回调方法执行的顺序" title="旋转过程对应回调方法执行的顺序">
+<img src="/2015/05/07/150507-ios-screen-rotate/150507-ios-screen-rotate-00.png" title="旋转过程对应回调方法执行的顺序">
 <p>对于push的view controller所支持的旋转方向是由navigationController的回调控制的<br>对于present的view controller所支持的选装方向是由本view controller的回调控制的</p>
 <h3 id="注意事项："><a href="#注意事项：" class="headerlink" title="注意事项："></a>注意事项：</h3><ol>
 <li>尽量使用autoresizingMask进行相对布局,这样无需改变view的frame,减少性能消耗</li>
@@ -332,7 +332,7 @@
 <li>旋转完成后重新加载可见tableview的数据，使得tableview显示的行数适合屏幕尺寸</li>
 <li>监听旋转消息去更新应用的状态信息,可以通过viewcontroller的回调方法或设备方向的notification来记录当前设备的方向,从而做出必要的调整(其他viewcontroller显示的时候需要根据当前设备方向做出对应的调整).</li>
 </ol>
-<h4 id="ScreenRotate"><a href="#ScreenRotate" class="headerlink" title="ScreenRotate"></a><a href="https://github.com/zrongl/ScreenRotate" target="_blank" rel="external">ScreenRotate</a></h4>
+<h4 id="ScreenRotate"><a href="#ScreenRotate" class="headerlink" title="ScreenRotate"></a><a href="https://github.com/zrongl/ScreenRotate" target="_blank" rel="noopener">ScreenRotate</a></h4>
       
     </div>
 
