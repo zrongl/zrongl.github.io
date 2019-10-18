@@ -1,0 +1,607 @@
+<!DOCTYPE html>
+
+
+
+
+
+<html class="theme-next mist use-motion" lang="zh-CN">
+<head>
+  <meta charset="UTF-8">
+<meta name="generator" content="Hexo 3.9.0">
+<meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=2">
+<meta name="theme-color" content="#222">
+<meta http-equiv="X-UA-Compatible" content="IE=edge">
+  <link rel="apple-touch-icon" sizes="180x180" href="/images/apple-touch-icon-next.png?v=7.3.0">
+  <link rel="icon" type="image/png" sizes="32x32" href="/images/favicon-32x32-next.png?v=7.3.0">
+  <link rel="icon" type="image/png" sizes="16x16" href="/images/favicon-16x16-next.png?v=7.3.0">
+  <link rel="mask-icon" href="/images/logo.svg?v=7.3.0" color="#222">
+
+<link rel="stylesheet" href="/css/main.css?v=7.3.0">
+
+<link rel="stylesheet" href="//fonts.googleapis.com/css?family=Monda:300,300italic,400,400italic,700,700italic|Roboto Slab:300,300italic,400,400italic,700,700italic|PT Mono:300,300italic,400,400italic,700,700italic&display=swap&subset=latin,latin-ext">
+<link rel="stylesheet" href="/lib/font-awesome/css/font-awesome.min.css?v=4.7.0">
+  <script src="/lib/pace/pace.min.js?v=1.0.2"></script>
+  <link rel="stylesheet" href="/lib/pace/pace-theme-minimal.min.css?v=1.0.2">
+
+
+<script id="hexo-configurations">
+  var NexT = window.NexT || {};
+  var CONFIG = {
+    root: '/',
+    scheme: 'Mist',
+    version: '7.3.0',
+    sidebar: {"position":"right","display":"post","offset":12,"onmobile":false},
+    back2top: {"enable":true,"sidebar":false,"scrollpercent":true},
+    save_scroll: false,
+    copycode: {"enable":false,"show_result":false,"style":null},
+    fancybox: false,
+    mediumzoom: false,
+    lazyload: false,
+    pangu: false,
+    algolia: {
+      applicationID: '',
+      apiKey: '',
+      indexName: '',
+      hits: {"per_page":10},
+      labels: {"input_placeholder":"Search for Posts","hits_empty":"We didn't find any results for the search: ${query}","hits_stats":"${hits} results found in ${time} ms"}
+    },
+    localsearch: {"enable":false,"trigger":"auto","top_n_per_article":1,"unescape":false,"preload":false},
+    path: '',
+    tabs: true,
+    motion: {"enable":true,"async":false,"transition":{"post_block":"fadeIn","post_header":"slideDownIn","post_body":"slideDownIn","coll_header":"slideLeftIn","sidebar":"slideUpIn"}},
+    translation: {
+      copy_button: '复制',
+      copy_success: '复制成功',
+      copy_failure: '复制失败'
+    }
+  };
+</script>
+
+  <meta name="description" content="基于线程的组织结构去介绍AFNetworking请求发出的过程">
+<meta property="og:type" content="article">
+<meta property="og:title" content="AFNetworking2.0源码分析(原创)">
+<meta property="og:url" content="http://zrongl.github.io/2015-05-30-150530-afnetworking.html">
+<meta property="og:site_name" content="善恶众相">
+<meta property="og:description" content="基于线程的组织结构去介绍AFNetworking请求发出的过程">
+<meta property="og:locale" content="zh-CN">
+<meta property="og:image" content="http://zrongl.github.io/2015-05-30-150530-afnetworking/150530-afnetworking-00.png">
+<meta property="og:updated_time" content="2019-08-07T07:24:24.276Z">
+<meta name="twitter:card" content="summary">
+<meta name="twitter:title" content="AFNetworking2.0源码分析(原创)">
+<meta name="twitter:description" content="基于线程的组织结构去介绍AFNetworking请求发出的过程">
+<meta name="twitter:image" content="http://zrongl.github.io/2015-05-30-150530-afnetworking/150530-afnetworking-00.png">
+  <link rel="canonical" href="http://zrongl.github.io/2015-05-30-150530-afnetworking">
+
+
+<script id="page-configurations">
+  // https://hexo.io/docs/variables.html
+  CONFIG.page = {
+    sidebar: "",
+    isHome: false,
+    isPost: true,
+    isPage: false,
+    isArchive: false
+  };
+</script>
+
+  <title>AFNetworking2.0源码分析(原创) | 善恶众相</title>
+  
+
+
+
+
+
+
+
+
+  <noscript>
+  <style>
+  .use-motion .motion-element,
+  .use-motion .brand,
+  .use-motion .menu-item,
+  .sidebar-inner,
+  .use-motion .post-block,
+  .use-motion .pagination,
+  .use-motion .comments,
+  .use-motion .post-header,
+  .use-motion .post-body,
+  .use-motion .collection-title { opacity: initial; }
+
+  .use-motion .logo,
+  .use-motion .site-title,
+  .use-motion .site-subtitle {
+    opacity: initial;
+    top: initial;
+  }
+
+  .use-motion .logo-line-before i { left: initial; }
+  .use-motion .logo-line-after i { right: initial; }
+  </style>
+</noscript>
+
+</head>
+
+<body itemscope itemtype="http://schema.org/WebPage" lang="zh-CN">
+
+  <div class="container sidebar-position-right">
+    <div class="headband"></div>
+
+<a href="https://github.com/zrongl" class="github-corner" aria-label="View source on GitHub"><svg width="80" height="80" viewBox="0 0 250 250" style="fill:#151513; color:#fff; position: absolute; top: 0; border: 0; right: 0;" aria-hidden="true"><path d="M0,0 L115,115 L130,115 L142,142 L250,250 L250,0 Z"></path><path d="M128.3,109.0 C113.8,99.7 119.0,89.6 119.0,89.6 C122.0,82.7 120.5,78.6 120.5,78.6 C119.2,72.0 123.4,76.3 123.4,76.3 C127.3,80.9 125.5,87.3 125.5,87.3 C122.9,97.6 130.6,101.9 134.4,103.2" fill="currentColor" style="transform-origin: 130px 106px;" class="octo-arm"></path><path d="M115.0,115.0 C114.9,115.1 118.7,116.5 119.8,115.4 L133.7,101.6 C136.9,99.2 139.9,98.4 142.2,98.6 C133.8,88.0 127.5,74.4 143.8,58.0 C148.5,53.4 154.0,51.2 159.7,51.0 C160.3,49.4 163.2,43.6 171.4,40.1 C171.4,40.1 176.1,42.5 178.8,56.2 C183.1,58.6 187.2,61.8 190.9,65.4 C194.5,69.0 197.7,73.2 200.1,77.6 C213.8,80.2 216.3,84.9 216.3,84.9 C212.7,93.1 206.9,96.0 205.4,96.6 C205.1,102.4 203.0,107.8 198.3,112.5 C181.9,128.9 168.3,122.5 157.7,114.1 C157.9,116.9 156.7,120.9 152.7,124.9 L141.0,136.5 C139.8,137.7 141.6,141.9 141.8,141.8 Z" fill="currentColor" class="octo-body"></path></svg></a><style>.github-corner:hover .octo-arm{animation:octocat-wave 560ms ease-in-out}@keyframes octocat-wave{0%,100%{transform:rotate(0)}20%,60%{transform:rotate(-25deg)}40%,80%{transform:rotate(10deg)}}@media (max-width:500px){.github-corner:hover .octo-arm{animation:none}.github-corner .octo-arm{animation:octocat-wave 560ms ease-in-out}}</style>
+
+    <header id="header" class="header" itemscope itemtype="http://schema.org/WPHeader">
+      <div class="header-inner"><div class="site-brand-wrapper">
+  <div class="site-meta">
+
+    <div class="custom-logo-site-title">
+      <a href="/" class="brand" rel="start">
+        <span class="logo-line-before"><i></i></span>
+        <span class="site-title">善恶众相</span>
+        <span class="logo-line-after"><i></i></span>
+      </a>
+    </div>
+  </div>
+
+  <div class="site-nav-toggle">
+    <button aria-label="切换导航栏">
+      <span class="btn-bar"></span>
+      <span class="btn-bar"></span>
+      <span class="btn-bar"></span>
+    </button>
+  </div>
+</div>
+
+
+<nav class="site-nav">
+  
+  <ul id="menu" class="menu">
+      
+      
+      
+        
+        <li class="menu-item menu-item-home">
+      
+    
+
+    <a href="/" rel="section"><i class="menu-item-icon fa fa-fw fa-home"></i> <br>首页</a>
+
+  </li>
+      
+      
+      
+        
+        <li class="menu-item menu-item-categories">
+      
+    
+
+    <a href="/categories/" rel="section"><i class="menu-item-icon fa fa-fw fa-th"></i> <br>分类</a>
+
+  </li>
+      
+      
+      
+        
+        <li class="menu-item menu-item-archives">
+      
+    
+
+    <a href="/archives/" rel="section"><i class="menu-item-icon fa fa-fw fa-archive"></i> <br>归档</a>
+
+  </li>
+  </ul>
+
+    
+
+</nav>
+</div>
+    </header>
+
+    
+
+
+    <main id="main" class="main">
+      <div class="main-inner">
+        <div class="content-wrap">
+          <div id="content" class="content page-post-detail">
+            
+
+  <div id="posts" class="posts-expand">
+    
+
+  <article class="post post-type-categories" itemscope itemtype="http://schema.org/Article">
+  
+  
+  
+  <div class="post-block">
+    <link itemprop="mainEntityOfPage" href="http://zrongl.github.io/2015-05-30-150530-afnetworking.html">
+
+    <span hidden itemprop="author" itemscope itemtype="http://schema.org/Person">
+      <meta itemprop="name" content="Zrongl">
+      <meta itemprop="description" content="">
+      <meta itemprop="image" content="/images/avatar.png">
+    </span>
+
+    <span hidden itemprop="publisher" itemscope itemtype="http://schema.org/Organization">
+      <meta itemprop="name" content="善恶众相">
+    </span>
+      <header class="post-header">
+
+        
+          <h1 class="post-title" itemprop="name headline">AFNetworking2.0源码分析(原创)
+
+            
+          </h1>
+        
+
+        <div class="post-meta">
+            <span class="post-meta-item">
+              <span class="post-meta-item-icon">
+                <i class="fa fa-calendar-o"></i>
+              </span>
+              <span class="post-meta-item-text">发表于</span>
+
+              
+                
+              
+
+              <time title="创建时间：2015-05-30 00:00:00" itemprop="dateCreated datePublished" datetime="2015-05-30T00:00:00+08:00">2015-05-30</time>
+            </span>
+          
+            
+
+            
+              <span class="post-meta-item">
+                <span class="post-meta-item-icon">
+                  <i class="fa fa-calendar-check-o"></i>
+                </span>
+                <span class="post-meta-item-text">更新于</span>
+                <time title="修改时间：2019-08-07 15:24:24" itemprop="dateModified" datetime="2019-08-07T15:24:24+08:00">2019-08-07</time>
+              </span>
+            
+          
+            <span class="post-meta-item">
+              <span class="post-meta-item-icon">
+                <i class="fa fa-folder-o"></i>
+              </span>
+              <span class="post-meta-item-text">分类于</span>
+              
+                <span itemprop="about" itemscope itemtype="http://schema.org/Thing"><a href="/categories/iOS/" itemprop="url" rel="index"><span itemprop="name">iOS</span></a></span>
+
+                
+                
+              
+            </span>
+          
+
+          
+            <div class="post-description">基于线程的组织结构去介绍AFNetworking请求发出的过程</div>
+          
+
+        </div>
+      </header>
+
+    
+    
+    
+    <div class="post-body" itemprop="articleBody">
+
+      
+        <blockquote>
+<p>做为iOS的开发者对于AFNetworking肯定不陌生，本文从代码流程的角度去窥探AFNetworking做了什么。</p>
+</blockquote>
+<p>AFNetworking目录结构请参阅作者的<a href="http://nshipster.cn/afnetworking-2/" target="_blank" rel="noopener">这篇文章</a></p>
+<p>由于NSURLSession只支持iOS 7以后，所以为了向下兼容我们看一下利用NSURLConnection创建请求的过程。</p>
+<h3 id="请求的创建与设置"><a href="#请求的创建与设置" class="headerlink" title="请求的创建与设置"></a>请求的创建与设置</h3><p>我们以创建一个<code>POST</code>请求过程为例：</p>
+<figure class="highlight objectivec"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br><span class="line">25</span><br></pre></td><td class="code"><pre><span class="line">[[AFHTTPRequestOperationManager manager] POST:<span class="string">@"http://url"</span></span><br><span class="line">                                       parameters:<span class="literal">nil</span></span><br><span class="line">                                          success:^(AFHTTPRequestOperation *operation, <span class="keyword">id</span> responseObject) &#123;&#125;</span><br><span class="line">                                          failure:^(AFHTTPRequestOperation *operation, <span class="built_in">NSError</span> *error) &#123;&#125;];</span><br><span class="line"></span><br><span class="line"><span class="comment">// AFHTTPRequestOperationManager.m</span></span><br><span class="line">- (AFHTTPRequestOperation *)POST:(<span class="built_in">NSString</span> *)URLString</span><br><span class="line">                      parameters:(<span class="keyword">id</span>)parameters</span><br><span class="line">                         success:(<span class="keyword">void</span> (^)(AFHTTPRequestOperation *operation, <span class="keyword">id</span> responseObject))success</span><br><span class="line">                         failure:(<span class="keyword">void</span> (^)(AFHTTPRequestOperation *operation, <span class="built_in">NSError</span> *error))failure</span><br><span class="line">&#123;</span><br><span class="line">    <span class="comment">// 设置URLRequest的URL,method,httpHeader,httpBody</span></span><br><span class="line">    <span class="built_in">NSMutableURLRequest</span> *request = [<span class="keyword">self</span>.requestSerializer requestWithMethod:<span class="string">@"POST"</span></span><br><span class="line">                                                                   URLString:[[<span class="built_in">NSURL</span> URLWithString:URLString relativeToURL:<span class="keyword">self</span>.baseURL] absoluteString]</span><br><span class="line">                                                                  parameters:parameters error:<span class="literal">nil</span>];</span><br><span class="line">    </span><br><span class="line">    </span><br><span class="line">    AFHTTPRequestOperation *operation = [<span class="keyword">self</span> HTTPRequestOperationWithRequest:request</span><br><span class="line">                                                                      success:success</span><br><span class="line">                                                                      failure:failure];</span><br><span class="line"></span><br><span class="line">    [<span class="keyword">self</span>.operationQueue addOperation:operation];</span><br><span class="line"></span><br><span class="line">    <span class="keyword">return</span> operation;</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+
+<p>首先我们通过<code>AFHTTPRequestSerializer</code>的<code>requestWithMethod:URLString:parameters:</code>方法获取一个<code>NSMutableURLRequest</code>跟进去：</p>
+<figure class="highlight objectivec"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br></pre></td><td class="code"><pre><span class="line">- (<span class="built_in">NSMutableURLRequest</span> *)requestWithMethod:(<span class="built_in">NSString</span> *)method</span><br><span class="line">                                 URLString:(<span class="built_in">NSString</span> *)URLString</span><br><span class="line">                                parameters:(<span class="keyword">id</span>)parameters</span><br><span class="line">                                     error:(<span class="built_in">NSError</span> *__autoreleasing *)error</span><br><span class="line">&#123;</span><br><span class="line">    <span class="built_in">NSURL</span> *url = [<span class="built_in">NSURL</span> URLWithString:URLString];</span><br><span class="line"></span><br><span class="line">    <span class="comment">// 设置请求地址，请求方法此处为POST请求</span></span><br><span class="line">    <span class="built_in">NSMutableURLRequest</span> *mutableRequest = [[<span class="built_in">NSMutableURLRequest</span> alloc] initWithURL:url];</span><br><span class="line">    mutableRequest.HTTPMethod = method;</span><br><span class="line">    </span><br><span class="line">    <span class="comment">// 设置KVO监听的变量</span></span><br><span class="line">    <span class="comment">// allowsCellularAccess,cachePolicy,HTTPShouldHandleCookies,HTTPShouldUsePipelining,networkServiceType,timeoutInterval</span></span><br><span class="line">    <span class="keyword">for</span> (<span class="built_in">NSString</span> *keyPath <span class="keyword">in</span> AFHTTPRequestSerializerObservedKeyPaths()) &#123;</span><br><span class="line">        <span class="keyword">if</span> ([<span class="keyword">self</span>.mutableObservedChangedKeyPaths containsObject:keyPath]) &#123;</span><br><span class="line">            [mutableRequest setValue:[<span class="keyword">self</span> valueForKeyPath:keyPath] forKey:keyPath];</span><br><span class="line">        &#125;</span><br><span class="line">    &#125;</span><br><span class="line"></span><br><span class="line">    <span class="comment">// 设置httpHeader和httpBody</span></span><br><span class="line">    mutableRequest = [[<span class="keyword">self</span> requestBySerializingRequest:mutableRequest withParameters:parameters error:error] mutableCopy];</span><br><span class="line"></span><br><span class="line">	<span class="keyword">return</span> mutableRequest;</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+
+<p>继续跟进<code>requestBySerializingRequest:withParameters:error:</code>方法：</p>
+<figure class="highlight objectivec"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br><span class="line">25</span><br><span class="line">26</span><br><span class="line">27</span><br><span class="line">28</span><br><span class="line">29</span><br><span class="line">30</span><br><span class="line">31</span><br><span class="line">32</span><br><span class="line">33</span><br><span class="line">34</span><br><span class="line">35</span><br><span class="line">36</span><br><span class="line">37</span><br><span class="line">38</span><br><span class="line">39</span><br><span class="line">40</span><br><span class="line">41</span><br><span class="line">42</span><br><span class="line">43</span><br><span class="line">44</span><br><span class="line">45</span><br><span class="line">46</span><br><span class="line">47</span><br><span class="line">48</span><br><span class="line">49</span><br><span class="line">50</span><br></pre></td><td class="code"><pre><span class="line">- (<span class="built_in">NSURLRequest</span> *)requestBySerializingRequest:(<span class="built_in">NSURLRequest</span> *)request</span><br><span class="line">                               withParameters:(<span class="keyword">id</span>)parameters</span><br><span class="line">                                        error:(<span class="built_in">NSError</span> *__autoreleasing *)error</span><br><span class="line">&#123;</span><br><span class="line">    <span class="built_in">NSMutableURLRequest</span> *mutableRequest = [request mutableCopy];</span><br><span class="line"></span><br><span class="line">    <span class="comment">// 设置URLRequest的httpHeader</span></span><br><span class="line">    <span class="comment">//&#123;"Accept-Language":"en;q=1, fr;q=0.9, de;q=0.8, zh-Hans;q=0.7, zh-Hant;q=0.6, ja;q=0.5",</span></span><br><span class="line">    <span class="comment">//"User-Agent":"AFNetworking iOS Example/1.0.0 (iPhone Simulator; iOS 8.3; Scale/2.00)"&#125;</span></span><br><span class="line">    [<span class="keyword">self</span>.HTTPRequestHeaders enumerateKeysAndObjectsUsingBlock:^(<span class="keyword">id</span> field, <span class="keyword">id</span> value, <span class="built_in">BOOL</span> * __unused stop) &#123;</span><br><span class="line">        <span class="keyword">if</span> (![request valueForHTTPHeaderField:field]) &#123;</span><br><span class="line">            [mutableRequest setValue:value forHTTPHeaderField:field];</span><br><span class="line">        &#125;</span><br><span class="line">    &#125;];</span><br><span class="line"></span><br><span class="line">    <span class="keyword">if</span> (parameters) &#123;</span><br><span class="line">        <span class="built_in">NSString</span> *query = <span class="literal">nil</span>;</span><br><span class="line">        <span class="keyword">if</span> (<span class="keyword">self</span>.queryStringSerialization) &#123;</span><br><span class="line">            <span class="built_in">NSError</span> *serializationError;</span><br><span class="line">            query = <span class="keyword">self</span>.queryStringSerialization(request, parameters, &amp;serializationError);</span><br><span class="line"></span><br><span class="line">            <span class="keyword">if</span> (serializationError) &#123;</span><br><span class="line">                <span class="keyword">if</span> (error) &#123;</span><br><span class="line">                    *error = serializationError;</span><br><span class="line">                &#125;</span><br><span class="line"></span><br><span class="line">                <span class="keyword">return</span> <span class="literal">nil</span>;</span><br><span class="line">            &#125;</span><br><span class="line">        &#125; <span class="keyword">else</span> &#123;</span><br><span class="line">            <span class="keyword">switch</span> (<span class="keyword">self</span>.queryStringSerializationStyle) &#123;</span><br><span class="line">                <span class="keyword">case</span> AFHTTPRequestQueryStringDefaultStyle:</span><br><span class="line">                    query = AFQueryStringFromParametersWithEncoding(parameters, <span class="keyword">self</span>.stringEncoding);</span><br><span class="line">                    <span class="keyword">break</span>;</span><br><span class="line">            &#125;</span><br><span class="line">        &#125;</span><br><span class="line"></span><br><span class="line">        <span class="comment">// 如果是HTTPMethod是GET HEAD DELETE中的一种 则直接在URL中拼接参数</span></span><br><span class="line">        <span class="comment">// 如果是其他类型HTTPMehtod则将参数封装在HTTPBody中</span></span><br><span class="line">        <span class="keyword">if</span> ([<span class="keyword">self</span>.HTTPMethodsEncodingParametersInURI containsObject:[[request HTTPMethod] uppercaseString]]) &#123;</span><br><span class="line">            mutableRequest.URL = [<span class="built_in">NSURL</span> URLWithString:[[mutableRequest.URL absoluteString] stringByAppendingFormat:mutableRequest.URL.query ? <span class="string">@"&amp;%@"</span> : <span class="string">@"?%@"</span>, query]];</span><br><span class="line">        &#125; <span class="keyword">else</span> &#123;</span><br><span class="line">            <span class="keyword">if</span> (![mutableRequest valueForHTTPHeaderField:<span class="string">@"Content-Type"</span>]) &#123;</span><br><span class="line">                [mutableRequest setValue:<span class="string">@"application/x-www-form-urlencoded"</span> forHTTPHeaderField:<span class="string">@"Content-Type"</span>];</span><br><span class="line">            &#125;</span><br><span class="line">            [mutableRequest setHTTPBody:[query dataUsingEncoding:<span class="keyword">self</span>.stringEncoding]];</span><br><span class="line">        &#125;</span><br><span class="line">    &#125;</span><br><span class="line"></span><br><span class="line">    <span class="keyword">return</span> mutableRequest;</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+
+<p>创建完<code>NSMutableURLRequest</code>后，通过<code>AFHTTPRequestOperation</code>的<code>HTTPRequestOperationWithRequest:success:failure:</code>方法，初始化成员变量以及请求成功和失败的block：</p>
+<figure class="highlight objectivec"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br></pre></td><td class="code"><pre><span class="line">- (AFHTTPRequestOperation *)HTTPRequestOperationWithRequest:(<span class="built_in">NSURLRequest</span> *)request</span><br><span class="line">                                                    success:(<span class="keyword">void</span> (^)(AFHTTPRequestOperation *operation, <span class="keyword">id</span> responseObject))success</span><br><span class="line">                                                    failure:(<span class="keyword">void</span> (^)(AFHTTPRequestOperation *operation, <span class="built_in">NSError</span> *error))failure</span><br><span class="line">&#123;</span><br><span class="line">    AFHTTPRequestOperation *operation = [[AFHTTPRequestOperation alloc] initWithRequest:request];</span><br><span class="line">    operation.responseSerializer = <span class="keyword">self</span>.responseSerializer;</span><br><span class="line">    operation.shouldUseCredentialStorage = <span class="keyword">self</span>.shouldUseCredentialStorage;</span><br><span class="line">    operation.credential = <span class="keyword">self</span>.credential;</span><br><span class="line">    operation.securityPolicy = <span class="keyword">self</span>.securityPolicy;</span><br><span class="line"></span><br><span class="line">    [operation setCompletionBlockWithSuccess:success failure:failure];</span><br><span class="line">    operation.completionQueue = <span class="keyword">self</span>.completionQueue;</span><br><span class="line">    operation.completionGroup = <span class="keyword">self</span>.completionGroup;</span><br><span class="line"></span><br><span class="line">    <span class="keyword">return</span> operation;</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+
+<p>查看一下请求成功和失败的回调，跟进<code>setCompletionBlockWithSuccess:failure:</code>方法：</p>
+<figure class="highlight objectivec"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br><span class="line">25</span><br><span class="line">26</span><br><span class="line">27</span><br><span class="line">28</span><br><span class="line">29</span><br><span class="line">30</span><br><span class="line">31</span><br><span class="line">32</span><br><span class="line">33</span><br><span class="line">34</span><br><span class="line">35</span><br><span class="line">36</span><br><span class="line">37</span><br><span class="line">38</span><br><span class="line">39</span><br><span class="line">40</span><br><span class="line">41</span><br><span class="line">42</span><br><span class="line">43</span><br><span class="line">44</span><br><span class="line">45</span><br><span class="line">46</span><br><span class="line">47</span><br><span class="line">48</span><br><span class="line">49</span><br><span class="line">50</span><br><span class="line">51</span><br><span class="line">52</span><br><span class="line">53</span><br><span class="line">54</span><br><span class="line">55</span><br><span class="line">56</span><br><span class="line">57</span><br><span class="line">58</span><br><span class="line">59</span><br><span class="line">60</span><br><span class="line">61</span><br><span class="line">62</span><br><span class="line">63</span><br><span class="line">64</span><br><span class="line">65</span><br></pre></td><td class="code"><pre><span class="line">- (<span class="keyword">void</span>)setCompletionBlockWithSuccess:(<span class="keyword">void</span> (^)(AFHTTPRequestOperation *operation, <span class="keyword">id</span> responseObject))success</span><br><span class="line">                              failure:(<span class="keyword">void</span> (^)(AFHTTPRequestOperation *operation, <span class="built_in">NSError</span> *error))failure</span><br><span class="line">&#123;</span><br><span class="line">    <span class="comment">// completionBlock is manually nilled out in AFURLConnectionOperation to break the retain cycle.</span></span><br><span class="line">    <span class="comment">// 此处调用父类的setCompletionBlock:方法</span></span><br><span class="line">    <span class="keyword">self</span>.completionBlock = ^&#123;</span><br><span class="line">        <span class="keyword">if</span> (<span class="keyword">self</span>.completionGroup) &#123;</span><br><span class="line">            dispatch_group_enter(<span class="keyword">self</span>.completionGroup);</span><br><span class="line">        &#125;</span><br><span class="line"></span><br><span class="line">        <span class="built_in">dispatch_async</span>(http_request_operation_processing_queue(), ^&#123;</span><br><span class="line">            <span class="keyword">if</span> (<span class="keyword">self</span>.error) &#123;</span><br><span class="line">                <span class="keyword">if</span> (failure) &#123;</span><br><span class="line">                    dispatch_group_async(<span class="keyword">self</span>.completionGroup ?: http_request_operation_completion_group(), <span class="keyword">self</span>.completionQueue ?: dispatch_get_main_queue(), ^&#123;</span><br><span class="line">                        failure(<span class="keyword">self</span>, <span class="keyword">self</span>.error);</span><br><span class="line">                    &#125;);</span><br><span class="line">                &#125;</span><br><span class="line">            &#125; <span class="keyword">else</span> &#123;</span><br><span class="line">                <span class="keyword">id</span> responseObject = <span class="keyword">self</span>.responseObject;</span><br><span class="line">                <span class="keyword">if</span> (<span class="keyword">self</span>.error) &#123;</span><br><span class="line">                    <span class="keyword">if</span> (failure) &#123;</span><br><span class="line">                        dispatch_group_async(<span class="keyword">self</span>.completionGroup ?: http_request_operation_completion_group(), <span class="keyword">self</span>.completionQueue ?: dispatch_get_main_queue(), ^&#123;</span><br><span class="line">                            failure(<span class="keyword">self</span>, <span class="keyword">self</span>.error);</span><br><span class="line">                        &#125;);</span><br><span class="line">                    &#125;</span><br><span class="line">                &#125; <span class="keyword">else</span> &#123;</span><br><span class="line">                    <span class="keyword">if</span> (success) &#123;</span><br><span class="line">                        dispatch_group_async(<span class="keyword">self</span>.completionGroup ?: http_request_operation_completion_group(), <span class="keyword">self</span>.completionQueue ?: dispatch_get_main_queue(), ^&#123;</span><br><span class="line">                            success(<span class="keyword">self</span>, responseObject);</span><br><span class="line">                        &#125;);</span><br><span class="line">                    &#125;</span><br><span class="line">                &#125;</span><br><span class="line">            &#125;</span><br><span class="line"></span><br><span class="line">            <span class="keyword">if</span> (<span class="keyword">self</span>.completionGroup) &#123;</span><br><span class="line">                dispatch_group_leave(<span class="keyword">self</span>.completionGroup);</span><br><span class="line">            &#125;</span><br><span class="line">        &#125;);</span><br><span class="line">    &#125;;</span><br><span class="line">&#125;</span><br><span class="line"></span><br><span class="line"><span class="comment">// 父类AFURLConnectionOperation的</span></span><br><span class="line">- (<span class="keyword">void</span>)setCompletionBlock:(<span class="keyword">void</span> (^)(<span class="keyword">void</span>))block &#123;</span><br><span class="line">    [<span class="keyword">self</span>.lock lock];</span><br><span class="line">    <span class="keyword">if</span> (!block) &#123;</span><br><span class="line">        [<span class="keyword">super</span> setCompletionBlock:<span class="literal">nil</span>];</span><br><span class="line">    &#125; <span class="keyword">else</span> &#123;</span><br><span class="line">        __<span class="keyword">weak</span> __<span class="keyword">typeof</span>(<span class="keyword">self</span>)weakSelf = <span class="keyword">self</span>;</span><br><span class="line">        [<span class="keyword">super</span> setCompletionBlock:^ &#123;</span><br><span class="line">            __<span class="keyword">strong</span> __<span class="keyword">typeof</span>(weakSelf)strongSelf = weakSelf;</span><br><span class="line"></span><br><span class="line">            dispatch_group_t group = strongSelf.completionGroup ?: url_request_operation_completion_group();</span><br><span class="line">            <span class="built_in">dispatch_queue_t</span> queue = strongSelf.completionQueue ?: dispatch_get_main_queue();</span><br><span class="line"></span><br><span class="line">            dispatch_group_async(group, queue, ^&#123;</span><br><span class="line">                block();</span><br><span class="line">            &#125;);</span><br><span class="line">            <span class="comment">// 确保传入的block执行完之后再去调用NSOperation的完成回调</span></span><br><span class="line">            dispatch_group_notify(group, url_request_operation_completion_queue(), ^&#123;</span><br><span class="line">                [strongSelf setCompletionBlock:<span class="literal">nil</span>];</span><br><span class="line">            &#125;);</span><br><span class="line">        &#125;];</span><br><span class="line">    &#125;</span><br><span class="line">    [<span class="keyword">self</span>.lock unlock];</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+
+<p>其中：</p>
+<figure class="highlight lasso"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br></pre></td><td class="code"><pre><span class="line">dispatch_group_async(<span class="keyword">group</span>, <span class="built_in">queue</span>, ^&#123; </span><br><span class="line">　　<span class="comment">// ... </span></span><br><span class="line">&#125;); </span><br><span class="line"></span><br><span class="line"><span class="comment">// 等价于：</span></span><br><span class="line"></span><br><span class="line">dispatch_group_enter(<span class="keyword">group</span>);</span><br><span class="line">dispatch_async(<span class="built_in">queue</span>, ^&#123;</span><br><span class="line">　　<span class="comment">//...</span></span><br><span class="line">　　dispatch_group_leave(<span class="keyword">group</span>);</span><br><span class="line">&#125;);</span><br></pre></td></tr></table></figure>
+
+<p>最终<code>AFURLConnectionOperation</code>类的<code>completionBlcok</code>最终将执行如下代码：</p>
+<figure class="highlight objectivec"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br><span class="line">25</span><br><span class="line">26</span><br><span class="line">27</span><br><span class="line">28</span><br><span class="line">29</span><br><span class="line">30</span><br><span class="line">31</span><br><span class="line">32</span><br><span class="line">33</span><br><span class="line">34</span><br><span class="line">35</span><br></pre></td><td class="code"><pre><span class="line">__<span class="keyword">weak</span> __<span class="keyword">typeof</span>(<span class="keyword">self</span>)weakSelf = <span class="keyword">self</span>;</span><br><span class="line">    [<span class="keyword">super</span> setCompletionBlock:^ &#123;</span><br><span class="line">        __<span class="keyword">strong</span> __<span class="keyword">typeof</span>(weakSelf)strongSelf = weakSelf;</span><br><span class="line">        <span class="comment">// 确保成功或失败的数据及界面的处理在主线程的queue中进行</span></span><br><span class="line">        dispatch_group_async(url_request_operation_completion_group(), dispatch_get_main_queue(), ^&#123;</span><br><span class="line">            dispatch_group_async(<span class="keyword">self</span>.completionGroup, http_request_operation_processing_queue(), ^&#123;</span><br><span class="line">                <span class="keyword">if</span> (<span class="keyword">self</span>.error) &#123;</span><br><span class="line">                    <span class="keyword">if</span> (failure) &#123;</span><br><span class="line">                        dispatch_group_async(http_request_operation_completion_group(), dispatch_get_main_queue(), ^&#123;</span><br><span class="line">                            failure(<span class="keyword">self</span>, <span class="keyword">self</span>.error);</span><br><span class="line">                        &#125;);</span><br><span class="line">                    &#125;</span><br><span class="line">                &#125; <span class="keyword">else</span> &#123;</span><br><span class="line">                    <span class="keyword">id</span> responseObject = <span class="keyword">self</span>.responseObject;</span><br><span class="line">                    <span class="keyword">if</span> (<span class="keyword">self</span>.error) &#123;</span><br><span class="line">                        <span class="keyword">if</span> (failure) &#123;</span><br><span class="line">                            dispatch_group_async(http_request_operation_completion_group(), dispatch_get_main_queue(), ^&#123;</span><br><span class="line">                                failure(<span class="keyword">self</span>, <span class="keyword">self</span>.error);</span><br><span class="line">                            &#125;);</span><br><span class="line">                        &#125;</span><br><span class="line">                    &#125; <span class="keyword">else</span> &#123;</span><br><span class="line">                        <span class="keyword">if</span> (success) &#123;</span><br><span class="line">                            dispatch_group_async(http_request_operation_completion_group(), dispatch_get_main_queue(), ^&#123;</span><br><span class="line">                                success(<span class="keyword">self</span>, responseObject);</span><br><span class="line">                            &#125;);</span><br><span class="line">                        &#125;</span><br><span class="line">                    &#125;</span><br><span class="line">                &#125;</span><br><span class="line">            &#125;);</span><br><span class="line">        &#125;);</span><br><span class="line">        <span class="comment">// 确保传入的block执行完之后再去调用NSOperation的完成回调</span></span><br><span class="line">        dispatch_group_notify(url_request_operation_completion_group(), url_request_operation_completion_queue(), ^&#123;</span><br><span class="line">            [strongSelf setCompletionBlock:<span class="literal">nil</span>];</span><br><span class="line">        &#125;);</span><br><span class="line">    &#125;];</span><br></pre></td></tr></table></figure>
+
+<p>通过以上代码可以看出：</p>
+<ul>
+<li>成功或失败的回调都是在主线程的队列中执行的</li>
+<li>通过<code>dispatch_group_notify</code>方法确保，成功或失败的回调执行完成后才去执行，<code>NSOperation</code>自己的完成block。</li>
+</ul>
+<p>最后一步是将创建的<code>AFHTTPRequestOperation</code>对象添加到<code>operationQueue</code>中等待系统调度执行。</p>
+<h3 id="Operation的执行过程"><a href="#Operation的执行过程" class="headerlink" title="Operation的执行过程"></a>Operation的执行过程</h3><p>接下来我们分析一下请求的执行过程：<br><br>首先，一个<code>NSOperation</code>被添加进<code>NSOperationQueue</code>中之后，当系统调度执行该<code>Operation</code>时，首先从<code>start</code>方法开始执行:</p>
+<figure class="highlight objectivec"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br><span class="line">25</span><br><span class="line">26</span><br><span class="line">27</span><br><span class="line">28</span><br><span class="line">29</span><br><span class="line">30</span><br><span class="line">31</span><br><span class="line">32</span><br><span class="line">33</span><br></pre></td><td class="code"><pre><span class="line"><span class="comment">// 将每一个connection放到同一个线程networkRequestThread中去执行 保证每一个请求的处理都是顺序执行的</span></span><br><span class="line">- (<span class="keyword">void</span>)start &#123;</span><br><span class="line">    [<span class="keyword">self</span>.lock lock];</span><br><span class="line">    <span class="keyword">if</span> ([<span class="keyword">self</span> isCancelled]) &#123;</span><br><span class="line">        [<span class="keyword">self</span> performSelector:<span class="keyword">@selector</span>(cancelConnection) onThread:[[<span class="keyword">self</span> <span class="keyword">class</span>] networkRequestThread] withObject:<span class="literal">nil</span> waitUntilDone:<span class="literal">NO</span> modes:[<span class="keyword">self</span>.runLoopModes allObjects]];</span><br><span class="line">    &#125; <span class="keyword">else</span> <span class="keyword">if</span> ([<span class="keyword">self</span> isReady]) &#123;</span><br><span class="line">        <span class="keyword">self</span>.state = AFOperationExecutingState;</span><br><span class="line">        </span><br><span class="line">        [<span class="keyword">self</span> performSelector:<span class="keyword">@selector</span>(operationDidStart) onThread:[[<span class="keyword">self</span> <span class="keyword">class</span>] networkRequestThread] withObject:<span class="literal">nil</span> waitUntilDone:<span class="literal">NO</span> modes:[<span class="keyword">self</span>.runLoopModes allObjects]];</span><br><span class="line">    &#125;</span><br><span class="line">    [<span class="keyword">self</span>.lock unlock];</span><br><span class="line">&#125;</span><br><span class="line"></span><br><span class="line">- (<span class="keyword">void</span>)operationDidStart &#123;</span><br><span class="line">    [<span class="keyword">self</span>.lock lock];</span><br><span class="line">    <span class="keyword">if</span> (![<span class="keyword">self</span> isCancelled]) &#123;</span><br><span class="line">        <span class="keyword">self</span>.connection = [[<span class="built_in">NSURLConnection</span> alloc] initWithRequest:<span class="keyword">self</span>.request delegate:<span class="keyword">self</span> startImmediately:<span class="literal">NO</span>];</span><br><span class="line">        </span><br><span class="line">        <span class="built_in">NSRunLoop</span> *runLoop = [<span class="built_in">NSRunLoop</span> currentRunLoop];</span><br><span class="line">        <span class="keyword">for</span> (<span class="built_in">NSString</span> *runLoopMode <span class="keyword">in</span> <span class="keyword">self</span>.runLoopModes) &#123;</span><br><span class="line">            <span class="comment">// 将connection和outputStream添加到当前runloop的指定mode中去运行</span></span><br><span class="line">            [<span class="keyword">self</span>.connection scheduleInRunLoop:runLoop forMode:runLoopMode];</span><br><span class="line">            [<span class="keyword">self</span>.outputStream scheduleInRunLoop:runLoop forMode:runLoopMode];</span><br><span class="line">        &#125;</span><br><span class="line">        </span><br><span class="line">        [<span class="keyword">self</span>.connection start];</span><br><span class="line">    &#125;</span><br><span class="line">    [<span class="keyword">self</span>.lock unlock];</span><br><span class="line">    </span><br><span class="line">    <span class="built_in">dispatch_async</span>(dispatch_get_main_queue(), ^&#123;</span><br><span class="line">        [[<span class="built_in">NSNotificationCenter</span> defaultCenter] postNotificationName:AFNetworkingOperationDidStartNotification object:<span class="keyword">self</span>];</span><br><span class="line">    &#125;);</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+
+<p>我们看到在<code>start</code>函数中将<code>operationDidStart</code>方法加到<code>networkRequestThread</code>的线程的runloop中去执行，而<code>operationDidStart</code>方法将<code>connection</code>和<code>ouputStream</code>作为事件源填加到当前线程(networkRequestThread线程)的runloop中，然后runloop就会监听<code>NSURLConnection</code>的处理回调，当事件发生时调用对应的代理去处理，在接收请求数据过程中使用了<code>outputStream</code>，等到请求完成再将<code>outputStream</code>中的数据传递给<code>responseData</code>：</p>
+<figure class="highlight objectivec"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br><span class="line">25</span><br><span class="line">26</span><br><span class="line">27</span><br><span class="line">28</span><br><span class="line">29</span><br><span class="line">30</span><br><span class="line">31</span><br><span class="line">32</span><br><span class="line">33</span><br><span class="line">34</span><br><span class="line">35</span><br><span class="line">36</span><br><span class="line">37</span><br><span class="line">38</span><br><span class="line">39</span><br><span class="line">40</span><br><span class="line">41</span><br><span class="line">42</span><br><span class="line">43</span><br><span class="line">44</span><br><span class="line">45</span><br><span class="line">46</span><br><span class="line">47</span><br><span class="line">48</span><br><span class="line">49</span><br><span class="line">50</span><br><span class="line">51</span><br><span class="line">52</span><br><span class="line">53</span><br><span class="line">54</span><br><span class="line">55</span><br><span class="line">56</span><br><span class="line">57</span><br><span class="line">58</span><br><span class="line">59</span><br><span class="line">60</span><br></pre></td><td class="code"><pre><span class="line">- (<span class="keyword">void</span>)connection:(<span class="built_in">NSURLConnection</span> __unused *)connection</span><br><span class="line">didReceiveResponse:(<span class="built_in">NSURLResponse</span> *)response</span><br><span class="line">&#123;</span><br><span class="line">    <span class="comment">// 当接收到response的时候打开outputStream准备将接收的数据写入其中</span></span><br><span class="line">    <span class="keyword">self</span>.response = response;</span><br><span class="line">    </span><br><span class="line">    [<span class="keyword">self</span>.outputStream open];</span><br><span class="line">&#125;</span><br><span class="line"></span><br><span class="line">- (<span class="keyword">void</span>)connection:(<span class="built_in">NSURLConnection</span> __unused *)connection</span><br><span class="line">    didReceiveData:(<span class="built_in">NSData</span> *)data</span><br><span class="line">&#123;</span><br><span class="line">    <span class="built_in">NSUInteger</span> length = [data length];</span><br><span class="line">    <span class="keyword">while</span> (<span class="literal">YES</span>) &#123;</span><br><span class="line">        <span class="built_in">NSInteger</span> totalNumberOfBytesWritten = <span class="number">0</span>;</span><br><span class="line">        <span class="keyword">if</span> ([<span class="keyword">self</span>.outputStream hasSpaceAvailable]) &#123;</span><br><span class="line">            <span class="keyword">const</span> uint8_t *dataBuffer = (uint8_t *)[data bytes];</span><br><span class="line"></span><br><span class="line">            <span class="built_in">NSInteger</span> numberOfBytesWritten = <span class="number">0</span>;</span><br><span class="line">            <span class="keyword">while</span> (totalNumberOfBytesWritten &lt; (<span class="built_in">NSInteger</span>)length) &#123;</span><br><span class="line">                numberOfBytesWritten = [<span class="keyword">self</span>.outputStream write:&amp;dataBuffer[(<span class="built_in">NSUInteger</span>)totalNumberOfBytesWritten] maxLength:(length - (<span class="built_in">NSUInteger</span>)totalNumberOfBytesWritten)];</span><br><span class="line">                <span class="keyword">if</span> (numberOfBytesWritten == <span class="number">-1</span>) &#123;</span><br><span class="line">                    <span class="keyword">break</span>;</span><br><span class="line">                &#125;</span><br><span class="line">                </span><br><span class="line">                totalNumberOfBytesWritten += numberOfBytesWritten;</span><br><span class="line">            &#125;</span><br><span class="line"></span><br><span class="line">            <span class="keyword">break</span>;</span><br><span class="line">        &#125;</span><br><span class="line">        </span><br><span class="line">        <span class="keyword">if</span> (<span class="keyword">self</span>.outputStream.streamError) &#123;</span><br><span class="line">            [<span class="keyword">self</span>.connection cancel];</span><br><span class="line">            [<span class="keyword">self</span> performSelector:<span class="keyword">@selector</span>(connection:didFailWithError:) withObject:<span class="keyword">self</span>.connection withObject:<span class="keyword">self</span>.outputStream.streamError];</span><br><span class="line">            <span class="keyword">return</span>;</span><br><span class="line">        &#125;</span><br><span class="line">    &#125;</span><br><span class="line"></span><br><span class="line">    <span class="built_in">dispatch_async</span>(dispatch_get_main_queue(), ^&#123;</span><br><span class="line">        <span class="keyword">self</span>.totalBytesRead += (<span class="keyword">long</span> <span class="keyword">long</span>)length;</span><br><span class="line"></span><br><span class="line">        <span class="keyword">if</span> (<span class="keyword">self</span>.downloadProgress) &#123;</span><br><span class="line">            <span class="keyword">self</span>.downloadProgress(length, <span class="keyword">self</span>.totalBytesRead, <span class="keyword">self</span>.response.expectedContentLength);</span><br><span class="line">        &#125;</span><br><span class="line">    &#125;);</span><br><span class="line">&#125;</span><br><span class="line"></span><br><span class="line">- (<span class="keyword">void</span>)connectionDidFinishLoading:(<span class="built_in">NSURLConnection</span> __unused *)connection &#123;</span><br><span class="line">    <span class="comment">// 将ouputStream中接收的数据赋值给responseData</span></span><br><span class="line">    <span class="keyword">self</span>.responseData = [<span class="keyword">self</span>.outputStream propertyForKey:<span class="built_in">NSStreamDataWrittenToMemoryStreamKey</span>];</span><br><span class="line"></span><br><span class="line">    [<span class="keyword">self</span>.outputStream close];</span><br><span class="line">    <span class="keyword">if</span> (<span class="keyword">self</span>.responseData) &#123;</span><br><span class="line">       <span class="keyword">self</span>.outputStream = <span class="literal">nil</span>;</span><br><span class="line">    &#125;</span><br><span class="line"></span><br><span class="line">    <span class="keyword">self</span>.connection = <span class="literal">nil</span>;</span><br><span class="line"></span><br><span class="line">    [<span class="keyword">self</span> finish];</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+
+<p>整体的流程结构如下图：</p>
+<img src="/2015-05-30-150530-afnetworking/150530-afnetworking-00.png" title="请求任务调度流程">
+
+<p>需要注意的是：</p>
+<ul>
+<li>首先请求operation添加到operationQueue中，这些operation的执行关系是并行的</li>
+<li>每一个operation执行的任务是向networkRequestThread线程中添加任务operationDidStart，也就是说：[向networkRequestThread线程中添加任务operationDidStart的过程]是并行的</li>
+<li>每一个operationDidStart任务的工作又是向networkRequestThread线程中添加connection和outputStream两个事件源</li>
+<li>由于operationDidStart任务以及connection、outputStream事件源都是被添加到同一个networkRequestThread线程中的，所以这三者之间的执行关系是串行的，也就是说networkRequestThread线程的runloop的轮询的执行operationDidStart任务以及监听connection、outputStream事件源并做出处理这三者是串行的关系</li>
+</ul>
+<h3 id="延伸应用"><a href="#延伸应用" class="headerlink" title="延伸应用"></a>延伸应用</h3><p>设想以下场景：当进入一个界面的时候我们需要发送4个请求，而第4个请求的发出依赖于前3个请求的完成，这时候就需要对着几个请求进行一些同步操作，如果利用GCD的话我们首先想到的是利用dispatch group将前三个请求放到group中等到全部执行完成后再去执行第4个请求，再进一步我们如果想要记录前3个请求的完成情况的话又该怎么办呢，其实AFNetworking的AFURLConnectionOperation.m已经为我们提供了batchOfRequestOperations方法，为了能够对请求完成情况进行记录，使用了一些技巧请参见注释，方法如下：</p>
+<figure class="highlight objectivec"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br><span class="line">25</span><br><span class="line">26</span><br><span class="line">27</span><br><span class="line">28</span><br><span class="line">29</span><br><span class="line">30</span><br><span class="line">31</span><br><span class="line">32</span><br><span class="line">33</span><br><span class="line">34</span><br><span class="line">35</span><br><span class="line">36</span><br><span class="line">37</span><br><span class="line">38</span><br><span class="line">39</span><br><span class="line">40</span><br><span class="line">41</span><br><span class="line">42</span><br><span class="line">43</span><br><span class="line">44</span><br><span class="line">45</span><br><span class="line">46</span><br><span class="line">47</span><br><span class="line">48</span><br><span class="line">49</span><br><span class="line">50</span><br><span class="line">51</span><br><span class="line">52</span><br><span class="line">53</span><br><span class="line">54</span><br><span class="line">55</span><br><span class="line">56</span><br><span class="line">57</span><br><span class="line">58</span><br><span class="line">59</span><br><span class="line">60</span><br><span class="line">61</span><br><span class="line">62</span><br><span class="line">63</span><br><span class="line">64</span><br><span class="line">65</span><br><span class="line">66</span><br><span class="line">67</span><br><span class="line">68</span><br><span class="line">69</span><br><span class="line">70</span><br></pre></td><td class="code"><pre><span class="line">+ (<span class="built_in">NSArray</span> *)batchOfRequestOperations:(<span class="built_in">NSArray</span> *)operations</span><br><span class="line">                        progressBlock:(<span class="keyword">void</span> (^)(<span class="built_in">NSUInteger</span> numberOfFinishedOperations, <span class="built_in">NSUInteger</span> totalNumberOfOperations))progressBlock</span><br><span class="line">                      completionBlock:(<span class="keyword">void</span> (^)(<span class="built_in">NSArray</span> *operations))completionBlock</span><br><span class="line">&#123;</span><br><span class="line">    <span class="keyword">if</span> (!operations || [operations count] == <span class="number">0</span>) &#123;</span><br><span class="line">        <span class="keyword">return</span> @[[<span class="built_in">NSBlockOperation</span> blockOperationWithBlock:^&#123;</span><br><span class="line">            <span class="built_in">dispatch_async</span>(dispatch_get_main_queue(), ^&#123;</span><br><span class="line">                <span class="keyword">if</span> (completionBlock) &#123;</span><br><span class="line">                    completionBlock(@[]);</span><br><span class="line">                &#125;</span><br><span class="line">            &#125;);</span><br><span class="line">        &#125;]];</span><br><span class="line">    &#125;</span><br><span class="line"></span><br><span class="line">    __block dispatch_group_t group = dispatch_group_create();</span><br><span class="line">    <span class="comment">// 当最后一个operation请求返回后</span></span><br><span class="line">    <span class="comment">// 异步的执行targetBlock与batchedOperation轮询到最后一个operation已经执行完成后执行batchedOperation的block之间存在竞争关系</span></span><br><span class="line">    </span><br><span class="line">    <span class="comment">// 当targetBlock先执行后，加入group中的最后一个block调用dispatch_group_leave</span></span><br><span class="line">    <span class="comment">// 之后batchedOperation轮询到最后一个operation已经执行完成，执行batchedOperation的block</span></span><br><span class="line">    <span class="comment">// 执行dispatch_group_notify时，不会阻塞直接执行</span></span><br><span class="line">    </span><br><span class="line">    <span class="comment">// 当batchedOperation先轮询到最后一个operation完成，会立即执行下面的block</span></span><br><span class="line">    <span class="comment">// 执行dispatch_group_notify时，由于batchedOperation未执行，会阻塞再此等待batchedOperation执行完dispatch_group_leave后</span></span><br><span class="line">    <span class="comment">// 才会继续执行completionBlock</span></span><br><span class="line">    <span class="built_in">NSBlockOperation</span> *batchedOperation = [<span class="built_in">NSBlockOperation</span> blockOperationWithBlock:^&#123;</span><br><span class="line">        dispatch_group_notify(group, dispatch_get_main_queue(), ^&#123;</span><br><span class="line">            <span class="keyword">if</span> (completionBlock) &#123;</span><br><span class="line">                completionBlock(operations);</span><br><span class="line">            &#125;</span><br><span class="line">        &#125;);</span><br><span class="line">    &#125;];</span><br><span class="line"></span><br><span class="line">    <span class="keyword">for</span> (AFURLConnectionOperation *operation <span class="keyword">in</span> operations) &#123;</span><br><span class="line">        operation.completionGroup = group;</span><br><span class="line">        <span class="keyword">void</span> (^originalCompletionBlock)(<span class="keyword">void</span>) = [operation.completionBlock <span class="keyword">copy</span>];</span><br><span class="line">        __<span class="keyword">weak</span> __<span class="keyword">typeof</span>(operation)weakOperation = operation;</span><br><span class="line">        operation.completionBlock = ^&#123;</span><br><span class="line">            __<span class="keyword">strong</span> __<span class="keyword">typeof</span>(weakOperation)strongOperation = weakOperation;</span><br><span class="line"><span class="meta">#pragma clang diagnostic push</span></span><br><span class="line"><span class="meta">#pragma clang diagnostic ignored <span class="meta-string">"-Wgnu"</span></span></span><br><span class="line">            <span class="built_in">dispatch_queue_t</span> queue = strongOperation.completionQueue ?: dispatch_get_main_queue();</span><br><span class="line"><span class="meta">#pragma clang diagnostic pop</span></span><br><span class="line">            <span class="comment">// 暂且把下面dispatch_group_async中的block称之为targetBlock</span></span><br><span class="line">            <span class="comment">// 请求返回后operation的completionBlock会立即返回</span></span><br><span class="line">            <span class="comment">// 异步的去执行targetBlock的内容</span></span><br><span class="line">            dispatch_group_async(group, queue, ^&#123;</span><br><span class="line">                <span class="keyword">if</span> (originalCompletionBlock) &#123;</span><br><span class="line">                    originalCompletionBlock();</span><br><span class="line">                &#125;</span><br><span class="line">                </span><br><span class="line">                <span class="comment">// 由于operation的completionBlock立即返回它的isFinished标识已标记为YES</span></span><br><span class="line">                <span class="built_in">NSUInteger</span> numberOfFinishedOperations = [[operations indexesOfObjectsPassingTest:^<span class="built_in">BOOL</span>(<span class="keyword">id</span> op, <span class="built_in">NSUInteger</span> __unused idx,  <span class="built_in">BOOL</span> __unused *stop) &#123;</span><br><span class="line">                    <span class="keyword">return</span> [op isFinished];</span><br><span class="line">                &#125;] count];</span><br><span class="line"></span><br><span class="line">                <span class="keyword">if</span> (progressBlock) &#123;</span><br><span class="line">                    progressBlock(numberOfFinishedOperations, [operations count]);</span><br><span class="line">                &#125;</span><br><span class="line"></span><br><span class="line">                dispatch_group_leave(group);</span><br><span class="line">            &#125;);</span><br><span class="line">        &#125;;</span><br><span class="line"></span><br><span class="line">        dispatch_group_enter(group);</span><br><span class="line">        [batchedOperation addDependency:operation];</span><br><span class="line">    &#125;</span><br><span class="line"></span><br><span class="line">    <span class="keyword">return</span> [operations arrayByAddingObject:batchedOperation];</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+
+
+    </div>
+
+    
+    
+    
+
+    <footer class="post-footer">
+        <div class="post-nav">
+          <div class="post-nav-next post-nav-item">
+              <a href="/2015-05-12-150512-oc-main-point.html" rel="next" title="OC知识要点">
+                <i class="fa fa-chevron-left"></i> OC知识要点
+              </a>
+            
+          </div>
+
+          <span class="post-nav-divider"></span>
+
+          <div class="post-nav-prev post-nav-item">
+              <a href="/2015-06-19-150619-mach-o-file-format.html" rel="prev" title="Mach-O文件格式与otool工具的使用">
+                Mach-O文件格式与otool工具的使用 <i class="fa fa-chevron-right"></i>
+              </a>
+            
+          </div>
+        </div>
+    </footer>
+  </div>
+  
+  
+  
+  </article>
+
+  </div>
+
+
+          </div>
+          
+
+
+        </div>
+          
+  
+  <div class="sidebar-toggle">
+    <div class="sidebar-toggle-line-wrap">
+      <span class="sidebar-toggle-line sidebar-toggle-line-first"></span>
+      <span class="sidebar-toggle-line sidebar-toggle-line-middle"></span>
+      <span class="sidebar-toggle-line sidebar-toggle-line-last"></span>
+    </div>
+  </div>
+
+  <aside id="sidebar" class="sidebar">
+    <div class="sidebar-inner">
+        <ul class="sidebar-nav motion-element">
+          <li class="sidebar-nav-toc sidebar-nav-active" data-target="post-toc-wrap">
+            文章目录
+          </li>
+          <li class="sidebar-nav-overview" data-target="site-overview-wrap">
+            站点概览
+          </li>
+        </ul>
+      
+
+      <div class="site-overview-wrap sidebar-panel">
+        <div class="site-overview">
+
+          <div class="site-author motion-element" itemprop="author" itemscope itemtype="http://schema.org/Person">
+    <img class="site-author-image" itemprop="image"
+      src="/images/avatar.png"
+      alt="Zrongl">
+  <p class="site-author-name" itemprop="name">Zrongl</p>
+  <div class="site-description motion-element" itemprop="description"></div>
+</div>
+  <nav class="site-state motion-element">
+      <div class="site-state-item site-state-posts">
+        
+          <a href="/archives/">
+        
+          <span class="site-state-item-count">23</span>
+          <span class="site-state-item-name">日志</span>
+        </a>
+      </div>
+    
+      
+      
+      <div class="site-state-item site-state-categories">
+        
+          
+            <a href="/categories/">
+          
+        
+        
+        
+          
+        
+          
+        
+          
+        
+        <span class="site-state-item-count">3</span>
+        <span class="site-state-item-name">分类</span>
+        </a>
+      </div>
+    
+  </nav>
+  <div class="links-of-author motion-element">
+      <span class="links-of-author-item">
+      
+      
+        
+      
+      
+        
+      
+        <a href="https://github.com/zrongl" title="GitHub &rarr; https://github.com/zrongl" rel="noopener" target="_blank"><i class="fa fa-fw fa-github"></i>GitHub</a>
+      </span>
+    
+      <span class="links-of-author-item">
+      
+      
+        
+      
+      
+        
+      
+        <a href="mailto:ronglei0324@163.com" title="E-Mail &rarr; mailto:ronglei0324@163.com" rel="noopener" target="_blank"><i class="fa fa-fw fa-envelope"></i>E-Mail</a>
+      </span>
+    
+  </div>
+
+
+
+        </div>
+      </div>
+      <!--noindex-->
+        <div class="post-toc-wrap motion-element sidebar-panel sidebar-panel-active">
+          <div class="post-toc">
+
+            
+            
+            
+            
+
+            
+              <div class="post-toc-content"><ol class="nav"><li class="nav-item nav-level-3"><a class="nav-link" href="#请求的创建与设置"><span class="nav-number">1.</span> <span class="nav-text">请求的创建与设置</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#Operation的执行过程"><span class="nav-number">2.</span> <span class="nav-text">Operation的执行过程</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#延伸应用"><span class="nav-number">3.</span> <span class="nav-text">延伸应用</span></a></li></ol></div>
+            
+
+          </div>
+        </div>
+      <!--/noindex-->
+      
+
+    </div>
+  </aside>
+  <div id="sidebar-dimmer"></div>
+
+
+      </div>
+    </main>
+
+    <footer id="footer" class="footer">
+      <div class="footer-inner">
+        <div class="copyright">&copy; <span itemprop="copyrightYear">2019</span>
+  <span class="with-love" id="animate">
+    <i class="fa fa-user"></i>
+  </span>
+  <span class="author" itemprop="copyrightHolder">Zrongl</span>
+</div>
+<div class="powered-by">
+<i class="fa fa-user-md"></i>
+<span>不争无尤</span>
+</span>
+</div>
+  <span class="post-meta-divider">|</span>
+  <div class="theme-info">主题 – <a href="https://theme-next.org" class="theme-link" rel="noopener" target="_blank">NexT.Mist</a> v7.3.0</div>
+
+        
+
+
+
+
+
+
+
+
+        
+      </div>
+    </footer>
+      <div class="back-to-top">
+        <i class="fa fa-arrow-up"></i>
+          <span id="scrollpercent"><span>0</span>%</span>
+        
+      </div>
+
+    
+
+  </div>
+
+  
+    
+    
+  
+  <script color='0,0,255' opacity='0.5' zIndex='-1' count='99' src="/lib/canvas-nest/canvas-nest-nomobile.min.js"></script>
+  <script src="/lib/jquery/index.js?v=3.4.1"></script>
+  <script src="/lib/velocity/velocity.min.js?v=1.2.1"></script>
+  <script src="/lib/velocity/velocity.ui.min.js?v=1.2.1"></script>
+
+<script src="/js/utils.js?v=7.3.0"></script>
+  <script src="/js/motion.js?v=7.3.0"></script>
+
+
+  <script src="/js/schemes/muse.js?v=7.3.0"></script>
+
+
+
+<script src="/js/next-boot.js?v=7.3.0"></script>
+
+
+
+
+
+
+  
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+  
+
+  
+
+  
+
+  
+
+
+  
+  <script src="/js/scrollspy.js?v=7.3.0"></script>
+<script src="/js/post-details.js?v=7.3.0"></script>
+
+
+  <!-- 页面点击小红心 -->
+  <script type="text/javascript" src="/js/src/love.js"></script>
+
+</body>
+</html>

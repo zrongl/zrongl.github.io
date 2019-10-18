@@ -1,0 +1,721 @@
+<!DOCTYPE html>
+
+
+
+
+
+<html class="theme-next mist use-motion" lang="zh-CN">
+<head>
+  <meta charset="UTF-8">
+<meta name="generator" content="Hexo 3.9.0">
+<meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=2">
+<meta name="theme-color" content="#222">
+<meta http-equiv="X-UA-Compatible" content="IE=edge">
+  <link rel="apple-touch-icon" sizes="180x180" href="/images/apple-touch-icon-next.png?v=7.3.0">
+  <link rel="icon" type="image/png" sizes="32x32" href="/images/favicon-32x32-next.png?v=7.3.0">
+  <link rel="icon" type="image/png" sizes="16x16" href="/images/favicon-16x16-next.png?v=7.3.0">
+  <link rel="mask-icon" href="/images/logo.svg?v=7.3.0" color="#222">
+
+<link rel="stylesheet" href="/css/main.css?v=7.3.0">
+
+<link rel="stylesheet" href="//fonts.googleapis.com/css?family=Monda:300,300italic,400,400italic,700,700italic|Roboto Slab:300,300italic,400,400italic,700,700italic|PT Mono:300,300italic,400,400italic,700,700italic&display=swap&subset=latin,latin-ext">
+<link rel="stylesheet" href="/lib/font-awesome/css/font-awesome.min.css?v=4.7.0">
+  <script src="/lib/pace/pace.min.js?v=1.0.2"></script>
+  <link rel="stylesheet" href="/lib/pace/pace-theme-minimal.min.css?v=1.0.2">
+
+
+<script id="hexo-configurations">
+  var NexT = window.NexT || {};
+  var CONFIG = {
+    root: '/',
+    scheme: 'Mist',
+    version: '7.3.0',
+    sidebar: {"position":"right","display":"post","offset":12,"onmobile":false},
+    back2top: {"enable":true,"sidebar":false,"scrollpercent":true},
+    save_scroll: false,
+    copycode: {"enable":false,"show_result":false,"style":null},
+    fancybox: false,
+    mediumzoom: false,
+    lazyload: false,
+    pangu: false,
+    algolia: {
+      applicationID: '',
+      apiKey: '',
+      indexName: '',
+      hits: {"per_page":10},
+      labels: {"input_placeholder":"Search for Posts","hits_empty":"We didn't find any results for the search: ${query}","hits_stats":"${hits} results found in ${time} ms"}
+    },
+    localsearch: {"enable":false,"trigger":"auto","top_n_per_article":1,"unescape":false,"preload":false},
+    path: '',
+    tabs: true,
+    motion: {"enable":true,"async":false,"transition":{"post_block":"fadeIn","post_header":"slideDownIn","post_body":"slideDownIn","coll_header":"slideLeftIn","sidebar":"slideUpIn"}},
+    translation: {
+      copy_button: '复制',
+      copy_success: '复制成功',
+      copy_failure: '复制失败'
+    }
+  };
+</script>
+
+  <meta name="description" content="从应用启动、绘图和动画动画、内存等角度探究性能优化的注意事项">
+<meta property="og:type" content="article">
+<meta property="og:title" content="iOS应用性能调优">
+<meta property="og:url" content="http://zrongl.github.io/2015-09-09-150909-ios-app-performance.html">
+<meta property="og:site_name" content="善恶众相">
+<meta property="og:description" content="从应用启动、绘图和动画动画、内存等角度探究性能优化的注意事项">
+<meta property="og:locale" content="zh-CN">
+<meta property="og:image" content="http://zrongl.github.io/2015-09-09-150909-ios-app-performance/150909-ios-app-performance-00.png">
+<meta property="og:image" content="http://zrongl.github.io/2015-09-09-150909-ios-app-performance/150909-ios-app-performance-01.png">
+<meta property="og:image" content="http://zrongl.github.io/2015-09-09-150909-ios-app-performance/150909-ios-app-performance-02.png">
+<meta property="og:image" content="http://zrongl.github.io/2015-09-09-150909-ios-app-performance/150909-ios-app-performance-03.png">
+<meta property="og:updated_time" content="2019-08-07T07:24:52.070Z">
+<meta name="twitter:card" content="summary">
+<meta name="twitter:title" content="iOS应用性能调优">
+<meta name="twitter:description" content="从应用启动、绘图和动画动画、内存等角度探究性能优化的注意事项">
+<meta name="twitter:image" content="http://zrongl.github.io/2015-09-09-150909-ios-app-performance/150909-ios-app-performance-00.png">
+  <link rel="canonical" href="http://zrongl.github.io/2015-09-09-150909-ios-app-performance">
+
+
+<script id="page-configurations">
+  // https://hexo.io/docs/variables.html
+  CONFIG.page = {
+    sidebar: "",
+    isHome: false,
+    isPost: true,
+    isPage: false,
+    isArchive: false
+  };
+</script>
+
+  <title>iOS应用性能调优 | 善恶众相</title>
+  
+
+
+
+
+
+
+
+
+  <noscript>
+  <style>
+  .use-motion .motion-element,
+  .use-motion .brand,
+  .use-motion .menu-item,
+  .sidebar-inner,
+  .use-motion .post-block,
+  .use-motion .pagination,
+  .use-motion .comments,
+  .use-motion .post-header,
+  .use-motion .post-body,
+  .use-motion .collection-title { opacity: initial; }
+
+  .use-motion .logo,
+  .use-motion .site-title,
+  .use-motion .site-subtitle {
+    opacity: initial;
+    top: initial;
+  }
+
+  .use-motion .logo-line-before i { left: initial; }
+  .use-motion .logo-line-after i { right: initial; }
+  </style>
+</noscript>
+
+</head>
+
+<body itemscope itemtype="http://schema.org/WebPage" lang="zh-CN">
+
+  <div class="container sidebar-position-right">
+    <div class="headband"></div>
+
+<a href="https://github.com/zrongl" class="github-corner" aria-label="View source on GitHub"><svg width="80" height="80" viewBox="0 0 250 250" style="fill:#151513; color:#fff; position: absolute; top: 0; border: 0; right: 0;" aria-hidden="true"><path d="M0,0 L115,115 L130,115 L142,142 L250,250 L250,0 Z"></path><path d="M128.3,109.0 C113.8,99.7 119.0,89.6 119.0,89.6 C122.0,82.7 120.5,78.6 120.5,78.6 C119.2,72.0 123.4,76.3 123.4,76.3 C127.3,80.9 125.5,87.3 125.5,87.3 C122.9,97.6 130.6,101.9 134.4,103.2" fill="currentColor" style="transform-origin: 130px 106px;" class="octo-arm"></path><path d="M115.0,115.0 C114.9,115.1 118.7,116.5 119.8,115.4 L133.7,101.6 C136.9,99.2 139.9,98.4 142.2,98.6 C133.8,88.0 127.5,74.4 143.8,58.0 C148.5,53.4 154.0,51.2 159.7,51.0 C160.3,49.4 163.2,43.6 171.4,40.1 C171.4,40.1 176.1,42.5 178.8,56.2 C183.1,58.6 187.2,61.8 190.9,65.4 C194.5,69.0 197.7,73.2 200.1,77.6 C213.8,80.2 216.3,84.9 216.3,84.9 C212.7,93.1 206.9,96.0 205.4,96.6 C205.1,102.4 203.0,107.8 198.3,112.5 C181.9,128.9 168.3,122.5 157.7,114.1 C157.9,116.9 156.7,120.9 152.7,124.9 L141.0,136.5 C139.8,137.7 141.6,141.9 141.8,141.8 Z" fill="currentColor" class="octo-body"></path></svg></a><style>.github-corner:hover .octo-arm{animation:octocat-wave 560ms ease-in-out}@keyframes octocat-wave{0%,100%{transform:rotate(0)}20%,60%{transform:rotate(-25deg)}40%,80%{transform:rotate(10deg)}}@media (max-width:500px){.github-corner:hover .octo-arm{animation:none}.github-corner .octo-arm{animation:octocat-wave 560ms ease-in-out}}</style>
+
+    <header id="header" class="header" itemscope itemtype="http://schema.org/WPHeader">
+      <div class="header-inner"><div class="site-brand-wrapper">
+  <div class="site-meta">
+
+    <div class="custom-logo-site-title">
+      <a href="/" class="brand" rel="start">
+        <span class="logo-line-before"><i></i></span>
+        <span class="site-title">善恶众相</span>
+        <span class="logo-line-after"><i></i></span>
+      </a>
+    </div>
+  </div>
+
+  <div class="site-nav-toggle">
+    <button aria-label="切换导航栏">
+      <span class="btn-bar"></span>
+      <span class="btn-bar"></span>
+      <span class="btn-bar"></span>
+    </button>
+  </div>
+</div>
+
+
+<nav class="site-nav">
+  
+  <ul id="menu" class="menu">
+      
+      
+      
+        
+        <li class="menu-item menu-item-home">
+      
+    
+
+    <a href="/" rel="section"><i class="menu-item-icon fa fa-fw fa-home"></i> <br>首页</a>
+
+  </li>
+      
+      
+      
+        
+        <li class="menu-item menu-item-categories">
+      
+    
+
+    <a href="/categories/" rel="section"><i class="menu-item-icon fa fa-fw fa-th"></i> <br>分类</a>
+
+  </li>
+      
+      
+      
+        
+        <li class="menu-item menu-item-archives">
+      
+    
+
+    <a href="/archives/" rel="section"><i class="menu-item-icon fa fa-fw fa-archive"></i> <br>归档</a>
+
+  </li>
+  </ul>
+
+    
+
+</nav>
+</div>
+    </header>
+
+    
+
+
+    <main id="main" class="main">
+      <div class="main-inner">
+        <div class="content-wrap">
+          <div id="content" class="content page-post-detail">
+            
+
+  <div id="posts" class="posts-expand">
+    
+
+  <article class="post post-type-categories" itemscope itemtype="http://schema.org/Article">
+  
+  
+  
+  <div class="post-block">
+    <link itemprop="mainEntityOfPage" href="http://zrongl.github.io/2015-09-09-150909-ios-app-performance.html">
+
+    <span hidden itemprop="author" itemscope itemtype="http://schema.org/Person">
+      <meta itemprop="name" content="Zrongl">
+      <meta itemprop="description" content="">
+      <meta itemprop="image" content="/images/avatar.png">
+    </span>
+
+    <span hidden itemprop="publisher" itemscope itemtype="http://schema.org/Organization">
+      <meta itemprop="name" content="善恶众相">
+    </span>
+      <header class="post-header">
+
+        
+          <h1 class="post-title" itemprop="name headline">iOS应用性能调优
+
+            
+          </h1>
+        
+
+        <div class="post-meta">
+            <span class="post-meta-item">
+              <span class="post-meta-item-icon">
+                <i class="fa fa-calendar-o"></i>
+              </span>
+              <span class="post-meta-item-text">发表于</span>
+
+              
+                
+              
+
+              <time title="创建时间：2015-09-09 00:00:00" itemprop="dateCreated datePublished" datetime="2015-09-09T00:00:00+08:00">2015-09-09</time>
+            </span>
+          
+            
+
+            
+              <span class="post-meta-item">
+                <span class="post-meta-item-icon">
+                  <i class="fa fa-calendar-check-o"></i>
+                </span>
+                <span class="post-meta-item-text">更新于</span>
+                <time title="修改时间：2019-08-07 15:24:52" itemprop="dateModified" datetime="2019-08-07T15:24:52+08:00">2019-08-07</time>
+              </span>
+            
+          
+            <span class="post-meta-item">
+              <span class="post-meta-item-icon">
+                <i class="fa fa-folder-o"></i>
+              </span>
+              <span class="post-meta-item-text">分类于</span>
+              
+                <span itemprop="about" itemscope itemtype="http://schema.org/Thing"><a href="/categories/iOS/" itemprop="url" rel="index"><span itemprop="name">iOS</span></a></span>
+
+                
+                
+              
+            </span>
+          
+
+          
+            <div class="post-description">从应用启动、绘图和动画动画、内存等角度探究性能优化的注意事项</div>
+          
+
+        </div>
+      </header>
+
+    
+    
+    
+    <div class="post-body" itemprop="articleBody">
+
+      
+        <h3 id="性能调优工作流程"><a href="#性能调优工作流程" class="headerlink" title="性能调优工作流程"></a>性能调优工作流程</h3><img src="/2015-09-09-150909-ios-app-performance/150909-ios-app-performance-00.png" title="调优流程">
+
+<p>通过上图我们可以看出性能调试的过程：</p>
+<ol>
+<li>重现性能问题(如：反应慢，动画卡顿等)，利用Profile工具或经验查找问题原因</li>
+<li>通过观察提出存在问题的假设，</li>
+<li>反复观察Profile工具表现，确定正确的假设</li>
+<li>根据假设改进程序</li>
+<li>改进之后再次观察应用查看问题是否存在</li>
+</ol>
+<h3 id="应用启动"><a href="#应用启动" class="headerlink" title="应用启动"></a>应用启动</h3><h4 id="看门狗程序的时限"><a href="#看门狗程序的时限" class="headerlink" title="看门狗程序的时限"></a>看门狗程序的时限</h4><p>从某种意义上说，应用启动的性能是给用户的第一印象，所以启动时间越短给用户的第一印象越好，一般很少有人会注意，系统的看门狗程序对你的应用制定了一系列的时限，如果特定场景下应用响应时间超出了这些时限，看门狗程序会直接结束你的应用，当然另外一种情况是用户在启动应用时不想再等下去了，直接手动结束了应用启动。下面列举了系统看门狗规定的场景及时限。</p>
+<table>
+<thead>
+<tr>
+<th>场景</th>
+<th align="right">时限</th>
+</tr>
+</thead>
+<tbody><tr>
+<td>Launch</td>
+<td align="right">20s</td>
+</tr>
+<tr>
+<td>Resume</td>
+<td align="right">10s</td>
+</tr>
+<tr>
+<td>Suspend</td>
+<td align="right">10s</td>
+</tr>
+<tr>
+<td>Quit</td>
+<td align="right">6s</td>
+</tr>
+<tr>
+<td>Backgournd task</td>
+<td align="right">10m</td>
+</tr>
+</tbody></table>
+<blockquote>
+<p><strong>注意：</strong><br><br>Xcode在调试的时候会禁掉系统看门狗程序</p>
+</blockquote>
+<h4 id="如何衡量启动时间"><a href="#如何衡量启动时间" class="headerlink" title="如何衡量启动时间"></a>如何衡量启动时间</h4><h4 id="输出系统时间"><a href="#输出系统时间" class="headerlink" title="输出系统时间"></a>输出系统时间</h4><ul>
+<li>在<code>main()</code>函数中记录系统开始启动的时间</li>
+</ul>
+<figure class="highlight cpp"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br></pre></td><td class="code"><pre><span class="line"><span class="function"><span class="keyword">int</span> <span class="title">main</span><span class="params">(<span class="keyword">int</span> argc, <span class="keyword">char</span> **argv)</span> </span>&#123;     StartTime = CFAbsoluteTimeGetCurrent();</span><br><span class="line">     ...</span><br></pre></td></tr></table></figure>
+
+<ul>
+<li>应用启动完成时输出启动所用的时间</li>
+</ul>
+<figure class="highlight objectivec"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">- (<span class="keyword">void</span>)applicationDidFinishLaunching:(<span class="built_in">UIApplication</span> *)app &#123;     <span class="built_in">dispatch_async</span>(dispatch_get_main_queue(), ^&#123;        <span class="built_in">NSLog</span>(<span class="string">@"Launched in %f sec"</span>, <span class="built_in">CFAbsoluteTimeGetCurrent</span>() - StartTime);     &#125;);</span><br></pre></td></tr></table></figure>
+
+<h4 id="利用Time-Profile确定启动时间"><a href="#利用Time-Profile确定启动时间" class="headerlink" title="利用Time Profile确定启动时间"></a>利用Time Profile确定启动时间</h4><ul>
+<li>切换到Sample List找到<code>main()</code>函数，即为启动开始的时间，如下图：</li>
+</ul>
+<img src="/2015-09-09-150909-ios-app-performance/150909-ios-app-performance-01.png" title="main函数开始">
+
+<ul>
+<li>找到<code>didFinishLaunchWithOptions</code>，即为启动结束的时间，如图：</li>
+</ul>
+<img src="/2015-09-09-150909-ios-app-performance/150909-ios-app-performance-02.png" title="didFinishLaunchWithOptions函数结束">
+
+<h4 id="应用启动步骤"><a href="#应用启动步骤" class="headerlink" title="应用启动步骤"></a>应用启动步骤</h4><h4 id="链接和加载"><a href="#链接和加载" class="headerlink" title="链接和加载"></a>链接和加载</h4><p><strong>介绍：</strong><br><br>链接加载发生在Time Profiler中的dyld阶段，该阶段library将被映射进相应的内存空间，然后进行绑定和修复，最后进行一些静态变量的初始化。<br></p>
+<p><strong>建议：</strong><br></p>
+<ul>
+<li>由于每一个Objective-C的framework映射进内存都需要时间的，所以避免链接无用的framework</li>
+<li>被标记为Optinal的framework需要额外的判断工作，所以不要把所有系统版本都需要的framework标记为Optinal</li>
+</ul>
+<h4 id="UIKit初始化"><a href="#UIKit初始化" class="headerlink" title="UIKit初始化"></a>UIKit初始化</h4><p><strong>介绍：</strong><br><br>该阶段会对与视图相关的内容进行初始化如：Fonts，status bar，user defaults，main nib等<br><br>这些内容的初始化是在以下过程中完成的：</p>
+<figure class="highlight objectivec"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line"><span class="built_in">UIApplicationInitialize</span><span class="built_in">UIApplicationInstantiateSingleton</span>-[<span class="built_in">UIApplication</span> _createStatusBarWithRequestedStyle: ...]-[<span class="built_in">UIApplication</span> _loadMainNibFileNamed:bundle:]</span><br></pre></td></tr></table></figure>
+
+<p><strong>建议：</strong><br></p>
+<ul>
+<li>尽量减少不必要的控件添加到nib中</li>
+<li>偏好设置(User Default)是用于存储属性的，并且它是被一次性反序列化的，所以不要试图在其中存储过大的数据，比如：图片，文件等。</li>
+</ul>
+<h4 id="处理application-delegate-method"><a href="#处理application-delegate-method" class="headerlink" title="处理application delegate method"></a>处理application delegate method</h4><p><strong>介绍：</strong><br><br>UIKit会在一下回调中调用你的代码来完成程序的启动</p>
+<ol>
+<li>调用<code>application:willFinishLaunchingWithOptions:</code></li>
+<li>恢复应用的状态</li>
+<li>调用<code>application:didFinishLaunchingWithOptions:</code></li>
+</ol>
+<p>经过以上步骤应用会完全在你的代码控制之下</p>
+<p><strong>建议：</strong><br></p>
+<ul>
+<li>由于<code>application:didFinishLaunchingWithOptions</code>回调的执行也属于应用启动的过程，所以应该尽量避免在该回掉中进行一些费时的操作，如：复杂数据的处理、I/O的操作等。</li>
+</ul>
+<h4 id="第一次动画事物"><a href="#第一次动画事物" class="headerlink" title="第一次动画事物"></a>第一次动画事物</h4><p><strong>介绍：</strong><br><br>由于应用启动准备任务完成之后，最终会将应用的内容呈现在屏幕上，而呈现的方式就是一个视图从小到大的动画，所以这一步的优化就变成了针对动画的优化</p>
+<p>针对于动画的优化下一章节我们将详细讲解。</p>
+<h3 id="绘图和动画"><a href="#绘图和动画" class="headerlink" title="绘图和动画"></a>绘图和动画</h3><h4 id="影响动画性能的因素"><a href="#影响动画性能的因素" class="headerlink" title="影响动画性能的因素"></a>影响动画性能的因素</h4><p>根据<a href="http://zrongl.github.io/ios/2015/08/25/views-layers-and-animations.html">这篇文章</a>的介绍，动画执行过程中我们能够控制的阶段是下图高亮的阶段：</p>
+<img src="/2015-09-09-150909-ios-app-performance/150909-ios-app-performance-03.png" title="我们能够控制的阶段">
+
+<p>引起动画性能问题的因素主要有以下两点：</p>
+<ul>
+<li>布局<ul>
+<li>复杂的视图继承关系</li>
+<li>懒加载视图</li>
+<li>通过访问数据库得到的数据来初始化视图</li>
+</ul>
+</li>
+<li>绘制<ul>
+<li>-drawRect 如非必要，尽量不要重载drawRect方法</li>
+<li>字符绘制 如：UILabel控件最终是绘制出来的</li>
+<li>图片解码 针对图片视图的动画，commit之前对图片的解码是必不可少的步骤，所以推荐使用png/jpeg格式的图片，苹果对这两种图片的解码做了内部的优化</li>
+</ul>
+</li>
+</ul>
+<h4 id="改善动画性能的关键点"><a href="#改善动画性能的关键点" class="headerlink" title="改善动画性能的关键点"></a>改善动画性能的关键点</h4><h4 id="尽量减少设置操作"><a href="#尽量减少设置操作" class="headerlink" title="尽量减少设置操作"></a>尽量减少设置操作</h4><ul>
+<li>在进行布局的时候，尽量避免重CPU(如复杂的浮点运算)或阻塞操作</li>
+<li>使用内存缓存，将多次用到的属性或对象存储在内存中，静态变量或单例等</li>
+<li>确保数据库有合适的索引以供查询</li>
+<li>尽可能复用cell或view</li>
+</ul>
+<h4 id="减少绘制"><a href="#减少绘制" class="headerlink" title="减少绘制"></a>减少绘制</h4><ul>
+<li>只在需要的时候调用<code>-setNeedsDisplay</code>进行重绘</li>
+<li>如非必要不要重载<code>-drawRect:</code></li>
+<li>尽量使用<code>-setNeedsDisplayInRect</code>缩小重绘区域</li>
+<li>如果不需要交互的话，使用CALayer的属性代替视图的属性</li>
+</ul>
+<h4 id="高效的使用image"><a href="#高效的使用image" class="headerlink" title="高效的使用image"></a>高效的使用image</h4><p><strong>图像和图层：</strong><br></p>
+<ul>
+<li>UIImage是CGImage的轻量级的扩展</li>
+<li>CALayer的contents属性可以指向CGImage</li>
+<li>CGImage是以文件或数据形式进行存储的，但最终是以位图的形式加载进内存的</li>
+</ul>
+<p><strong>与[UIImage draw…]相比UIImageView做了如下优化：</strong><br></p>
+<ul>
+<li>CATrasaction可以从CGImage直接获取位图</li>
+<li>允许通过GPU进行混合</li>
+<li>内建的位图缓存</li>
+</ul>
+<p><strong>一些建议：</strong></p>
+<ul>
+<li>保证图片与视图的size相符合</li>
+<li>尽量不设置图片的alpha属性，图层混合需要额外消耗性能</li>
+<li>只使用PNG或JPEG格式的图片</li>
+</ul>
+<p><strong>PNG与JPEG图片格式：</strong></p>
+<p>PNG采用的是无损压缩，JPEG采用的经过优化的压缩算法；<br>PNG存在alpha通道，JPEG没有alpha通道；<br>JPEG的文件相对较小，JPEG图片解码的时间相对较短</p>
+<p><strong>xcode针对PNG的一些优化：</strong></p>
+<ul>
+<li>预乘alpha(抗锯齿渲染的一种技术)和字节转换(byte-swap)</li>
+<li>禁止一些PNG的混合模式</li>
+<li>对一张图片可以进行并行解码，加快解码速度</li>
+</ul>
+<p><strong>图像的缓存：</strong></p>
+<ul>
+<li>当image被绘制进一个位图上下文时<ul>
+<li>[UIimage imageNamed:]方法会将image缓存进可擦除的内存中</li>
+<li>[UIImage imageWithContentsOfFile:]则不会对image进行缓存</li>
+</ul>
+</li>
+<li>所有CGImage被赋值给layer的contents属性时，都会被系统缓存起来</li>
+<li>kCGImageSourceShouldCache<ul>
+<li>标识image是否会被缓存进解码表(decoded form)中</li>
+</ul>
+</li>
+<li>一般情况下不要试图自己缓存image</li>
+</ul>
+<h4 id="drawsAsynchronously"><a href="#drawsAsynchronously" class="headerlink" title="-drawsAsynchronously"></a>-drawsAsynchronously</h4><ul>
+<li>当layer的该属性被设置为YES的时候，被传递给<code>-drawInContent:</code>方法的CGContent对象会将提交给它的绘图指令进行序列化存储，然后异步的去执行这些绘图操作(也就是说<code>-drawInContent:</code>方法会异步的执行)。这样可以使得layer的绘图操作推迟一会儿执行，不会等到它绘图操作完成之后再往下执行。默认值是NO</li>
+</ul>
+
+    </div>
+
+    
+    
+    
+
+    <footer class="post-footer">
+        <div class="post-nav">
+          <div class="post-nav-next post-nav-item">
+              <a href="/2015-08-25-150825-views-layers-animations.html" rel="next" title="视图，层和动画">
+                <i class="fa fa-chevron-left"></i> 视图，层和动画
+              </a>
+            
+          </div>
+
+          <span class="post-nav-divider"></span>
+
+          <div class="post-nav-prev post-nav-item">
+              <a href="/2016-08-01-160801-oc-copy-operation.html" rel="prev" title="iOS Copy操作那些坑">
+                iOS Copy操作那些坑 <i class="fa fa-chevron-right"></i>
+              </a>
+            
+          </div>
+        </div>
+    </footer>
+  </div>
+  
+  
+  
+  </article>
+
+  </div>
+
+
+          </div>
+          
+
+
+        </div>
+          
+  
+  <div class="sidebar-toggle">
+    <div class="sidebar-toggle-line-wrap">
+      <span class="sidebar-toggle-line sidebar-toggle-line-first"></span>
+      <span class="sidebar-toggle-line sidebar-toggle-line-middle"></span>
+      <span class="sidebar-toggle-line sidebar-toggle-line-last"></span>
+    </div>
+  </div>
+
+  <aside id="sidebar" class="sidebar">
+    <div class="sidebar-inner">
+        <ul class="sidebar-nav motion-element">
+          <li class="sidebar-nav-toc sidebar-nav-active" data-target="post-toc-wrap">
+            文章目录
+          </li>
+          <li class="sidebar-nav-overview" data-target="site-overview-wrap">
+            站点概览
+          </li>
+        </ul>
+      
+
+      <div class="site-overview-wrap sidebar-panel">
+        <div class="site-overview">
+
+          <div class="site-author motion-element" itemprop="author" itemscope itemtype="http://schema.org/Person">
+    <img class="site-author-image" itemprop="image"
+      src="/images/avatar.png"
+      alt="Zrongl">
+  <p class="site-author-name" itemprop="name">Zrongl</p>
+  <div class="site-description motion-element" itemprop="description"></div>
+</div>
+  <nav class="site-state motion-element">
+      <div class="site-state-item site-state-posts">
+        
+          <a href="/archives/">
+        
+          <span class="site-state-item-count">23</span>
+          <span class="site-state-item-name">日志</span>
+        </a>
+      </div>
+    
+      
+      
+      <div class="site-state-item site-state-categories">
+        
+          
+            <a href="/categories/">
+          
+        
+        
+        
+          
+        
+          
+        
+          
+        
+        <span class="site-state-item-count">3</span>
+        <span class="site-state-item-name">分类</span>
+        </a>
+      </div>
+    
+  </nav>
+  <div class="links-of-author motion-element">
+      <span class="links-of-author-item">
+      
+      
+        
+      
+      
+        
+      
+        <a href="https://github.com/zrongl" title="GitHub &rarr; https://github.com/zrongl" rel="noopener" target="_blank"><i class="fa fa-fw fa-github"></i>GitHub</a>
+      </span>
+    
+      <span class="links-of-author-item">
+      
+      
+        
+      
+      
+        
+      
+        <a href="mailto:ronglei0324@163.com" title="E-Mail &rarr; mailto:ronglei0324@163.com" rel="noopener" target="_blank"><i class="fa fa-fw fa-envelope"></i>E-Mail</a>
+      </span>
+    
+  </div>
+
+
+
+        </div>
+      </div>
+      <!--noindex-->
+        <div class="post-toc-wrap motion-element sidebar-panel sidebar-panel-active">
+          <div class="post-toc">
+
+            
+            
+            
+            
+
+            
+              <div class="post-toc-content"><ol class="nav"><li class="nav-item nav-level-3"><a class="nav-link" href="#性能调优工作流程"><span class="nav-number">1.</span> <span class="nav-text">性能调优工作流程</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#应用启动"><span class="nav-number">2.</span> <span class="nav-text">应用启动</span></a><ol class="nav-child"><li class="nav-item nav-level-4"><a class="nav-link" href="#看门狗程序的时限"><span class="nav-number">2.1.</span> <span class="nav-text">看门狗程序的时限</span></a></li><li class="nav-item nav-level-4"><a class="nav-link" href="#如何衡量启动时间"><span class="nav-number">2.2.</span> <span class="nav-text">如何衡量启动时间</span></a></li><li class="nav-item nav-level-4"><a class="nav-link" href="#输出系统时间"><span class="nav-number">2.3.</span> <span class="nav-text">输出系统时间</span></a></li><li class="nav-item nav-level-4"><a class="nav-link" href="#利用Time-Profile确定启动时间"><span class="nav-number">2.4.</span> <span class="nav-text">利用Time Profile确定启动时间</span></a></li><li class="nav-item nav-level-4"><a class="nav-link" href="#应用启动步骤"><span class="nav-number">2.5.</span> <span class="nav-text">应用启动步骤</span></a></li><li class="nav-item nav-level-4"><a class="nav-link" href="#链接和加载"><span class="nav-number">2.6.</span> <span class="nav-text">链接和加载</span></a></li><li class="nav-item nav-level-4"><a class="nav-link" href="#UIKit初始化"><span class="nav-number">2.7.</span> <span class="nav-text">UIKit初始化</span></a></li><li class="nav-item nav-level-4"><a class="nav-link" href="#处理application-delegate-method"><span class="nav-number">2.8.</span> <span class="nav-text">处理application delegate method</span></a></li><li class="nav-item nav-level-4"><a class="nav-link" href="#第一次动画事物"><span class="nav-number">2.9.</span> <span class="nav-text">第一次动画事物</span></a></li></ol></li><li class="nav-item nav-level-3"><a class="nav-link" href="#绘图和动画"><span class="nav-number">3.</span> <span class="nav-text">绘图和动画</span></a><ol class="nav-child"><li class="nav-item nav-level-4"><a class="nav-link" href="#影响动画性能的因素"><span class="nav-number">3.1.</span> <span class="nav-text">影响动画性能的因素</span></a></li><li class="nav-item nav-level-4"><a class="nav-link" href="#改善动画性能的关键点"><span class="nav-number">3.2.</span> <span class="nav-text">改善动画性能的关键点</span></a></li><li class="nav-item nav-level-4"><a class="nav-link" href="#尽量减少设置操作"><span class="nav-number">3.3.</span> <span class="nav-text">尽量减少设置操作</span></a></li><li class="nav-item nav-level-4"><a class="nav-link" href="#减少绘制"><span class="nav-number">3.4.</span> <span class="nav-text">减少绘制</span></a></li><li class="nav-item nav-level-4"><a class="nav-link" href="#高效的使用image"><span class="nav-number">3.5.</span> <span class="nav-text">高效的使用image</span></a></li><li class="nav-item nav-level-4"><a class="nav-link" href="#drawsAsynchronously"><span class="nav-number">3.6.</span> <span class="nav-text">-drawsAsynchronously</span></a></li></ol></li></ol></div>
+            
+
+          </div>
+        </div>
+      <!--/noindex-->
+      
+
+    </div>
+  </aside>
+  <div id="sidebar-dimmer"></div>
+
+
+      </div>
+    </main>
+
+    <footer id="footer" class="footer">
+      <div class="footer-inner">
+        <div class="copyright">&copy; <span itemprop="copyrightYear">2019</span>
+  <span class="with-love" id="animate">
+    <i class="fa fa-user"></i>
+  </span>
+  <span class="author" itemprop="copyrightHolder">Zrongl</span>
+</div>
+<div class="powered-by">
+<i class="fa fa-user-md"></i>
+<span>不争无尤</span>
+</span>
+</div>
+  <span class="post-meta-divider">|</span>
+  <div class="theme-info">主题 – <a href="https://theme-next.org" class="theme-link" rel="noopener" target="_blank">NexT.Mist</a> v7.3.0</div>
+
+        
+
+
+
+
+
+
+
+
+        
+      </div>
+    </footer>
+      <div class="back-to-top">
+        <i class="fa fa-arrow-up"></i>
+          <span id="scrollpercent"><span>0</span>%</span>
+        
+      </div>
+
+    
+
+  </div>
+
+  
+    
+    
+  
+  <script color='0,0,255' opacity='0.5' zIndex='-1' count='99' src="/lib/canvas-nest/canvas-nest-nomobile.min.js"></script>
+  <script src="/lib/jquery/index.js?v=3.4.1"></script>
+  <script src="/lib/velocity/velocity.min.js?v=1.2.1"></script>
+  <script src="/lib/velocity/velocity.ui.min.js?v=1.2.1"></script>
+
+<script src="/js/utils.js?v=7.3.0"></script>
+  <script src="/js/motion.js?v=7.3.0"></script>
+
+
+  <script src="/js/schemes/muse.js?v=7.3.0"></script>
+
+
+
+<script src="/js/next-boot.js?v=7.3.0"></script>
+
+
+
+
+
+
+  
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+  
+
+  
+
+  
+
+  
+
+
+  
+  <script src="/js/scrollspy.js?v=7.3.0"></script>
+<script src="/js/post-details.js?v=7.3.0"></script>
+
+
+  <!-- 页面点击小红心 -->
+  <script type="text/javascript" src="/js/src/love.js"></script>
+
+</body>
+</html>

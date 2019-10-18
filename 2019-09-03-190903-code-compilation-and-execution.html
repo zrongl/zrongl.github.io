@@ -1,0 +1,647 @@
+<!DOCTYPE html>
+
+
+
+
+
+<html class="theme-next mist use-motion" lang="zh-CN">
+<head>
+  <meta charset="UTF-8">
+<meta name="generator" content="Hexo 3.9.0">
+<meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=2">
+<meta name="theme-color" content="#222">
+<meta http-equiv="X-UA-Compatible" content="IE=edge">
+  <link rel="apple-touch-icon" sizes="180x180" href="/images/apple-touch-icon-next.png?v=7.3.0">
+  <link rel="icon" type="image/png" sizes="32x32" href="/images/favicon-32x32-next.png?v=7.3.0">
+  <link rel="icon" type="image/png" sizes="16x16" href="/images/favicon-16x16-next.png?v=7.3.0">
+  <link rel="mask-icon" href="/images/logo.svg?v=7.3.0" color="#222">
+
+<link rel="stylesheet" href="/css/main.css?v=7.3.0">
+
+<link rel="stylesheet" href="//fonts.googleapis.com/css?family=Monda:300,300italic,400,400italic,700,700italic|Roboto Slab:300,300italic,400,400italic,700,700italic|PT Mono:300,300italic,400,400italic,700,700italic&display=swap&subset=latin,latin-ext">
+<link rel="stylesheet" href="/lib/font-awesome/css/font-awesome.min.css?v=4.7.0">
+  <script src="/lib/pace/pace.min.js?v=1.0.2"></script>
+  <link rel="stylesheet" href="/lib/pace/pace-theme-minimal.min.css?v=1.0.2">
+
+
+<script id="hexo-configurations">
+  var NexT = window.NexT || {};
+  var CONFIG = {
+    root: '/',
+    scheme: 'Mist',
+    version: '7.3.0',
+    sidebar: {"position":"right","display":"post","offset":12,"onmobile":false},
+    back2top: {"enable":true,"sidebar":false,"scrollpercent":true},
+    save_scroll: false,
+    copycode: {"enable":false,"show_result":false,"style":null},
+    fancybox: false,
+    mediumzoom: false,
+    lazyload: false,
+    pangu: false,
+    algolia: {
+      applicationID: '',
+      apiKey: '',
+      indexName: '',
+      hits: {"per_page":10},
+      labels: {"input_placeholder":"Search for Posts","hits_empty":"We didn't find any results for the search: ${query}","hits_stats":"${hits} results found in ${time} ms"}
+    },
+    localsearch: {"enable":false,"trigger":"auto","top_n_per_article":1,"unescape":false,"preload":false},
+    path: '',
+    tabs: true,
+    motion: {"enable":true,"async":false,"transition":{"post_block":"fadeIn","post_header":"slideDownIn","post_body":"slideDownIn","coll_header":"slideLeftIn","sidebar":"slideUpIn"}},
+    translation: {
+      copy_button: '复制',
+      copy_success: '复制成功',
+      copy_failure: '复制失败'
+    }
+  };
+</script>
+
+  <meta name="description" content="从代码的编译与执行的角度，去开始一门新语言的学习">
+<meta property="og:type" content="article">
+<meta property="og:title" content="代码的编译与执行">
+<meta property="og:url" content="http://zrongl.github.io/2019-09-03-190903-code-compilation-and-execution.html">
+<meta property="og:site_name" content="善恶众相">
+<meta property="og:description" content="从代码的编译与执行的角度，去开始一门新语言的学习">
+<meta property="og:locale" content="zh-CN">
+<meta property="og:image" content="http://zrongl.github.io/2019-09-03-190903-code-compilation-and-execution/190903-code-compilation-and-execution-01.png">
+<meta property="og:image" content="http://zrongl.github.io/2019-09-03-190903-code-compilation-and-execution/190903-code-compilation-and-execution-04.png">
+<meta property="og:image" content="http://zrongl.github.io/2019-09-03-190903-code-compilation-and-execution/190903-code-compilation-and-execution-05.png">
+<meta property="og:image" content="http://zrongl.github.io/2019-09-03-190903-code-compilation-and-execution/190903-code-compilation-and-execution-06.png">
+<meta property="og:image" content="http://zrongl.github.io/2019-09-03-190903-code-compilation-and-execution/190903-code-compilation-and-execution-07.png">
+<meta property="og:image" content="http://zrongl.github.io/2019-09-03-190903-code-compilation-and-execution/190903-code-compilation-and-execution-08.png">
+<meta property="og:image" content="http://zrongl.github.io/2019-09-03-190903-code-compilation-and-execution/190903-code-compilation-and-execution-09.png">
+<meta property="og:image" content="http://zrongl.github.io/2019-09-03-190903-code-compilation-and-execution/190903-code-compilation-and-execution-02.png">
+<meta property="og:image" content="http://zrongl.github.io/2019-09-03-190903-code-compilation-and-execution/190903-code-compilation-and-execution-10.png">
+<meta property="og:image" content="http://zrongl.github.io/2019-09-03-190903-code-compilation-and-execution/190903-code-compilation-and-execution-11.png">
+<meta property="og:image" content="http://zrongl.github.io/2019-09-03-190903-code-compilation-and-execution/190903-code-compilation-and-execution-03.png">
+<meta property="og:image" content="http://zrongl.github.io/2019-09-03-190903-code-compilation-and-execution/190903-code-compilation-and-execution-12.png">
+<meta property="og:image" content="http://zrongl.github.io/2019-09-03-190903-code-compilation-and-execution/190903-code-compilation-and-execution-14.png">
+<meta property="og:image" content="http://zrongl.github.io/2019-09-03-190903-code-compilation-and-execution/190903-code-compilation-and-execution-13.png">
+<meta property="og:image" content="http://zrongl.github.io/2019-09-03-190903-code-compilation-and-execution/190903-code-compilation-and-execution-15.png">
+<meta property="og:updated_time" content="2019-10-18T02:07:52.047Z">
+<meta name="twitter:card" content="summary">
+<meta name="twitter:title" content="代码的编译与执行">
+<meta name="twitter:description" content="从代码的编译与执行的角度，去开始一门新语言的学习">
+<meta name="twitter:image" content="http://zrongl.github.io/2019-09-03-190903-code-compilation-and-execution/190903-code-compilation-and-execution-01.png">
+  <link rel="canonical" href="http://zrongl.github.io/2019-09-03-190903-code-compilation-and-execution">
+
+
+<script id="page-configurations">
+  // https://hexo.io/docs/variables.html
+  CONFIG.page = {
+    sidebar: "",
+    isHome: false,
+    isPost: true,
+    isPage: false,
+    isArchive: false
+  };
+</script>
+
+  <title>代码的编译与执行 | 善恶众相</title>
+  
+
+
+
+
+
+
+
+
+  <noscript>
+  <style>
+  .use-motion .motion-element,
+  .use-motion .brand,
+  .use-motion .menu-item,
+  .sidebar-inner,
+  .use-motion .post-block,
+  .use-motion .pagination,
+  .use-motion .comments,
+  .use-motion .post-header,
+  .use-motion .post-body,
+  .use-motion .collection-title { opacity: initial; }
+
+  .use-motion .logo,
+  .use-motion .site-title,
+  .use-motion .site-subtitle {
+    opacity: initial;
+    top: initial;
+  }
+
+  .use-motion .logo-line-before i { left: initial; }
+  .use-motion .logo-line-after i { right: initial; }
+  </style>
+</noscript>
+
+</head>
+
+<body itemscope itemtype="http://schema.org/WebPage" lang="zh-CN">
+
+  <div class="container sidebar-position-right">
+    <div class="headband"></div>
+
+<a href="https://github.com/zrongl" class="github-corner" aria-label="View source on GitHub"><svg width="80" height="80" viewBox="0 0 250 250" style="fill:#151513; color:#fff; position: absolute; top: 0; border: 0; right: 0;" aria-hidden="true"><path d="M0,0 L115,115 L130,115 L142,142 L250,250 L250,0 Z"></path><path d="M128.3,109.0 C113.8,99.7 119.0,89.6 119.0,89.6 C122.0,82.7 120.5,78.6 120.5,78.6 C119.2,72.0 123.4,76.3 123.4,76.3 C127.3,80.9 125.5,87.3 125.5,87.3 C122.9,97.6 130.6,101.9 134.4,103.2" fill="currentColor" style="transform-origin: 130px 106px;" class="octo-arm"></path><path d="M115.0,115.0 C114.9,115.1 118.7,116.5 119.8,115.4 L133.7,101.6 C136.9,99.2 139.9,98.4 142.2,98.6 C133.8,88.0 127.5,74.4 143.8,58.0 C148.5,53.4 154.0,51.2 159.7,51.0 C160.3,49.4 163.2,43.6 171.4,40.1 C171.4,40.1 176.1,42.5 178.8,56.2 C183.1,58.6 187.2,61.8 190.9,65.4 C194.5,69.0 197.7,73.2 200.1,77.6 C213.8,80.2 216.3,84.9 216.3,84.9 C212.7,93.1 206.9,96.0 205.4,96.6 C205.1,102.4 203.0,107.8 198.3,112.5 C181.9,128.9 168.3,122.5 157.7,114.1 C157.9,116.9 156.7,120.9 152.7,124.9 L141.0,136.5 C139.8,137.7 141.6,141.9 141.8,141.8 Z" fill="currentColor" class="octo-body"></path></svg></a><style>.github-corner:hover .octo-arm{animation:octocat-wave 560ms ease-in-out}@keyframes octocat-wave{0%,100%{transform:rotate(0)}20%,60%{transform:rotate(-25deg)}40%,80%{transform:rotate(10deg)}}@media (max-width:500px){.github-corner:hover .octo-arm{animation:none}.github-corner .octo-arm{animation:octocat-wave 560ms ease-in-out}}</style>
+
+    <header id="header" class="header" itemscope itemtype="http://schema.org/WPHeader">
+      <div class="header-inner"><div class="site-brand-wrapper">
+  <div class="site-meta">
+
+    <div class="custom-logo-site-title">
+      <a href="/" class="brand" rel="start">
+        <span class="logo-line-before"><i></i></span>
+        <span class="site-title">善恶众相</span>
+        <span class="logo-line-after"><i></i></span>
+      </a>
+    </div>
+  </div>
+
+  <div class="site-nav-toggle">
+    <button aria-label="切换导航栏">
+      <span class="btn-bar"></span>
+      <span class="btn-bar"></span>
+      <span class="btn-bar"></span>
+    </button>
+  </div>
+</div>
+
+
+<nav class="site-nav">
+  
+  <ul id="menu" class="menu">
+      
+      
+      
+        
+        <li class="menu-item menu-item-home">
+      
+    
+
+    <a href="/" rel="section"><i class="menu-item-icon fa fa-fw fa-home"></i> <br>首页</a>
+
+  </li>
+      
+      
+      
+        
+        <li class="menu-item menu-item-categories">
+      
+    
+
+    <a href="/categories/" rel="section"><i class="menu-item-icon fa fa-fw fa-th"></i> <br>分类</a>
+
+  </li>
+      
+      
+      
+        
+        <li class="menu-item menu-item-archives">
+      
+    
+
+    <a href="/archives/" rel="section"><i class="menu-item-icon fa fa-fw fa-archive"></i> <br>归档</a>
+
+  </li>
+  </ul>
+
+    
+
+</nav>
+</div>
+    </header>
+
+    
+
+
+    <main id="main" class="main">
+      <div class="main-inner">
+        <div class="content-wrap">
+          <div id="content" class="content page-post-detail">
+            
+
+  <div id="posts" class="posts-expand">
+    
+
+  <article class="post post-type-categories" itemscope itemtype="http://schema.org/Article">
+  
+  
+  
+  <div class="post-block">
+    <link itemprop="mainEntityOfPage" href="http://zrongl.github.io/2019-09-03-190903-code-compilation-and-execution.html">
+
+    <span hidden itemprop="author" itemscope itemtype="http://schema.org/Person">
+      <meta itemprop="name" content="Zrongl">
+      <meta itemprop="description" content="">
+      <meta itemprop="image" content="/images/avatar.png">
+    </span>
+
+    <span hidden itemprop="publisher" itemscope itemtype="http://schema.org/Organization">
+      <meta itemprop="name" content="善恶众相">
+    </span>
+      <header class="post-header">
+
+        
+          <h1 class="post-title" itemprop="name headline">代码的编译与执行
+
+            
+          </h1>
+        
+
+        <div class="post-meta">
+            <span class="post-meta-item">
+              <span class="post-meta-item-icon">
+                <i class="fa fa-calendar-o"></i>
+              </span>
+              <span class="post-meta-item-text">发表于</span>
+
+              
+                
+              
+
+              <time title="创建时间：2019-09-03 00:00:00" itemprop="dateCreated datePublished" datetime="2019-09-03T00:00:00+08:00">2019-09-03</time>
+            </span>
+          
+            
+
+            
+              <span class="post-meta-item">
+                <span class="post-meta-item-icon">
+                  <i class="fa fa-calendar-check-o"></i>
+                </span>
+                <span class="post-meta-item-text">更新于</span>
+                <time title="修改时间：2019-10-18 10:07:52" itemprop="dateModified" datetime="2019-10-18T10:07:52+08:00">2019-10-18</time>
+              </span>
+            
+          
+            <span class="post-meta-item">
+              <span class="post-meta-item-icon">
+                <i class="fa fa-folder-o"></i>
+              </span>
+              <span class="post-meta-item-text">分类于</span>
+              
+                <span itemprop="about" itemscope itemtype="http://schema.org/Thing"><a href="/categories/iOS/" itemprop="url" rel="index"><span itemprop="name">iOS</span></a></span>
+
+                
+                
+              
+            </span>
+          
+
+          
+            <div class="post-description">从代码的编译与执行的角度，去开始一门新语言的学习</div>
+          
+
+        </div>
+      </header>
+
+    
+    
+    
+    <div class="post-body" itemprop="articleBody">
+
+      
+        <p>对于计算机语言来讲，从编译及运行的角度来看，可以将其分为三类：</p>
+<h1 id="编译型语言"><a href="#编译型语言" class="headerlink" title="编译型语言"></a>编译型语言</h1><p>将代码通过编译链接等处理，生成可执行二进制文件；然后再将文件加载进内存去执行</p>
+<p>优点：编译器一般会有预编译的过程对代码进行优化。由于运行时不需要编译，所以编译型语言的程序执行效率高。<br>缺点：编译之后如果需要修改就需要整个模块重新编译。编译的时候根据对应的运行环境生成机器码，所以需要根据运行的操作系统环境编译不同的可执行文件。<br>比如：C，C++，Objective-C</p>
+<img src="/2019-09-03-190903-code-compilation-and-execution/190903-code-compilation-and-execution-01.png" title="编译型语言">
+
+<p>以Mac平台的以下Objective-C代码为例：</p>
+<figure class="highlight cpp"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br><span class="line">25</span><br><span class="line">26</span><br><span class="line">27</span><br><span class="line">28</span><br><span class="line">29</span><br><span class="line">30</span><br><span class="line">31</span><br></pre></td><td class="code"><pre><span class="line"><span class="meta">#<span class="meta-keyword">include</span> <span class="meta-string">&lt;stdio.h&gt;</span></span></span><br><span class="line"></span><br><span class="line"><span class="meta">#<span class="meta-keyword">define</span> kUIWindow <span class="meta-string">"UIWindow"</span></span></span><br><span class="line"><span class="class"><span class="keyword">struct</span> <span class="title">objc_object</span>&#123;</span></span><br><span class="line"></span><br><span class="line">&#125;;</span><br><span class="line"></span><br><span class="line"><span class="class"><span class="keyword">struct</span> <span class="title">objc_class</span>&#123;</span></span><br><span class="line"></span><br><span class="line">&#125;;</span><br><span class="line"></span><br><span class="line"><span class="keyword">typedef</span> <span class="class"><span class="keyword">struct</span> <span class="title">objc_object</span> *<span class="title">id</span>;</span></span><br><span class="line"><span class="keyword">typedef</span> <span class="class"><span class="keyword">struct</span> <span class="title">objc_class</span> *<span class="title">Class</span>;</span></span><br><span class="line"><span class="keyword">typedef</span> <span class="keyword">const</span> <span class="keyword">char</span> *SEL;</span><br><span class="line"></span><br><span class="line"><span class="function">Class <span class="title">objc_getClass</span><span class="params">(<span class="keyword">const</span> <span class="keyword">char</span> *aClassName)</span></span></span><br><span class="line"><span class="function"></span>&#123;</span><br><span class="line">	<span class="comment">// ...</span></span><br><span class="line">	<span class="keyword">return</span> <span class="literal">NULL</span>;</span><br><span class="line">&#125;</span><br><span class="line"><span class="function">id <span class="title">objc_msgSend</span><span class="params">(Class cls, <span class="keyword">const</span> <span class="keyword">char</span> *op)</span></span></span><br><span class="line"><span class="function"></span>&#123;</span><br><span class="line">	<span class="comment">// ...</span></span><br><span class="line">	<span class="keyword">return</span> <span class="literal">NULL</span>;</span><br><span class="line">&#125;</span><br><span class="line"></span><br><span class="line"><span class="function"><span class="keyword">int</span> <span class="title">main</span><span class="params">(<span class="keyword">int</span> argc, <span class="keyword">const</span> <span class="keyword">char</span> * argv[])</span></span>&#123;</span><br><span class="line">    Class cls = (Class)objc_msgSend(objc_getClass(kUIWindow), <span class="string">"alloc"</span>);</span><br><span class="line">    <span class="built_in">printf</span>(<span class="string">"Hello, World!\n"</span>);</span><br><span class="line">    <span class="keyword">return</span> <span class="number">0</span>;</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+
+<h2 id="编译链接过程"><a href="#编译链接过程" class="headerlink" title="编译链接过程"></a>编译链接过程</h2><p>由于Objective-C完全是由C语言实现的，所以它的编译过程与C语言几乎完全相同，首先我们先来看一下编译链接生成二进制文件的过程如下图：</p>
+<img src="/2019-09-03-190903-code-compilation-and-execution/190903-code-compilation-and-execution-04.png" title="生成可执行文件过程">
+
+<p>将以上源码命名为objc.c，根据上图从OC源码到生成可执行文件（Mach-O）过程，大致分为一下步骤：</p>
+<h3 id="1-预处理（Pre-Processing）"><a href="#1-预处理（Pre-Processing）" class="headerlink" title="1. 预处理（Pre-Processing）"></a>1. 预处理（Pre-Processing）</h3><p>gcc -E objc.c -o objc.i<br>执行结果生成了objc.i文件，内容如下：</p>
+<figure class="highlight cpp"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br><span class="line">25</span><br><span class="line">26</span><br><span class="line">27</span><br><span class="line">28</span><br></pre></td><td class="code"><pre><span class="line">……</span><br><span class="line"><span class="class"><span class="keyword">struct</span> __<span class="title">sFILEX</span>;</span></span><br><span class="line"># <span class="number">120</span> <span class="string">"/Applications/Xcode6.app/Contents/Developer/Platforms/MacOSX.platform/Developer/SDKs/MacOSX10.9.sdk/usr/include/stdio.h"</span> <span class="number">3</span> <span class="number">4</span></span><br><span class="line"><span class="keyword">typedef</span> <span class="class"><span class="keyword">struct</span> __<span class="title">sFILE</span> &#123;</span></span><br><span class="line"> <span class="keyword">unsigned</span> <span class="keyword">char</span> *_p;</span><br><span class="line"> <span class="keyword">int</span> _r;</span><br><span class="line"> <span class="keyword">int</span> _w;</span><br><span class="line"> <span class="keyword">short</span> _flags;</span><br><span class="line"> <span class="keyword">short</span> _file;</span><br><span class="line"> <span class="class"><span class="keyword">struct</span> __<span class="title">sbuf</span> _<span class="title">bf</span>;</span></span><br><span class="line"> <span class="keyword">int</span> _lbfsize;</span><br><span class="line"></span><br><span class="line"></span><br><span class="line"> <span class="keyword">void</span> *_cookie;</span><br><span class="line"> <span class="keyword">int</span> (*_close)(<span class="keyword">void</span> *);</span><br><span class="line"> <span class="keyword">int</span> (*_read) (<span class="keyword">void</span> *, <span class="keyword">char</span> *, <span class="keyword">int</span>);</span><br><span class="line"> <span class="keyword">fpos_t</span> (*_seek) (<span class="keyword">void</span> *, <span class="keyword">fpos_t</span>, <span class="keyword">int</span>);</span><br><span class="line"> <span class="keyword">int</span> (*_write)(<span class="keyword">void</span> *, <span class="keyword">const</span> <span class="keyword">char</span> *, <span class="keyword">int</span>);</span><br><span class="line"></span><br><span class="line">……</span><br><span class="line"></span><br><span class="line"><span class="function"><span class="keyword">int</span> <span class="title">main</span><span class="params">(<span class="keyword">int</span> argc, <span class="keyword">const</span> <span class="keyword">char</span> * argv[])</span> </span>&#123;</span><br><span class="line"></span><br><span class="line">    Class cls = objc_msgSend(objc_getClass(<span class="string">"UIWindow"</span>), <span class="string">"alloc"</span>);</span><br><span class="line">    <span class="built_in">printf</span>(<span class="string">"Hello, World!\n"</span>);</span><br><span class="line">    <span class="keyword">return</span> <span class="number">0</span>;</span><br><span class="line">&#125;</span><br><span class="line">……</span><br></pre></td></tr></table></figure>
+
+<p>我们发现，该过程其实是把 stdio.h文件中的内容插入到了objc.i文件中，并且将用到宏OBJC的地方都替换成它对应的“NSObject”，所以该阶段主要处理#ifdef、 #include和#define等命令。</p>
+<blockquote>
+<p>tips:<br>预编译过程主要处理那些源代码中以#开始的预编译指令，主要处理规则如下：<br>  将所有的#define删除，并且展开所有的宏定义；<br>  处理所有条件编译指令，如#if，#ifdef等；<br>  处理#include预编译指令，将被包含的文件插入到该预编译指令的位置。该过程递归进行，及被包含的文件可能还包含其他文件。<br>  删除所有的注释//和 /**/；<br>  添加行号和文件标识，如#2 “hello.c” 2,以便于编译时编译器产生调试用的行号信息及用于编译时产生编译错误或警告时能够显示行号信息；<br>  保留所有的#pragma编译器指令，因为编译器须要使用它们；</p>
+</blockquote>
+<h3 id="2-编译（Compiling）"><a href="#2-编译（Compiling）" class="headerlink" title="2. 编译（Compiling）"></a>2. 编译（Compiling）</h3><p>gcc -S objc.i -o objc.s<br>执行结果生成objc.s文件，内容如下：</p>
+<figure class="highlight perl"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br><span class="line">25</span><br><span class="line">26</span><br><span class="line">27</span><br></pre></td><td class="code"><pre><span class="line">……</span><br><span class="line">_main:                                  <span class="comment">## @main</span></span><br><span class="line">	.cfi_startproc</span><br><span class="line"><span class="comment">## BB#0:</span></span><br><span class="line">	pushq	%rbp</span><br><span class="line">Ltmp2:</span><br><span class="line">	.cfi_def_cfa_offset <span class="number">16</span></span><br><span class="line">Ltmp3:</span><br><span class="line">	.cfi_offset %rbp, -<span class="number">16</span></span><br><span class="line">	movq	%rsp, %rbp</span><br><span class="line">Ltmp4:</span><br><span class="line">	.cfi_def_cfa_register %rbp</span><br><span class="line">	subq	$32, %rsp</span><br><span class="line">	leaq	L<span class="number">_</span>.str(%rip), %rax</span><br><span class="line">	movl	$0, -<span class="number">4</span>(%rbp)</span><br><span class="line">	movl	%edi, -<span class="number">8</span>(%rbp)</span><br><span class="line">	movq	%rsi, -<span class="number">16</span>(%rbp)</span><br><span class="line">	movq	%rax, %rdi</span><br><span class="line">	callq	_objc_getClass</span><br><span class="line">	leaq	L<span class="number">_</span>.str1(%rip), %rsi</span><br><span class="line">	movq	%rax, %rdi</span><br><span class="line">	callq	_objc_msgSend</span><br><span class="line">	leaq	L<span class="number">_</span>.str2(%rip), %rdi</span><br><span class="line">	movq	%rax, -<span class="number">24</span>(%rbp)</span><br><span class="line">	movb	$0, %al</span><br><span class="line">	callq	_printf</span><br><span class="line">……</span><br></pre></td></tr></table></figure>
+
+<p>我们发现该阶段生成了汇编代码，但是在进行转换之前编译器会对代码规范性及语法做检查然后给我警告或错误，如果没有检测到错误那么就会继续生成汇编代码文件。</p>
+<p>编译其实就是将一种语言转化为另一种语言的过程，这个过程极其复杂，大致步骤分为一下步骤：</p>
+<img src="/2019-09-03-190903-code-compilation-and-execution/190903-code-compilation-and-execution-05.png" title="编译过程">
+
+<h3 id="3-汇编（Assembling）"><a href="#3-汇编（Assembling）" class="headerlink" title="3. 汇编（Assembling）"></a>3. 汇编（Assembling）</h3><p>gcc -c objc.s -o objc.o<br>汇编器是将汇编代码转变成机器可以执行的命令，每一个汇编语句几乎都对应一条机器指令。汇编相对于编译过程比较简单，根据汇编指令和机器指令的对照表一一翻译即可。</p>
+<h3 id="4-链接（Linking）"><a href="#4-链接（Linking）" class="headerlink" title="4. 链接（Linking）"></a>4. 链接（Linking）</h3><p>gcc objc.o -o objc<br>链接器ld将各个目标文件组装在一起，解决符号依赖，库依赖关系，并生成可执行目标文件（ELF文件结构）objc，此文件包含的也是二进制代码和数据，它可以被直接拷贝到内存中去运行，我们可以通过./objc命令执行该文件(程序)。</p>
+<p>回过头我们再看objc.c中我们调用了“printf”函数，但是在预编译生成的objc.i文件中，我们只找到了该函数的声明并没有定义，那该函数在哪里实现的呢？在默认情况下，这些系统级的调用的实现会被放到libc.so.6的库文件中，链接要做的就是把该函数的实现链接到libc.so.6的库中，这样在执行文件的时候就能够找到实现并完成程序的运行。</p>
+<blockquote>
+<p>tips：函数库一般分为静态库和动态库两种。静态库是指编译链接时，把库文件的代码全部加入到可执行文件中，因此生成的文件比较大，但在运行时也就不再需要库文件了。其后缀名一般为”.a”。动态库与之相反，在编译链接时并没有把库文件的代码加入到可执行文件中，而是在程序执行时由运行时链接文件加载库，这样可以节省系统的开销。动态库一般后缀名为”.so”，如前面所述的libc.so.6就是动态库。<br>静态库即静态链接库（Windows 下的 .lib，Linux 和 Mac 下的 .a）。之所以叫做静态，是因为静态库在编译的时候会被直接拷贝一份，复制到目标程序里，这段代码在目标程序里就不会再改变了。<br>静态库的好处很明显，编译完成之后，库文件实际上就没有作用了。目标程序没有外部依赖，直接就可以运行。当然其缺点也很明显，就是会使用目标程序的体积增大。<br>动态库即动态链接库（Windows 下的 .dll，Linux 下的 .so，Mac 下的 .dylib/.tbd）。与静态库相反，动态库在编译时并不会被拷贝到目标程序中，目标程序中只会存储指向动态库的引用。等到程序运行时，动态库才会被真正加载进来。<br>不需要拷贝到目标程序中，不会影响目标程序的体积，而且同一份库可以被多个程序使用（因为这个原因，动态库也被称作共享库）。同时，编译时才载入的特性，也可以让我们随时对库进行替换，而不需要重新编译代码。动态库带来的问题主要是，动态载入会带来一部分性能损失，使用动态库也会使得程序依赖于外部环境。如果环境缺少动态库或者库的版本不正确，就会导致程序无法运行（Linux 下喜闻乐见的 lib not found 错误）。</p>
+</blockquote>
+<h2 id="加载执行过程"><a href="#加载执行过程" class="headerlink" title="加载执行过程"></a>加载执行过程</h2><p>本着刨根问底的精神我们延伸思考一下，计算机从按下电源键那一刻到操作系统启动完成，如怎样的过程呢？其实操作系统是计算机启动后运行的第一个进程(launchd)，它也是等待内核加载完必要的资源之后才开始运行的；而我们的应用的启动和消亡都是由操作系统去统一维护和管理的。</p>
+<h3 id="从按下电源键到加载内核"><a href="#从按下电源键到加载内核" class="headerlink" title="从按下电源键到加载内核"></a>从按下电源键到加载内核</h3><img src="/2019-09-03-190903-code-compilation-and-execution/190903-code-compilation-and-execution-06.png" title="计算机启动过程">
+
+<p>更详细的描述请参阅这个篇文章[计算机是如何启动的]<br>(<a href="http://liaoph.com/how-computers-boot-up" target="_blank" rel="noopener">http://liaoph.com/how-computers-boot-up</a>)</p>
+<p>自举处理器就是运行内核初始化代码的处理器，当自举处理器从真实模式切换到保护模式之后，第一个执行的函数就是位于<code>i386_init.c</code>文件中的<code>vstart()</code>函数，想要知道内核初始化过程就要对内核的结构有所了解：</p>
+<img src="/2019-09-03-190903-code-compilation-and-execution/190903-code-compilation-and-execution-07.png" title="核心操作系统Darwin基本架构">
+
+<p>Darwin是OS X及iOS的核心操作系统，它是有内核xnu及众多系统库（libSystem.B.dylib，libc.dylib）组成，而xnu内核又是由BSD（包括文件系统、网络核心、POSIX接口）及Mach微内核（包括调度器、IPC、虚拟内存管理）组成，所以内核的初始化过程我们可以理解为对以上这些核心组件的初始化过程，代码的执行流程也说明了这一点：</p>
+<img src="/2019-09-03-190903-code-compilation-and-execution/190903-code-compilation-and-execution-08.png" title="内核初始化代码流程">
+
+<p>值得注意的是<code>load_init_program( )</code>函数就是负责初始化PID 为1 的进程launchd，至此我们的操作系统才开始进行启动和初始化，在此之后会在<code>load_dylinker()</code>中调起<code>__dyld_start()</code>方法，此时才正式的从内核态切换到了用户态，此后的流程就是连接器<code>dyld</code>去加载镜像(image)的过程，值得说明的一点是OC的<code>runtime</code>运行时系统就是在这个加载镜像过程中去完成构建的，等到镜像加载完毕，会返回<code>main()</code>函数的地址给<code>dyldStartup.s</code>中调用<code>__dyld_start()</code>处，最后跳到主程序的main函数去执行，此时才正式进入我们的应用代码去执行。</p>
+<img src="/2019-09-03-190903-code-compilation-and-execution/190903-code-compilation-and-execution-09.png" title="dyld加载镜像过程">
+
+<h1 id="解释型语言："><a href="#解释型语言：" class="headerlink" title="解释型语言："></a>解释型语言：</h1><p>在程序运行时去执行再去执行编译，编译完后直接加载进内存去执行，而不会生成可执行的二进制文件</p>
+<p>优点：有较好的平台兼容性，在任何环境中都可以运行，前提是安装了解释器/虚拟机。修改代码的时候直接修改就可以快速部署，不用停机维护。<br>缺点：每次运行的时候都要解释一遍，性能上不如编译型语言。<br>比如：PHP，Python，JavaScript</p>
+<img src="/2019-09-03-190903-code-compilation-and-execution/190903-code-compilation-and-execution-02.png" title="解释型语言">
+
+<p>拿PHP语言来说，它的编译执行过程可以用下图表示：</p>
+<img src="/2019-09-03-190903-code-compilation-and-execution/190903-code-compilation-and-execution-10.png" title="解释型语言">
+
+<p>本着刨根问底儿的精神，在这里对PHP进行一下了解，PHP其实只是一个脚本解析器，你可以把它理解为一个普通的函数，输入是PHP脚本，输出是执行结果。在网络应用场景下，PHP并没有像Golang那样实现http网络库，而是实现了FastCGI协议，然后与web服务器配合实现了http的处理，web服务器来处理http请求，然后将解析的结果再通过FastCGI协议转发给处理程序，处理程序处理完成后将结果返回给web服务器，web服务器再返回给用户，这就是PHP的FastCGI运行模式，这种模式下通过FPM（FastCGI<br> PRocess Manager）来对各个请求进行管理的。</p>
+<p>FPM启动过程的代码如下：</p>
+<figure class="highlight jboss-cli"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br><span class="line">25</span><br><span class="line">26</span><br><span class="line">27</span><br><span class="line">28</span><br><span class="line">29</span><br><span class="line">30</span><br><span class="line">31</span><br><span class="line">32</span><br><span class="line">33</span><br></pre></td><td class="code"><pre><span class="line">int main<span class="params">(int argc, char *argv[])</span></span><br><span class="line">&#123;</span><br><span class="line">    <span class="string">...</span></span><br><span class="line">    fcgi_fd = fpm_run<span class="params">(&amp;max_requests)</span>;</span><br><span class="line">    parent = 0;</span><br><span class="line">    </span><br><span class="line">    <span class="string">//</span>初始化fastcgi请求</span><br><span class="line">    request = fpm_init_request<span class="params">(fcgi_fd)</span>;</span><br><span class="line">    </span><br><span class="line">    <span class="string">//worker</span>进程将阻塞在这，等待请求</span><br><span class="line">    while <span class="params">(EXPECTED(fcgi_accept_request(request)</span> &gt;= 0)) &#123;</span><br><span class="line">        SG<span class="params">(server_context)</span> = <span class="params">(void *)</span> request;</span><br><span class="line">        init_request_info<span class="params">()</span>;</span><br><span class="line">        </span><br><span class="line">        <span class="string">//</span>请求开始</span><br><span class="line">        <span class="keyword">if</span> <span class="params">(UNEXPECTED(php_request_startup()</span> == FAILURE)) &#123;</span><br><span class="line">            <span class="string">...</span></span><br><span class="line">        &#125;</span><br><span class="line">        <span class="string">...</span></span><br><span class="line">        </span><br><span class="line">        fpm_request_executing<span class="params">()</span>;</span><br><span class="line">        <span class="string">//</span>编译、执行PHP脚本</span><br><span class="line">        php_execute_script<span class="params">(&amp;file_handle)</span>;</span><br><span class="line">        <span class="string">...</span></span><br><span class="line">        <span class="string">//</span>请求结束</span><br><span class="line">        php_request_<span class="keyword">shutdown</span><span class="params">((void *)</span> 0);</span><br><span class="line">        <span class="string">...</span></span><br><span class="line">    &#125;</span><br><span class="line">    <span class="string">...</span></span><br><span class="line">    <span class="string">//worker</span>进程退出</span><br><span class="line">    php_module_<span class="keyword">shutdown</span><span class="params">()</span>;</span><br><span class="line">    <span class="string">...</span></span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+
+<figure class="highlight cpp"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br></pre></td><td class="code"><pre><span class="line"><span class="function"><span class="keyword">int</span> <span class="title">fpm_run</span><span class="params">(<span class="keyword">int</span> *max_requests)</span></span></span><br><span class="line"><span class="function"></span>&#123;</span><br><span class="line">    <span class="class"><span class="keyword">struct</span> <span class="title">fpm_worker_pool_s</span> *<span class="title">wp</span>;</span></span><br><span class="line">    <span class="keyword">for</span> (wp = fpm_worker_all_pools; wp; wp = wp-&gt;next) &#123;</span><br><span class="line">        <span class="comment">//调用fpm_children_make() fork子进程</span></span><br><span class="line">        is_parent = fpm_children_create_initial(wp);</span><br><span class="line">        </span><br><span class="line">        <span class="keyword">if</span> (!is_parent) &#123;</span><br><span class="line">            <span class="keyword">goto</span> run_child;</span><br><span class="line">        &#125;</span><br><span class="line">    &#125;</span><br><span class="line">    <span class="comment">//master进程将进入event循环，不再往下走</span></span><br><span class="line">    fpm_event_loop(<span class="number">0</span>);</span><br><span class="line">    </span><br><span class="line">run_child: <span class="comment">//只有worker进程会到这里</span></span><br><span class="line">    </span><br><span class="line">    *max_requests = fpm_globals.max_requests;</span><br><span class="line">    <span class="keyword">return</span> fpm_globals.listening_socket; <span class="comment">//返回监听的套接字</span></span><br><span class="line">&#125;</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+
+<figure class="highlight cpp"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br><span class="line">25</span><br><span class="line">26</span><br><span class="line">27</span><br><span class="line">28</span><br></pre></td><td class="code"><pre><span class="line"><span class="function"><span class="keyword">void</span> <span class="title">fpm_event_loop</span><span class="params">(<span class="keyword">int</span> err)</span></span></span><br><span class="line"><span class="function"></span>&#123;</span><br><span class="line">    <span class="comment">//创建一个io read的监听事件，这里监听的就是在fpm_init()阶段中通过socketpair()创建管道sp[0]</span></span><br><span class="line">    <span class="comment">//当sp[0]可读时将回调fpm_got_signal()</span></span><br><span class="line">    fpm_event_set(&amp;signal_fd_event,</span><br><span class="line">                  fpm_signals_get_fd(),</span><br><span class="line">                  FPM_EV_READ,</span><br><span class="line">                  &amp;fpm_got_signal,</span><br><span class="line">                  <span class="literal">NULL</span>);</span><br><span class="line">    fpm_event_add(&amp;signal_fd_event, <span class="number">0</span>);</span><br><span class="line">    </span><br><span class="line">    <span class="comment">//如果在php-fpm.conf配置了request_terminate_timeout则启动心跳检查</span></span><br><span class="line">    <span class="keyword">if</span> (fpm_globals.heartbeat &gt; <span class="number">0</span>) &#123;</span><br><span class="line">        fpm_pctl_heartbeat(<span class="literal">NULL</span>, <span class="number">0</span>, <span class="literal">NULL</span>);</span><br><span class="line">    &#125;</span><br><span class="line">    <span class="comment">//定时触发进程管理</span></span><br><span class="line">    fpm_pctl_perform_idle_server_maintenance_heartbeat(<span class="literal">NULL</span>, <span class="number">0</span>, <span class="literal">NULL</span>);</span><br><span class="line">    </span><br><span class="line">    <span class="comment">//进入事件循环，master进程将阻塞在此</span></span><br><span class="line">    <span class="keyword">while</span> (<span class="number">1</span>) &#123;</span><br><span class="line">        ...</span><br><span class="line">        <span class="comment">//等待IO事件</span></span><br><span class="line">        ret = <span class="keyword">module</span>-&gt;wait(fpm_event_queue_fd, timeout);</span><br><span class="line">        ...</span><br><span class="line">        <span class="comment">//检查定时器事件</span></span><br><span class="line">        ...</span><br><span class="line">    &#125;</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+
+<p>FPM启动及运行过程总结如下图：</p>
+<img src="/2019-09-03-190903-code-compilation-and-execution/190903-code-compilation-and-execution-11.png" title="FPM启动过程">
+
+<h1 id="混合型语言："><a href="#混合型语言：" class="headerlink" title="混合型语言："></a>混合型语言：</h1><p>首先通过编译器生成一种有别于机器码的中间语言，然后再通过虚拟机去解释执行</p>
+<p>比如：Java，C#</p>
+<img src="/2019-09-03-190903-code-compilation-and-execution/190903-code-compilation-and-execution-03.png" title="混合型语言编译执行流程">
+
+<p>Java语言的编译及执行流程如下图：</p>
+<img src="/2019-09-03-190903-code-compilation-and-execution/190903-code-compilation-and-execution-12.png" title="Java编译执行流程">
+
+<p>Java更详细的编译及执行流程如下图：</p>
+<img src="/2019-09-03-190903-code-compilation-and-execution/190903-code-compilation-and-execution-14.png" title="Java执行流程">
+
+<p>C#语言的编译及执行流程如下图：</p>
+<img src="/2019-09-03-190903-code-compilation-and-execution/190903-code-compilation-and-execution-13.png" title="C#语言编译执行流程">
+
+<p>C#更详细的编译及执行流程如下图：</p>
+<img src="/2019-09-03-190903-code-compilation-and-execution/190903-code-compilation-and-execution-15.png" title="C#语言编译执行流程">
+
+<h1 id="Reference"><a href="#Reference" class="headerlink" title="Reference"></a>Reference</h1><p><a href="https://baijiahao.baidu.com/s?id=1602418434992761288&amp;wfr=spider&amp;for=pc" target="_blank" rel="noopener">https://baijiahao.baidu.com/s?id=1602418434992761288&amp;wfr=spider&amp;for=pc</a></p>
+<p>[PHP7内核剖析]<br>(<a href="https://www.kancloud.cn/nickbai/php7" target="_blank" rel="noopener">https://www.kancloud.cn/nickbai/php7</a>)<br>[计算机是如何启动的]<br>(<a href="http://liaoph.com/how-computers-boot-up" target="_blank" rel="noopener">http://liaoph.com/how-computers-boot-up</a>)<br>[MacOS X系统启动过程a]<br>(<a href="https://blog.csdn.net/dianshanglian/article/details/56485263" target="_blank" rel="noopener">https://blog.csdn.net/dianshanglian/article/details/56485263</a>)<br>[MacOS X系统启动过程b]<br>(<a href="http://www.ruanyifeng.com/blog/2013/02/booting.html" target="_blank" rel="noopener">http://www.ruanyifeng.com/blog/2013/02/booting.html</a>)</p>
+
+    </div>
+
+    
+    
+    
+
+    <footer class="post-footer">
+        <div class="post-nav">
+          <div class="post-nav-next post-nav-item">
+              <a href="/2019-07-15-151115-sinvoice-generate.html" rel="next" title="从数据到声音">
+                <i class="fa fa-chevron-left"></i> 从数据到声音
+              </a>
+            
+          </div>
+
+          <span class="post-nav-divider"></span>
+
+          <div class="post-nav-prev post-nav-item">
+          </div>
+        </div>
+    </footer>
+  </div>
+  
+  
+  
+  </article>
+
+  </div>
+
+
+          </div>
+          
+
+
+        </div>
+          
+  
+  <div class="sidebar-toggle">
+    <div class="sidebar-toggle-line-wrap">
+      <span class="sidebar-toggle-line sidebar-toggle-line-first"></span>
+      <span class="sidebar-toggle-line sidebar-toggle-line-middle"></span>
+      <span class="sidebar-toggle-line sidebar-toggle-line-last"></span>
+    </div>
+  </div>
+
+  <aside id="sidebar" class="sidebar">
+    <div class="sidebar-inner">
+        <ul class="sidebar-nav motion-element">
+          <li class="sidebar-nav-toc sidebar-nav-active" data-target="post-toc-wrap">
+            文章目录
+          </li>
+          <li class="sidebar-nav-overview" data-target="site-overview-wrap">
+            站点概览
+          </li>
+        </ul>
+      
+
+      <div class="site-overview-wrap sidebar-panel">
+        <div class="site-overview">
+
+          <div class="site-author motion-element" itemprop="author" itemscope itemtype="http://schema.org/Person">
+    <img class="site-author-image" itemprop="image"
+      src="/images/avatar.png"
+      alt="Zrongl">
+  <p class="site-author-name" itemprop="name">Zrongl</p>
+  <div class="site-description motion-element" itemprop="description"></div>
+</div>
+  <nav class="site-state motion-element">
+      <div class="site-state-item site-state-posts">
+        
+          <a href="/archives/">
+        
+          <span class="site-state-item-count">23</span>
+          <span class="site-state-item-name">日志</span>
+        </a>
+      </div>
+    
+      
+      
+      <div class="site-state-item site-state-categories">
+        
+          
+            <a href="/categories/">
+          
+        
+        
+        
+          
+        
+          
+        
+          
+        
+        <span class="site-state-item-count">3</span>
+        <span class="site-state-item-name">分类</span>
+        </a>
+      </div>
+    
+  </nav>
+  <div class="links-of-author motion-element">
+      <span class="links-of-author-item">
+      
+      
+        
+      
+      
+        
+      
+        <a href="https://github.com/zrongl" title="GitHub &rarr; https://github.com/zrongl" rel="noopener" target="_blank"><i class="fa fa-fw fa-github"></i>GitHub</a>
+      </span>
+    
+      <span class="links-of-author-item">
+      
+      
+        
+      
+      
+        
+      
+        <a href="mailto:ronglei0324@163.com" title="E-Mail &rarr; mailto:ronglei0324@163.com" rel="noopener" target="_blank"><i class="fa fa-fw fa-envelope"></i>E-Mail</a>
+      </span>
+    
+  </div>
+
+
+
+        </div>
+      </div>
+      <!--noindex-->
+        <div class="post-toc-wrap motion-element sidebar-panel sidebar-panel-active">
+          <div class="post-toc">
+
+            
+            
+            
+            
+
+            
+              <div class="post-toc-content"><ol class="nav"><li class="nav-item nav-level-1"><a class="nav-link" href="#编译型语言"><span class="nav-number">1.</span> <span class="nav-text">编译型语言</span></a><ol class="nav-child"><li class="nav-item nav-level-2"><a class="nav-link" href="#编译链接过程"><span class="nav-number">1.1.</span> <span class="nav-text">编译链接过程</span></a><ol class="nav-child"><li class="nav-item nav-level-3"><a class="nav-link" href="#1-预处理（Pre-Processing）"><span class="nav-number">1.1.1.</span> <span class="nav-text">1. 预处理（Pre-Processing）</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#2-编译（Compiling）"><span class="nav-number">1.1.2.</span> <span class="nav-text">2. 编译（Compiling）</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#3-汇编（Assembling）"><span class="nav-number">1.1.3.</span> <span class="nav-text">3. 汇编（Assembling）</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#4-链接（Linking）"><span class="nav-number">1.1.4.</span> <span class="nav-text">4. 链接（Linking）</span></a></li></ol></li><li class="nav-item nav-level-2"><a class="nav-link" href="#加载执行过程"><span class="nav-number">1.2.</span> <span class="nav-text">加载执行过程</span></a><ol class="nav-child"><li class="nav-item nav-level-3"><a class="nav-link" href="#从按下电源键到加载内核"><span class="nav-number">1.2.1.</span> <span class="nav-text">从按下电源键到加载内核</span></a></li></ol></li></ol></li><li class="nav-item nav-level-1"><a class="nav-link" href="#解释型语言："><span class="nav-number">2.</span> <span class="nav-text">解释型语言：</span></a></li><li class="nav-item nav-level-1"><a class="nav-link" href="#混合型语言："><span class="nav-number">3.</span> <span class="nav-text">混合型语言：</span></a></li><li class="nav-item nav-level-1"><a class="nav-link" href="#Reference"><span class="nav-number">4.</span> <span class="nav-text">Reference</span></a></li></ol></div>
+            
+
+          </div>
+        </div>
+      <!--/noindex-->
+      
+
+    </div>
+  </aside>
+  <div id="sidebar-dimmer"></div>
+
+
+      </div>
+    </main>
+
+    <footer id="footer" class="footer">
+      <div class="footer-inner">
+        <div class="copyright">&copy; <span itemprop="copyrightYear">2019</span>
+  <span class="with-love" id="animate">
+    <i class="fa fa-user"></i>
+  </span>
+  <span class="author" itemprop="copyrightHolder">Zrongl</span>
+</div>
+<div class="powered-by">
+<i class="fa fa-user-md"></i>
+<span>不争无尤</span>
+</span>
+</div>
+  <span class="post-meta-divider">|</span>
+  <div class="theme-info">主题 – <a href="https://theme-next.org" class="theme-link" rel="noopener" target="_blank">NexT.Mist</a> v7.3.0</div>
+
+        
+
+
+
+
+
+
+
+
+        
+      </div>
+    </footer>
+      <div class="back-to-top">
+        <i class="fa fa-arrow-up"></i>
+          <span id="scrollpercent"><span>0</span>%</span>
+        
+      </div>
+
+    
+
+  </div>
+
+  
+    
+    
+  
+  <script color='0,0,255' opacity='0.5' zIndex='-1' count='99' src="/lib/canvas-nest/canvas-nest-nomobile.min.js"></script>
+  <script src="/lib/jquery/index.js?v=3.4.1"></script>
+  <script src="/lib/velocity/velocity.min.js?v=1.2.1"></script>
+  <script src="/lib/velocity/velocity.ui.min.js?v=1.2.1"></script>
+
+<script src="/js/utils.js?v=7.3.0"></script>
+  <script src="/js/motion.js?v=7.3.0"></script>
+
+
+  <script src="/js/schemes/muse.js?v=7.3.0"></script>
+
+
+
+<script src="/js/next-boot.js?v=7.3.0"></script>
+
+
+
+
+
+
+  
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+  
+
+  
+
+  
+
+  
+
+
+  
+  <script src="/js/scrollspy.js?v=7.3.0"></script>
+<script src="/js/post-details.js?v=7.3.0"></script>
+
+
+  <!-- 页面点击小红心 -->
+  <script type="text/javascript" src="/js/src/love.js"></script>
+
+</body>
+</html>

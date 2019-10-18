@@ -1,0 +1,644 @@
+<!DOCTYPE html>
+
+
+
+
+
+<html class="theme-next mist use-motion" lang="zh-CN">
+<head>
+  <meta charset="UTF-8">
+<meta name="generator" content="Hexo 3.9.0">
+<meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=2">
+<meta name="theme-color" content="#222">
+<meta http-equiv="X-UA-Compatible" content="IE=edge">
+  <link rel="apple-touch-icon" sizes="180x180" href="/images/apple-touch-icon-next.png?v=7.3.0">
+  <link rel="icon" type="image/png" sizes="32x32" href="/images/favicon-32x32-next.png?v=7.3.0">
+  <link rel="icon" type="image/png" sizes="16x16" href="/images/favicon-16x16-next.png?v=7.3.0">
+  <link rel="mask-icon" href="/images/logo.svg?v=7.3.0" color="#222">
+
+<link rel="stylesheet" href="/css/main.css?v=7.3.0">
+
+<link rel="stylesheet" href="//fonts.googleapis.com/css?family=Monda:300,300italic,400,400italic,700,700italic|Roboto Slab:300,300italic,400,400italic,700,700italic|PT Mono:300,300italic,400,400italic,700,700italic&display=swap&subset=latin,latin-ext">
+<link rel="stylesheet" href="/lib/font-awesome/css/font-awesome.min.css?v=4.7.0">
+  <script src="/lib/pace/pace.min.js?v=1.0.2"></script>
+  <link rel="stylesheet" href="/lib/pace/pace-theme-minimal.min.css?v=1.0.2">
+
+
+<script id="hexo-configurations">
+  var NexT = window.NexT || {};
+  var CONFIG = {
+    root: '/',
+    scheme: 'Mist',
+    version: '7.3.0',
+    sidebar: {"position":"right","display":"post","offset":12,"onmobile":false},
+    back2top: {"enable":true,"sidebar":false,"scrollpercent":true},
+    save_scroll: false,
+    copycode: {"enable":false,"show_result":false,"style":null},
+    fancybox: false,
+    mediumzoom: false,
+    lazyload: false,
+    pangu: false,
+    algolia: {
+      applicationID: '',
+      apiKey: '',
+      indexName: '',
+      hits: {"per_page":10},
+      labels: {"input_placeholder":"Search for Posts","hits_empty":"We didn't find any results for the search: ${query}","hits_stats":"${hits} results found in ${time} ms"}
+    },
+    localsearch: {"enable":false,"trigger":"auto","top_n_per_article":1,"unescape":false,"preload":false},
+    path: '',
+    tabs: true,
+    motion: {"enable":true,"async":false,"transition":{"post_block":"fadeIn","post_header":"slideDownIn","post_body":"slideDownIn","coll_header":"slideLeftIn","sidebar":"slideUpIn"}},
+    translation: {
+      copy_button: '复制',
+      copy_success: '复制成功',
+      copy_failure: '复制失败'
+    }
+  };
+</script>
+
+  <meta name="description" content="Automatic Reference Count深入原理。">
+<meta property="og:type" content="article">
+<meta property="og:title" content="iOS内存管理ARC">
+<meta property="og:url" content="http://zrongl.github.io/2018-06-08-180608-arc.html">
+<meta property="og:site_name" content="善恶众相">
+<meta property="og:description" content="Automatic Reference Count深入原理。">
+<meta property="og:locale" content="zh-CN">
+<meta property="og:image" content="http://zrongl.github.io/2018-06-08-180608-arc/180608-arc-00.png">
+<meta property="og:image" content="http://zrongl.github.io/2018-06-08-180608-arc/180608-arc-01.png">
+<meta property="og:updated_time" content="2019-10-18T01:50:45.439Z">
+<meta name="twitter:card" content="summary">
+<meta name="twitter:title" content="iOS内存管理ARC">
+<meta name="twitter:description" content="Automatic Reference Count深入原理。">
+<meta name="twitter:image" content="http://zrongl.github.io/2018-06-08-180608-arc/180608-arc-00.png">
+  <link rel="canonical" href="http://zrongl.github.io/2018-06-08-180608-arc">
+
+
+<script id="page-configurations">
+  // https://hexo.io/docs/variables.html
+  CONFIG.page = {
+    sidebar: "",
+    isHome: false,
+    isPost: true,
+    isPage: false,
+    isArchive: false
+  };
+</script>
+
+  <title>iOS内存管理ARC | 善恶众相</title>
+  
+
+
+
+
+
+
+
+
+  <noscript>
+  <style>
+  .use-motion .motion-element,
+  .use-motion .brand,
+  .use-motion .menu-item,
+  .sidebar-inner,
+  .use-motion .post-block,
+  .use-motion .pagination,
+  .use-motion .comments,
+  .use-motion .post-header,
+  .use-motion .post-body,
+  .use-motion .collection-title { opacity: initial; }
+
+  .use-motion .logo,
+  .use-motion .site-title,
+  .use-motion .site-subtitle {
+    opacity: initial;
+    top: initial;
+  }
+
+  .use-motion .logo-line-before i { left: initial; }
+  .use-motion .logo-line-after i { right: initial; }
+  </style>
+</noscript>
+
+</head>
+
+<body itemscope itemtype="http://schema.org/WebPage" lang="zh-CN">
+
+  <div class="container sidebar-position-right">
+    <div class="headband"></div>
+
+<a href="https://github.com/zrongl" class="github-corner" aria-label="View source on GitHub"><svg width="80" height="80" viewBox="0 0 250 250" style="fill:#151513; color:#fff; position: absolute; top: 0; border: 0; right: 0;" aria-hidden="true"><path d="M0,0 L115,115 L130,115 L142,142 L250,250 L250,0 Z"></path><path d="M128.3,109.0 C113.8,99.7 119.0,89.6 119.0,89.6 C122.0,82.7 120.5,78.6 120.5,78.6 C119.2,72.0 123.4,76.3 123.4,76.3 C127.3,80.9 125.5,87.3 125.5,87.3 C122.9,97.6 130.6,101.9 134.4,103.2" fill="currentColor" style="transform-origin: 130px 106px;" class="octo-arm"></path><path d="M115.0,115.0 C114.9,115.1 118.7,116.5 119.8,115.4 L133.7,101.6 C136.9,99.2 139.9,98.4 142.2,98.6 C133.8,88.0 127.5,74.4 143.8,58.0 C148.5,53.4 154.0,51.2 159.7,51.0 C160.3,49.4 163.2,43.6 171.4,40.1 C171.4,40.1 176.1,42.5 178.8,56.2 C183.1,58.6 187.2,61.8 190.9,65.4 C194.5,69.0 197.7,73.2 200.1,77.6 C213.8,80.2 216.3,84.9 216.3,84.9 C212.7,93.1 206.9,96.0 205.4,96.6 C205.1,102.4 203.0,107.8 198.3,112.5 C181.9,128.9 168.3,122.5 157.7,114.1 C157.9,116.9 156.7,120.9 152.7,124.9 L141.0,136.5 C139.8,137.7 141.6,141.9 141.8,141.8 Z" fill="currentColor" class="octo-body"></path></svg></a><style>.github-corner:hover .octo-arm{animation:octocat-wave 560ms ease-in-out}@keyframes octocat-wave{0%,100%{transform:rotate(0)}20%,60%{transform:rotate(-25deg)}40%,80%{transform:rotate(10deg)}}@media (max-width:500px){.github-corner:hover .octo-arm{animation:none}.github-corner .octo-arm{animation:octocat-wave 560ms ease-in-out}}</style>
+
+    <header id="header" class="header" itemscope itemtype="http://schema.org/WPHeader">
+      <div class="header-inner"><div class="site-brand-wrapper">
+  <div class="site-meta">
+
+    <div class="custom-logo-site-title">
+      <a href="/" class="brand" rel="start">
+        <span class="logo-line-before"><i></i></span>
+        <span class="site-title">善恶众相</span>
+        <span class="logo-line-after"><i></i></span>
+      </a>
+    </div>
+  </div>
+
+  <div class="site-nav-toggle">
+    <button aria-label="切换导航栏">
+      <span class="btn-bar"></span>
+      <span class="btn-bar"></span>
+      <span class="btn-bar"></span>
+    </button>
+  </div>
+</div>
+
+
+<nav class="site-nav">
+  
+  <ul id="menu" class="menu">
+      
+      
+      
+        
+        <li class="menu-item menu-item-home">
+      
+    
+
+    <a href="/" rel="section"><i class="menu-item-icon fa fa-fw fa-home"></i> <br>首页</a>
+
+  </li>
+      
+      
+      
+        
+        <li class="menu-item menu-item-categories">
+      
+    
+
+    <a href="/categories/" rel="section"><i class="menu-item-icon fa fa-fw fa-th"></i> <br>分类</a>
+
+  </li>
+      
+      
+      
+        
+        <li class="menu-item menu-item-archives">
+      
+    
+
+    <a href="/archives/" rel="section"><i class="menu-item-icon fa fa-fw fa-archive"></i> <br>归档</a>
+
+  </li>
+  </ul>
+
+    
+
+</nav>
+</div>
+    </header>
+
+    
+
+
+    <main id="main" class="main">
+      <div class="main-inner">
+        <div class="content-wrap">
+          <div id="content" class="content page-post-detail">
+            
+
+  <div id="posts" class="posts-expand">
+    
+
+  <article class="post post-type-categories" itemscope itemtype="http://schema.org/Article">
+  
+  
+  
+  <div class="post-block">
+    <link itemprop="mainEntityOfPage" href="http://zrongl.github.io/2018-06-08-180608-arc.html">
+
+    <span hidden itemprop="author" itemscope itemtype="http://schema.org/Person">
+      <meta itemprop="name" content="Zrongl">
+      <meta itemprop="description" content="">
+      <meta itemprop="image" content="/images/avatar.png">
+    </span>
+
+    <span hidden itemprop="publisher" itemscope itemtype="http://schema.org/Organization">
+      <meta itemprop="name" content="善恶众相">
+    </span>
+      <header class="post-header">
+
+        
+          <h1 class="post-title" itemprop="name headline">iOS内存管理ARC
+
+            
+          </h1>
+        
+
+        <div class="post-meta">
+            <span class="post-meta-item">
+              <span class="post-meta-item-icon">
+                <i class="fa fa-calendar-o"></i>
+              </span>
+              <span class="post-meta-item-text">发表于</span>
+
+              
+                
+              
+
+              <time title="创建时间：2018-06-08 00:00:00" itemprop="dateCreated datePublished" datetime="2018-06-08T00:00:00+08:00">2018-06-08</time>
+            </span>
+          
+            
+
+            
+              <span class="post-meta-item">
+                <span class="post-meta-item-icon">
+                  <i class="fa fa-calendar-check-o"></i>
+                </span>
+                <span class="post-meta-item-text">更新于</span>
+                <time title="修改时间：2019-10-18 09:50:45" itemprop="dateModified" datetime="2019-10-18T09:50:45+08:00">2019-10-18</time>
+              </span>
+            
+          
+            <span class="post-meta-item">
+              <span class="post-meta-item-icon">
+                <i class="fa fa-folder-o"></i>
+              </span>
+              <span class="post-meta-item-text">分类于</span>
+              
+                <span itemprop="about" itemscope itemtype="http://schema.org/Thing"><a href="/categories/iOS/" itemprop="url" rel="index"><span itemprop="name">iOS</span></a></span>
+
+                
+                
+              
+            </span>
+          
+
+          
+            <div class="post-description">Automatic Reference Count深入原理。</div>
+          
+
+        </div>
+      </header>
+
+    
+    
+    
+    <div class="post-body" itemprop="articleBody">
+
+      
+        <h1 id="编译器和LLVM-IR"><a href="#编译器和LLVM-IR" class="headerlink" title="编译器和LLVM IR"></a>编译器和LLVM IR</h1><p>当代编译器遵循以下架构：前端（词法分析与解析器），优化器，后端    </p>
+<img src="/2018-06-08-180608-arc/180608-arc-00.png" title="当代编译器架构">
+
+<p>前端就是lexer加上parser，设计目标是把源代码转成数据结构，一般是AST的结构，即Abstract Syntax Tree，用来表示源代码当中的各种代码的层级关系。<br>接下来看Optimizer，这块的作用是把前端的转化而成的数据结构进行优化，但前提是不改变源代码原本要表达的逻辑。<br>优化这块可以做的，比如去除掉永远运行不到的代码，把一些写得冗长不合理的逻辑改短，同时不改变逻辑本身，等等。<br>最后是后端。后端就是把中间的数据结构转化成目标平台的源代码。这部分要用到的技术也是独立的一块。<br>这样设计编译器的好处是什么？实际上就是前端和后端可以各自独立实现，独立维护。因为前端和后端所用到的技术各自都比较独立，所以对于维护编译器这样复杂的项目来说，模块化是必要的。<br>还有一个更重要的原因，就是这样的设计可以让一个编译器支持多语言，多平台的设计。类似下图所示：</p>
+<img src="/2018-06-08-180608-arc/180608-arc-01.png" title="模块化结构">
+
+<h1 id="ARC情况下编译器为我们做了什么"><a href="#ARC情况下编译器为我们做了什么" class="headerlink" title="ARC情况下编译器为我们做了什么"></a>ARC情况下编译器为我们做了什么</h1><p>通过以下命令可以将OC源码转换成LLVM IR（中间语言），便于我们对ARC进行分析：</p>
+<figure class="highlight css"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line"><span class="selector-tag">clang</span> <span class="selector-tag">-S</span> <span class="selector-tag">-fobjc-arc</span> <span class="selector-tag">-emit-llvm</span> <span class="selector-tag">main</span><span class="selector-class">.m</span> <span class="selector-tag">-o</span> <span class="selector-tag">main</span><span class="selector-class">.ll</span></span><br></pre></td></tr></table></figure>
+
+<p>先简单举个例子：</p>
+<figure class="highlight cpp"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br></pre></td><td class="code"><pre><span class="line"><span class="function"><span class="keyword">int</span> <span class="title">main</span><span class="params">()</span> </span>&#123;</span><br><span class="line">    <span class="keyword">return</span> <span class="number">0</span>;</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+
+<p>上面的C源码转换为LLVM IR语言之后：</p>
+<figure class="highlight llvm"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">define</span> <span class="keyword">i32</span> <span class="title">@main</span>() <span class="symbol">#0</span> &#123;</span><br><span class="line">  <span class="symbol">%1</span> = <span class="keyword">alloca</span> <span class="keyword">i32</span>, <span class="keyword">align</span> <span class="number">4</span> //声明局部变量<span class="symbol">%1</span></span><br><span class="line">  <span class="keyword">store</span> <span class="keyword">i32</span> <span class="number">0</span>, <span class="keyword">i32</span>* <span class="symbol">%1</span>, <span class="keyword">align</span> <span class="number">4</span> //赋值局部变量<span class="symbol">%1</span>的值为 <span class="number">0</span></span><br><span class="line">  <span class="keyword">ret</span> <span class="keyword">i32</span> <span class="number">0</span></span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+
+<p>简单解释：</p>
+<ol>
+<li>@代表全局变量，%代表局部变量</li>
+<li>%1 = alloca i32, align 4 栈上分配内存</li>
+<li>load读出内容 store写入内容</li>
+<li>i32 i表示32位integer32，即四字节</li>
+<li>align 4 4字节对齐</li>
+</ol>
+<p>下面我们通过分析以下几种声明所对应的LLVM IR语言来解读一下，编译器到底针对这几种声明为我们做了什么，从而实现自动管理内存（ARC）的：</p>
+<h2 id="strong"><a href="#strong" class="headerlink" title="__strong"></a>__strong</h2><figure class="highlight cpp"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br></pre></td><td class="code"><pre><span class="line"><span class="function"><span class="keyword">int</span> <span class="title">main</span><span class="params">()</span> </span>&#123;</span><br><span class="line">    id a;</span><br><span class="line">    <span class="keyword">return</span> <span class="number">0</span>;</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+
+<p>再ARC环境下，声明变量默认添加的是__strong属性，上面源码对应的LLVM IR：</p>
+<figure class="highlight routeros"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br></pre></td><td class="code"><pre><span class="line">define i32 @main() #0 &#123;</span><br><span class="line">  %1 = alloca i32,<span class="built_in"> align </span>4</span><br><span class="line">  %2 = alloca i8*,<span class="built_in"> align </span>8</span><br><span class="line">  store i32 0, i32* %1,<span class="built_in"> align </span>4</span><br><span class="line">  store i8* <span class="literal">null</span>, i8** %2,<span class="built_in"> align </span>8</span><br><span class="line">  store i32 0, i32* %1,<span class="built_in"> align </span>4</span><br><span class="line">  call void @objc_storeStrong(i8** %2, i8* <span class="literal">null</span>) #1</span><br><span class="line">  %3 = load i32, i32* %1,<span class="built_in"> align </span>4</span><br><span class="line">  ret i32 %3</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+
+<p>排除掉干扰之后：</p>
+<figure class="highlight routeros"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br></pre></td><td class="code"><pre><span class="line">define i32 @main() #0 &#123;</span><br><span class="line">  .</span><br><span class="line">  %2 = alloca i8*,<span class="built_in"> align </span>8</span><br><span class="line">  .</span><br><span class="line">  store i8* <span class="literal">null</span>, i8** %2,<span class="built_in"> align </span>8</span><br><span class="line">  .</span><br><span class="line">  call void @objc_storeStrong(i8** %2, i8* <span class="literal">null</span>) #1</span><br><span class="line">  .</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+
+<p>根据objc_storeStrong的实现：</p>
+<figure class="highlight glsl"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br></pre></td><td class="code"><pre><span class="line"><span class="comment">//对obj进行了retain，对location进行了release</span></span><br><span class="line"><span class="comment">//如果传入obj==null，则该函数只是对location进行了release操作</span></span><br><span class="line"><span class="type">void</span></span><br><span class="line">objc_storeStrong(id *<span class="keyword">location</span>, id obj)</span><br><span class="line">&#123;</span><br><span class="line">    id prev = *<span class="keyword">location</span>;</span><br><span class="line">    <span class="keyword">if</span> (obj == prev) &#123;</span><br><span class="line">        <span class="keyword">return</span>;</span><br><span class="line">    &#125;</span><br><span class="line">    objc_retain(obj);</span><br><span class="line">    *<span class="keyword">location</span> = obj;</span><br><span class="line">    objc_release(prev);</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+
+<p>我们可以得出：在__strong类型的变量的<strong>作用域结束时</strong>，自动添加release函数进行释放。</p>
+<p>再看一下__strong属性的赋值操作，ARC环境下编译器是如何替我们优化的：</p>
+<figure class="highlight objectivec"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">int</span> main() &#123;</span><br><span class="line">    <span class="keyword">id</span> a;</span><br><span class="line">    __<span class="keyword">strong</span> <span class="keyword">id</span> b = a;</span><br><span class="line">    <span class="keyword">return</span> <span class="number">0</span>;</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+
+<p>对应的LLVM IR:</p>
+<figure class="highlight llvm"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">define</span> <span class="keyword">i32</span> <span class="title">@main</span>() <span class="symbol">#0</span> &#123;</span><br><span class="line">  .</span><br><span class="line">  <span class="symbol">%2</span> = <span class="keyword">alloca</span> <span class="keyword">i8</span>*, <span class="keyword">align</span> <span class="number">8</span> //__strong id a</span><br><span class="line">  <span class="symbol">%3</span> = <span class="keyword">alloca</span> <span class="keyword">i8</span>*, <span class="keyword">align</span> <span class="number">8</span> //__strong id b</span><br><span class="line">  .</span><br><span class="line">  <span class="keyword">store</span> <span class="keyword">i8</span>* <span class="keyword">null</span>, <span class="keyword">i8</span>** <span class="symbol">%2</span>, <span class="keyword">align</span> <span class="number">8</span> //a = <span class="keyword">null</span></span><br><span class="line">  <span class="symbol">%4</span> = <span class="keyword">load</span> <span class="keyword">i8</span>*, <span class="keyword">i8</span>** <span class="symbol">%2</span>, <span class="keyword">align</span> <span class="number">8</span> </span><br><span class="line">  <span class="symbol">%5</span> = <span class="keyword">call</span> <span class="keyword">i8</span>* <span class="title">@objc_retain</span>(<span class="keyword">i8</span>* <span class="symbol">%4</span>) <span class="symbol">#2</span>// [a retain]</span><br><span class="line">  <span class="keyword">store</span> <span class="keyword">i8</span>* <span class="symbol">%5</span>, <span class="keyword">i8</span>** <span class="symbol">%3</span>, <span class="keyword">align</span> <span class="number">8</span></span><br><span class="line">  .</span><br><span class="line">  <span class="keyword">call</span> void <span class="title">@objc_storeStrong</span>(<span class="keyword">i8</span>** <span class="symbol">%3</span>, <span class="keyword">i8</span>* <span class="keyword">null</span>) <span class="symbol">#2</span>// <span class="keyword">release</span> b</span><br><span class="line">  <span class="keyword">call</span> void <span class="title">@objc_storeStrong</span>(<span class="keyword">i8</span>** <span class="symbol">%2</span>, <span class="keyword">i8</span>* <span class="keyword">null</span>) <span class="symbol">#2</span>// <span class="keyword">release</span> a</span><br><span class="line">  .</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+
+<p>我们看到，在为<strong>strong属性的变量b赋值的时候，对a进行了objc_retain操作，当作用域结束时，对两个</strong>strong属性的变量a,b都进行release的操作。</p>
+<h2 id="weak"><a href="#weak" class="headerlink" title="__weak"></a>__weak</h2><blockquote>
+<p><code>weak</code>指针的实现借助于Objective-C的运行时特性，在启动runtime时基于<code>SideTable</code>结构体，通过<code>objc_initWeak``objc_storeWeak</code>, <code>objc_destroyWeak</code>和<code>objc_moveWeak</code>等方法，直接修改<code>__weak</code>对象，来实现弱引用。<br><code>objc_storeWeak</code>函数，将附有<code>__weak</code>标识符的变量的地址注册到weak表中，weak表是一份与引用计数表相似的散列表。<br>而该变量会在释放的过程中清理weak表中的引用，变量释放调用以下函数：</p>
+</blockquote>
+<blockquote>
+<figure class="highlight shell"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br></pre></td><td class="code"><pre><span class="line"><span class="meta">&gt;</span><span class="bash">dealloc</span></span><br><span class="line"><span class="meta">&gt;</span><span class="bash">_objc_rootDealloc</span></span><br><span class="line"><span class="meta">&gt;</span><span class="bash">object_dispose</span></span><br><span class="line"><span class="meta">&gt;</span><span class="bash">objc_destructInstance</span></span><br><span class="line"><span class="meta">&gt;</span><span class="bash">objc_clear_deallocating</span></span><br><span class="line"><span class="meta">&gt;</span><span class="bash"></span></span><br></pre></td></tr></table></figure>
+</blockquote>
+<figure class="highlight objectivec"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br></pre></td><td class="code"><pre><span class="line">在最后的`objc_clear_deallocating`函数中，从<span class="keyword">weak</span>表中找到弱引用指针的地址，然后置为<span class="literal">nil</span>,并从<span class="keyword">weak</span>表删除记录。</span><br><span class="line"></span><br><span class="line">__<span class="keyword">weak</span>属性的赋值操作，ARC环境下编译器是如何替我们优化的：</span><br></pre></td></tr></table></figure>
+
+<p>int main() {<br>    id a;<br>    __weak id b = a;<br>    return 0;<br>}</p>
+<figure class="highlight groovy"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">对应的LLVM <span class="string">IR:</span></span><br></pre></td></tr></table></figure>
+
+<p>define i32 @main() #0 {<br>  .<br>  %2 = alloca i8<em>, align 8// __strong id a<br>  %3 = alloca i8</em>, align 8// __weak id b<br>  .<br>  store i8* null, i8<em>* %2, align 8 //a = null<br>  %4 = load i8</em>, i8<em>* %2, align 8<br>  %5 = call i8</em> @objc_initWeak(i8<em>* %3, i8</em> %4) #1 //objc_initWeak(&amp;b, a)<br>  .<br>  call void @objc_destroyWeak(i8<em>* %3) #1//b = nil置为nil<br>  call void @objc_storeStrong(i8** %2, i8</em> null) #1// release a<br>  .<br>}</p>
+<figure class="highlight clean"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br></pre></td><td class="code"><pre><span class="line">在为`weak`对象赋值时，调用`objc_initWeak`函数，而在`weak`对象超过作用域时，使用`objc_destroyWeak`进行释放。</span><br><span class="line"></span><br><span class="line">## __autorelease</span><br><span class="line"></span><br><span class="line">Autorelease对象是在当前的runloop迭代结束时释放的。</span><br><span class="line">Autorelease的实现是基于AutoreleasePoolPage这样一个双链表结构实现的，而它能够释放的原因是系统在每个runloop迭代中都加入了自动释放池，通过`objc_autoreleasePoolPush`来实现将对象压入池中并做出标记，通过`objc_autoreleasePoolPop`对之对应的标记之后加入到池中对象进行release操作。</span><br><span class="line"></span><br><span class="line">ARC下，runtime有一套对autorelease返回值的优化策略:</span><br></pre></td></tr></table></figure>
+
+<ul>
+<li><p>(instancetype)createSark {<br>  return [self new];<br>}<br>// caller<br>Sark *sark = [Sark createSark];</p>
+<figure class="highlight makefile"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br></pre></td><td class="code"><pre><span class="line"></span><br><span class="line"><span class="section">编译器改写成了形如下面的代码:</span></span><br></pre></td></tr></table></figure>
+</li>
+<li><p>(instancetype)createSark {<br>  id tmp = [self new];<br>  return objc_autoreleaseReturnValue(tmp); // 代替我们调用autorelease<br>}<br>// caller<br>id tmp = objc_retainAutoreleasedReturnValue([Sark createSark]) // 代替我们调用retain<br>Sark *sark = tmp;<br>objc_storeStrong(&amp;sark, nil); // 相当于代替我们调用了release</p>
+<figure class="highlight less"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br></pre></td><td class="code"><pre><span class="line"></span><br><span class="line"><span class="selector-tag">Autorelease</span>返回值的快速释放，并非对<span class="selector-tag">autorelease</span>对象进行了<span class="selector-tag">retain</span>/<span class="selector-tag">release</span>操作，而是将通过<span class="selector-tag">tls</span>对对象进行了简单的存储(objc_autoreleaseReturnValue)和读取(objc_retainAutoreleasedReturnValue)操作。</span><br><span class="line"></span><br><span class="line"><span class="selector-tag">__autorelease</span>属性的赋值操作，<span class="selector-tag">ARC</span>环境下编译器是如何替我们优化的：</span><br></pre></td></tr></table></figure>
+
+</li>
+</ul>
+<p>int main() {<br>    id a;<br>    __autoreleasing id b = a;<br>    return 0;<br>}</p>
+<figure class="highlight groovy"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">对应的LLVM <span class="string">IR:</span></span><br></pre></td></tr></table></figure>
+
+<p>define i32 @main() #0 {<br>  .<br>  %2 = alloca i8<em>, align 8 // __strong id a<br>  %3 = alloca i8</em>, align 8 // __autorelease id b<br>  .<br>  store i8* null, i8<em>* %2, align 8 // a = null<br>  %4 = load i8</em>, i8<em>* %2, align 8<br>  %5 = call i8</em> @objc_retainAutorelease(i8* %4) #1 // objc_retainAutorelease(a)<br>  store i8* %5, i8<em>* %3, align 8<br>  .<br>  call void @objc_storeStrong(i8** %2, i8</em> null) #1<br>  .<br>}</p>
+<figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br></pre></td><td class="code"><pre><span class="line"></span><br><span class="line"></span><br></pre></td></tr></table></figure>
+
+<p>id objc_retainAutorelease(id value) {<br>  return objc_autorelease(objc_retain(value));<br>}</p>
+<figure class="highlight clean"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br></pre></td><td class="code"><pre><span class="line">`objc_retainAutorelease`对一个变量先进行一次retain，再添进行autorelease。</span><br><span class="line"></span><br><span class="line">## __unsafe_unretained</span><br><span class="line"></span><br><span class="line">__unsafe_unretained属性的赋值操作：</span><br></pre></td></tr></table></figure>
+
+<p>int main() {<br>    id a;<br>    __unsafe_unretained id b = a;<br>    return 0;<br>}</p>
+<figure class="highlight groovy"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">对应LLVM <span class="string">IR:</span></span><br></pre></td></tr></table></figure>
+
+<p>define i32 @main() #0 {<br>  .<br>  %2 = alloca i8<em>, align 8<br>  %3 = alloca i8</em>, align 8<br>  .<br>  store i8* null, i8<em>* %2, align 8<br>  %4 = load i8</em>, i8<em>* %2, align 8<br>  store i8</em> %4, i8<em>* %3, align 8<br>  .<br>  call void @objc_storeStrong(i8** %2, i8</em> null) #1<br>  .<br>}</p>
+<figure class="highlight autohotkey"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br></pre></td><td class="code"><pre><span class="line">对于声明为`__unsafe_unretained`属性的对象指针，编译器只是通过store对指针进行赋值，并没有其他相关函数的添加，所以`unsafe_unretained`只是单纯的保存指针，不考虑引用计数相关的内存管理问题。</span><br><span class="line"></span><br><span class="line"><span class="symbol">&gt;当我们直接使用performSelector:</span>执行一个传入的SEL时，编译器会抛出异常</span><br><span class="line"></span><br><span class="line">&gt;</span><br></pre></td></tr></table></figure>
+
+<p>performSelector may cause a leak because its selector is unknown </p>
+<figure class="highlight shell"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br></pre></td><td class="code"><pre><span class="line">对于函数performSelector:，其返回值是id，对于以下函数：</span><br><span class="line"></span><br><span class="line"><span class="meta">&gt;</span><span class="bash"></span></span><br></pre></td></tr></table></figure>
+
+<blockquote>
+<p>Hello *b;<br>b = [a performSelector:sel];</p>
+<figure class="highlight arduino"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br></pre></td><td class="code"><pre><span class="line">```</span><br><span class="line">我们知道b会对performSelector:返回的结果调用retain操作,在b对象离开作用域时进行一次<span class="built_in">release</span>操作。</span><br><span class="line">而如果selector是以 <span class="keyword">new</span>,copy,mutableCopy和alloc开头的，则返回的对象是带有一个引用计数的，则在调用函数处进行了一次retain 和<span class="built_in">release</span>后，该对象还是拥有一个引用计数，在ARC下就发生了内存泄露。</span><br></pre></td></tr></table></figure></blockquote>
+
+    </div>
+
+    
+    
+    
+
+    <footer class="post-footer">
+        <div class="post-nav">
+          <div class="post-nav-next post-nav-item">
+              <a href="/2017-05-21-160922-sqlite3.html" rel="next" title="Sqlite3">
+                <i class="fa fa-chevron-left"></i> Sqlite3
+              </a>
+            
+          </div>
+
+          <span class="post-nav-divider"></span>
+
+          <div class="post-nav-prev post-nav-item">
+              <a href="/2018-10-10-151010-thread-semaphore-practise.html" rel="prev" title="利用线程和信号量模拟冰淇淋商店运营情况">
+                利用线程和信号量模拟冰淇淋商店运营情况 <i class="fa fa-chevron-right"></i>
+              </a>
+            
+          </div>
+        </div>
+    </footer>
+  </div>
+  
+  
+  
+  </article>
+
+  </div>
+
+
+          </div>
+          
+
+
+        </div>
+          
+  
+  <div class="sidebar-toggle">
+    <div class="sidebar-toggle-line-wrap">
+      <span class="sidebar-toggle-line sidebar-toggle-line-first"></span>
+      <span class="sidebar-toggle-line sidebar-toggle-line-middle"></span>
+      <span class="sidebar-toggle-line sidebar-toggle-line-last"></span>
+    </div>
+  </div>
+
+  <aside id="sidebar" class="sidebar">
+    <div class="sidebar-inner">
+        <ul class="sidebar-nav motion-element">
+          <li class="sidebar-nav-toc sidebar-nav-active" data-target="post-toc-wrap">
+            文章目录
+          </li>
+          <li class="sidebar-nav-overview" data-target="site-overview-wrap">
+            站点概览
+          </li>
+        </ul>
+      
+
+      <div class="site-overview-wrap sidebar-panel">
+        <div class="site-overview">
+
+          <div class="site-author motion-element" itemprop="author" itemscope itemtype="http://schema.org/Person">
+    <img class="site-author-image" itemprop="image"
+      src="/images/avatar.png"
+      alt="Zrongl">
+  <p class="site-author-name" itemprop="name">Zrongl</p>
+  <div class="site-description motion-element" itemprop="description"></div>
+</div>
+  <nav class="site-state motion-element">
+      <div class="site-state-item site-state-posts">
+        
+          <a href="/archives/">
+        
+          <span class="site-state-item-count">23</span>
+          <span class="site-state-item-name">日志</span>
+        </a>
+      </div>
+    
+      
+      
+      <div class="site-state-item site-state-categories">
+        
+          
+            <a href="/categories/">
+          
+        
+        
+        
+          
+        
+          
+        
+          
+        
+        <span class="site-state-item-count">3</span>
+        <span class="site-state-item-name">分类</span>
+        </a>
+      </div>
+    
+  </nav>
+  <div class="links-of-author motion-element">
+      <span class="links-of-author-item">
+      
+      
+        
+      
+      
+        
+      
+        <a href="https://github.com/zrongl" title="GitHub &rarr; https://github.com/zrongl" rel="noopener" target="_blank"><i class="fa fa-fw fa-github"></i>GitHub</a>
+      </span>
+    
+      <span class="links-of-author-item">
+      
+      
+        
+      
+      
+        
+      
+        <a href="mailto:ronglei0324@163.com" title="E-Mail &rarr; mailto:ronglei0324@163.com" rel="noopener" target="_blank"><i class="fa fa-fw fa-envelope"></i>E-Mail</a>
+      </span>
+    
+  </div>
+
+
+
+        </div>
+      </div>
+      <!--noindex-->
+        <div class="post-toc-wrap motion-element sidebar-panel sidebar-panel-active">
+          <div class="post-toc">
+
+            
+            
+            
+            
+
+            
+              <div class="post-toc-content"><ol class="nav"><li class="nav-item nav-level-1"><a class="nav-link" href="#编译器和LLVM-IR"><span class="nav-number">1.</span> <span class="nav-text">编译器和LLVM IR</span></a></li><li class="nav-item nav-level-1"><a class="nav-link" href="#ARC情况下编译器为我们做了什么"><span class="nav-number">2.</span> <span class="nav-text">ARC情况下编译器为我们做了什么</span></a><ol class="nav-child"><li class="nav-item nav-level-2"><a class="nav-link" href="#strong"><span class="nav-number">2.1.</span> <span class="nav-text">__strong</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#weak"><span class="nav-number">2.2.</span> <span class="nav-text">__weak</span></a></li></ol></li></ol></div>
+            
+
+          </div>
+        </div>
+      <!--/noindex-->
+      
+
+    </div>
+  </aside>
+  <div id="sidebar-dimmer"></div>
+
+
+      </div>
+    </main>
+
+    <footer id="footer" class="footer">
+      <div class="footer-inner">
+        <div class="copyright">&copy; <span itemprop="copyrightYear">2019</span>
+  <span class="with-love" id="animate">
+    <i class="fa fa-user"></i>
+  </span>
+  <span class="author" itemprop="copyrightHolder">Zrongl</span>
+</div>
+<div class="powered-by">
+<i class="fa fa-user-md"></i>
+<span>不争无尤</span>
+</span>
+</div>
+  <span class="post-meta-divider">|</span>
+  <div class="theme-info">主题 – <a href="https://theme-next.org" class="theme-link" rel="noopener" target="_blank">NexT.Mist</a> v7.3.0</div>
+
+        
+
+
+
+
+
+
+
+
+        
+      </div>
+    </footer>
+      <div class="back-to-top">
+        <i class="fa fa-arrow-up"></i>
+          <span id="scrollpercent"><span>0</span>%</span>
+        
+      </div>
+
+    
+
+  </div>
+
+  
+    
+    
+  
+  <script color='0,0,255' opacity='0.5' zIndex='-1' count='99' src="/lib/canvas-nest/canvas-nest-nomobile.min.js"></script>
+  <script src="/lib/jquery/index.js?v=3.4.1"></script>
+  <script src="/lib/velocity/velocity.min.js?v=1.2.1"></script>
+  <script src="/lib/velocity/velocity.ui.min.js?v=1.2.1"></script>
+
+<script src="/js/utils.js?v=7.3.0"></script>
+  <script src="/js/motion.js?v=7.3.0"></script>
+
+
+  <script src="/js/schemes/muse.js?v=7.3.0"></script>
+
+
+
+<script src="/js/next-boot.js?v=7.3.0"></script>
+
+
+
+
+
+
+  
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+  
+
+  
+
+  
+
+  
+
+
+  
+  <script src="/js/scrollspy.js?v=7.3.0"></script>
+<script src="/js/post-details.js?v=7.3.0"></script>
+
+
+  <!-- 页面点击小红心 -->
+  <script type="text/javascript" src="/js/src/love.js"></script>
+
+</body>
+</html>

@@ -1,0 +1,637 @@
+<!DOCTYPE html>
+
+
+
+
+
+<html class="theme-next mist use-motion" lang="zh-CN">
+<head>
+  <meta charset="UTF-8">
+<meta name="generator" content="Hexo 3.9.0">
+<meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=2">
+<meta name="theme-color" content="#222">
+<meta http-equiv="X-UA-Compatible" content="IE=edge">
+  <link rel="apple-touch-icon" sizes="180x180" href="/images/apple-touch-icon-next.png?v=7.3.0">
+  <link rel="icon" type="image/png" sizes="32x32" href="/images/favicon-32x32-next.png?v=7.3.0">
+  <link rel="icon" type="image/png" sizes="16x16" href="/images/favicon-16x16-next.png?v=7.3.0">
+  <link rel="mask-icon" href="/images/logo.svg?v=7.3.0" color="#222">
+
+<link rel="stylesheet" href="/css/main.css?v=7.3.0">
+
+<link rel="stylesheet" href="//fonts.googleapis.com/css?family=Monda:300,300italic,400,400italic,700,700italic|Roboto Slab:300,300italic,400,400italic,700,700italic|PT Mono:300,300italic,400,400italic,700,700italic&display=swap&subset=latin,latin-ext">
+<link rel="stylesheet" href="/lib/font-awesome/css/font-awesome.min.css?v=4.7.0">
+  <script src="/lib/pace/pace.min.js?v=1.0.2"></script>
+  <link rel="stylesheet" href="/lib/pace/pace-theme-minimal.min.css?v=1.0.2">
+
+
+<script id="hexo-configurations">
+  var NexT = window.NexT || {};
+  var CONFIG = {
+    root: '/',
+    scheme: 'Mist',
+    version: '7.3.0',
+    sidebar: {"position":"right","display":"post","offset":12,"onmobile":false},
+    back2top: {"enable":true,"sidebar":false,"scrollpercent":true},
+    save_scroll: false,
+    copycode: {"enable":false,"show_result":false,"style":null},
+    fancybox: false,
+    mediumzoom: false,
+    lazyload: false,
+    pangu: false,
+    algolia: {
+      applicationID: '',
+      apiKey: '',
+      indexName: '',
+      hits: {"per_page":10},
+      labels: {"input_placeholder":"Search for Posts","hits_empty":"We didn't find any results for the search: ${query}","hits_stats":"${hits} results found in ${time} ms"}
+    },
+    localsearch: {"enable":false,"trigger":"auto","top_n_per_article":1,"unescape":false,"preload":false},
+    path: '',
+    tabs: true,
+    motion: {"enable":true,"async":false,"transition":{"post_block":"fadeIn","post_header":"slideDownIn","post_body":"slideDownIn","coll_header":"slideLeftIn","sidebar":"slideUpIn"}},
+    translation: {
+      copy_button: '复制',
+      copy_success: '复制成功',
+      copy_failure: '复制失败'
+    }
+  };
+</script>
+
+  <meta name="description" content="从代码层次介绍Objective-C动态运行时的加载及运行流程">
+<meta property="og:type" content="article">
+<meta property="og:title" content="OC运行时源码概览">
+<meta property="og:url" content="http://zrongl.github.io/2015-06-29-150629-oc-source-code-overview.html">
+<meta property="og:site_name" content="善恶众相">
+<meta property="og:description" content="从代码层次介绍Objective-C动态运行时的加载及运行流程">
+<meta property="og:locale" content="zh-CN">
+<meta property="og:image" content="http://zrongl.github.io/2015-06-29-150629-oc-source-code-overview/150629-oc-source-code-overview-00.png">
+<meta property="og:image" content="http://zrongl.github.io/2015-06-29-150629-oc-source-code-overview/150629-oc-source-code-overview-01.png">
+<meta property="og:image" content="http://zrongl.github.io/2015-06-29-150629-oc-source-code-overview/150629-oc-source-code-overview-02.png">
+<meta property="og:image" content="http://zrongl.github.io/2015-06-29-150629-oc-source-code-overview/150629-oc-source-code-overview-03.png">
+<meta property="og:image" content="http://zrongl.github.io/2015-06-29-150629-oc-source-code-overview/150629-oc-source-code-overview-04.png">
+<meta property="og:image" content="http://zrongl.github.io/2015-06-29-150629-oc-source-code-overview/150629-oc-source-code-overview-05.png">
+<meta property="og:image" content="http://zrongl.github.io/2015-06-29-150629-oc-source-code-overview/150629-oc-source-code-overview-06.png">
+<meta property="og:updated_time" content="2019-08-07T10:19:18.686Z">
+<meta name="twitter:card" content="summary">
+<meta name="twitter:title" content="OC运行时源码概览">
+<meta name="twitter:description" content="从代码层次介绍Objective-C动态运行时的加载及运行流程">
+<meta name="twitter:image" content="http://zrongl.github.io/2015-06-29-150629-oc-source-code-overview/150629-oc-source-code-overview-00.png">
+  <link rel="canonical" href="http://zrongl.github.io/2015-06-29-150629-oc-source-code-overview">
+
+
+<script id="page-configurations">
+  // https://hexo.io/docs/variables.html
+  CONFIG.page = {
+    sidebar: "",
+    isHome: false,
+    isPost: true,
+    isPage: false,
+    isArchive: false
+  };
+</script>
+
+  <title>OC运行时源码概览 | 善恶众相</title>
+  
+
+
+
+
+
+
+
+
+  <noscript>
+  <style>
+  .use-motion .motion-element,
+  .use-motion .brand,
+  .use-motion .menu-item,
+  .sidebar-inner,
+  .use-motion .post-block,
+  .use-motion .pagination,
+  .use-motion .comments,
+  .use-motion .post-header,
+  .use-motion .post-body,
+  .use-motion .collection-title { opacity: initial; }
+
+  .use-motion .logo,
+  .use-motion .site-title,
+  .use-motion .site-subtitle {
+    opacity: initial;
+    top: initial;
+  }
+
+  .use-motion .logo-line-before i { left: initial; }
+  .use-motion .logo-line-after i { right: initial; }
+  </style>
+</noscript>
+
+</head>
+
+<body itemscope itemtype="http://schema.org/WebPage" lang="zh-CN">
+
+  <div class="container sidebar-position-right">
+    <div class="headband"></div>
+
+<a href="https://github.com/zrongl" class="github-corner" aria-label="View source on GitHub"><svg width="80" height="80" viewBox="0 0 250 250" style="fill:#151513; color:#fff; position: absolute; top: 0; border: 0; right: 0;" aria-hidden="true"><path d="M0,0 L115,115 L130,115 L142,142 L250,250 L250,0 Z"></path><path d="M128.3,109.0 C113.8,99.7 119.0,89.6 119.0,89.6 C122.0,82.7 120.5,78.6 120.5,78.6 C119.2,72.0 123.4,76.3 123.4,76.3 C127.3,80.9 125.5,87.3 125.5,87.3 C122.9,97.6 130.6,101.9 134.4,103.2" fill="currentColor" style="transform-origin: 130px 106px;" class="octo-arm"></path><path d="M115.0,115.0 C114.9,115.1 118.7,116.5 119.8,115.4 L133.7,101.6 C136.9,99.2 139.9,98.4 142.2,98.6 C133.8,88.0 127.5,74.4 143.8,58.0 C148.5,53.4 154.0,51.2 159.7,51.0 C160.3,49.4 163.2,43.6 171.4,40.1 C171.4,40.1 176.1,42.5 178.8,56.2 C183.1,58.6 187.2,61.8 190.9,65.4 C194.5,69.0 197.7,73.2 200.1,77.6 C213.8,80.2 216.3,84.9 216.3,84.9 C212.7,93.1 206.9,96.0 205.4,96.6 C205.1,102.4 203.0,107.8 198.3,112.5 C181.9,128.9 168.3,122.5 157.7,114.1 C157.9,116.9 156.7,120.9 152.7,124.9 L141.0,136.5 C139.8,137.7 141.6,141.9 141.8,141.8 Z" fill="currentColor" class="octo-body"></path></svg></a><style>.github-corner:hover .octo-arm{animation:octocat-wave 560ms ease-in-out}@keyframes octocat-wave{0%,100%{transform:rotate(0)}20%,60%{transform:rotate(-25deg)}40%,80%{transform:rotate(10deg)}}@media (max-width:500px){.github-corner:hover .octo-arm{animation:none}.github-corner .octo-arm{animation:octocat-wave 560ms ease-in-out}}</style>
+
+    <header id="header" class="header" itemscope itemtype="http://schema.org/WPHeader">
+      <div class="header-inner"><div class="site-brand-wrapper">
+  <div class="site-meta">
+
+    <div class="custom-logo-site-title">
+      <a href="/" class="brand" rel="start">
+        <span class="logo-line-before"><i></i></span>
+        <span class="site-title">善恶众相</span>
+        <span class="logo-line-after"><i></i></span>
+      </a>
+    </div>
+  </div>
+
+  <div class="site-nav-toggle">
+    <button aria-label="切换导航栏">
+      <span class="btn-bar"></span>
+      <span class="btn-bar"></span>
+      <span class="btn-bar"></span>
+    </button>
+  </div>
+</div>
+
+
+<nav class="site-nav">
+  
+  <ul id="menu" class="menu">
+      
+      
+      
+        
+        <li class="menu-item menu-item-home">
+      
+    
+
+    <a href="/" rel="section"><i class="menu-item-icon fa fa-fw fa-home"></i> <br>首页</a>
+
+  </li>
+      
+      
+      
+        
+        <li class="menu-item menu-item-categories">
+      
+    
+
+    <a href="/categories/" rel="section"><i class="menu-item-icon fa fa-fw fa-th"></i> <br>分类</a>
+
+  </li>
+      
+      
+      
+        
+        <li class="menu-item menu-item-archives">
+      
+    
+
+    <a href="/archives/" rel="section"><i class="menu-item-icon fa fa-fw fa-archive"></i> <br>归档</a>
+
+  </li>
+  </ul>
+
+    
+
+</nav>
+</div>
+    </header>
+
+    
+
+
+    <main id="main" class="main">
+      <div class="main-inner">
+        <div class="content-wrap">
+          <div id="content" class="content page-post-detail">
+            
+
+  <div id="posts" class="posts-expand">
+    
+
+  <article class="post post-type-categories" itemscope itemtype="http://schema.org/Article">
+  
+  
+  
+  <div class="post-block">
+    <link itemprop="mainEntityOfPage" href="http://zrongl.github.io/2015-06-29-150629-oc-source-code-overview.html">
+
+    <span hidden itemprop="author" itemscope itemtype="http://schema.org/Person">
+      <meta itemprop="name" content="Zrongl">
+      <meta itemprop="description" content="">
+      <meta itemprop="image" content="/images/avatar.png">
+    </span>
+
+    <span hidden itemprop="publisher" itemscope itemtype="http://schema.org/Organization">
+      <meta itemprop="name" content="善恶众相">
+    </span>
+      <header class="post-header">
+
+        
+          <h1 class="post-title" itemprop="name headline">OC运行时源码概览
+
+            
+          </h1>
+        
+
+        <div class="post-meta">
+            <span class="post-meta-item">
+              <span class="post-meta-item-icon">
+                <i class="fa fa-calendar-o"></i>
+              </span>
+              <span class="post-meta-item-text">发表于</span>
+
+              
+                
+              
+
+              <time title="创建时间：2015-06-29 00:00:00" itemprop="dateCreated datePublished" datetime="2015-06-29T00:00:00+08:00">2015-06-29</time>
+            </span>
+          
+            
+
+            
+              <span class="post-meta-item">
+                <span class="post-meta-item-icon">
+                  <i class="fa fa-calendar-check-o"></i>
+                </span>
+                <span class="post-meta-item-text">更新于</span>
+                <time title="修改时间：2019-08-07 18:19:18" itemprop="dateModified" datetime="2019-08-07T18:19:18+08:00">2019-08-07</time>
+              </span>
+            
+          
+            <span class="post-meta-item">
+              <span class="post-meta-item-icon">
+                <i class="fa fa-folder-o"></i>
+              </span>
+              <span class="post-meta-item-text">分类于</span>
+              
+                <span itemprop="about" itemscope itemtype="http://schema.org/Thing"><a href="/categories/iOS/" itemprop="url" rel="index"><span itemprop="name">iOS</span></a></span>
+
+                
+                
+              
+            </span>
+          
+
+          
+            <div class="post-description">从代码层次介绍Objective-C动态运行时的加载及运行流程</div>
+          
+
+        </div>
+      </header>
+
+    
+    
+    
+    <div class="post-body" itemprop="articleBody">
+
+      
+        <blockquote>
+<p>Object-C作为一门动态语言，它的动态特性是其最基本也是最重要的特性，之所以重要是因为其很多功能及扩展扩展都是基于该特性去完成的。比如：autorelease是如何是实现的，category是如何是实现的，等等这些问题在objc的<a href="http://www.opensource.apple.com/tarballs/objc4/" target="_blank" rel="noopener">源代码</a>中我们都能找到答案…</p>
+</blockquote>
+<h3 id="出发准备"><a href="#出发准备" class="headerlink" title="出发准备"></a>出发准备</h3><p>在Xcode中对project进行build的过程就是一个<strong>编译-链接-生成可执行文件</strong>的过程，在Mac OS X系统中每一个可执行文件都是一个Mach-O文件格式。有关Mach-O文件的内容请看<a href="http://zrongl.github.io/translation/2015/05/19/mach-o-file-format-reference.html">这篇文章</a>，当我们运行一个可执行文件时，即在程序运行时会发生什么呢？<br><br>在Xcode中随便创建一个simple viewcontroller工程，添加符号断点：</p>
+<img src="/2015-06-29-150629-oc-source-code-overview/150629-oc-source-code-overview-00.png" title="添加符号断点">
+
+<p>在Symbol一栏中输入<code>_objc_init</code>来添加断点，</p>
+<img src="/2015-06-29-150629-oc-source-code-overview/150629-oc-source-code-overview-01.png" title="添加_objc_init断点">
+
+<p>成功添加断点后运行程序，程序停在我们的断点处：</p>
+<img src="/2015-06-29-150629-oc-source-code-overview/150629-oc-source-code-overview-02.png" title="中断在断点位置">
+
+<p>熟悉C语言的同学都知道，C语言的程序入口函数是main()，但是由于OC相交于C增加了动态的特性，所以对于OC程序而言，需要在main()函数之前先运行起一个动态系统，即libobjc.A.dylib库的执行，<code>_objc_init</code>函数就是libobjc.A.dylib的程序入口，然后的执行顺序是<code>_os_objct_init</code>-&gt;<code>_libdispatch_init</code>-&gt;<code>libSystem_initializer</code>-&gt;<code>_dyld_start</code>，函数<code>_dyld_stat</code>记录着我们程序的main.m中的<code>main()</code>函数的地址，最终会调起我们的代码去执行。<br></p>
+<h3 id="开始"><a href="#开始" class="headerlink" title="开始"></a>开始</h3><p>从objc4-646工程可以看到，最终该工程生成的就是libobjc.A.dylib库，这个库就是objec-C runtime的整体实现，下面我们就从<code>_objc_init</code>函数入手看看这个库到底做了什么?<br><br><code>_objc_init</code>的实现，函数位于<code>/runtime/objc-os.mm</code>：</p>
+<figure class="highlight cpp"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br><span class="line">25</span><br><span class="line">26</span><br><span class="line">27</span><br><span class="line">28</span><br><span class="line">29</span><br><span class="line">30</span><br><span class="line">31</span><br><span class="line">32</span><br><span class="line">33</span><br><span class="line">34</span><br><span class="line">35</span><br><span class="line">36</span><br><span class="line">37</span><br><span class="line">38</span><br><span class="line">39</span><br><span class="line">40</span><br><span class="line">41</span><br><span class="line">42</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">void</span> _objc_init(<span class="keyword">void</span>)</span><br><span class="line">&#123;</span><br><span class="line">    <span class="comment">// 保证初始化一次</span></span><br><span class="line">    <span class="keyword">static</span> <span class="keyword">bool</span> initialized = <span class="literal">false</span>;</span><br><span class="line">    <span class="keyword">if</span> (initialized) <span class="keyword">return</span>;</span><br><span class="line">    initialized = <span class="literal">true</span>;</span><br><span class="line">    </span><br><span class="line">    <span class="comment">// fixme defer initialization until an objc-using image is found?</span></span><br><span class="line">    <span class="comment">// 检查scheme中环境变量设置情况 以便在控制台输出相应选项内容</span></span><br><span class="line">    environ_init();</span><br><span class="line">    </span><br><span class="line">    <span class="comment">// 创建线程存储(Thread Specific Data) 详见 tls_create</span></span><br><span class="line">    tls_init();</span><br><span class="line">    </span><br><span class="line">    <span class="comment">// 初始化一个读-写锁和递归互斥锁</span></span><br><span class="line">    lock_init();</span><br><span class="line">    </span><br><span class="line">    <span class="comment">// 初始化libobjc的异常处理系统</span></span><br><span class="line">    exception_init();</span><br><span class="line">        </span><br><span class="line">    <span class="comment">// Register for unmap first, in case some +load unmaps something</span></span><br><span class="line">    </span><br><span class="line">    <span class="comment">/**</span></span><br><span class="line"><span class="comment">     通过_dyld_register_func_for_remove_image()方法注册的回调函数(unmap_image),在image运行任何终止器(terminators)之后并且还没有被从内存映射中移除之前被调用.</span></span><br><span class="line"><span class="comment">     */</span></span><br><span class="line">    _dyld_register_func_for_remove_image(&amp;unmap_image);</span><br><span class="line">     </span><br><span class="line">    <span class="comment">// 注册一个回调函数,使得当任何一个image变成指定状态时调用.</span></span><br><span class="line">    <span class="comment">// 如果“batch”为ture时,当所有images都变成指定状态后,这些images会依次调用注册的回调函数</span></span><br><span class="line">    <span class="comment">// 如果“batch”为false时,每当有image变成指定状态时,该image就会立即调用注册的回调函数一次,以此类推</span></span><br><span class="line">     </span><br><span class="line">    <span class="keyword">extern</span> <span class="keyword">void</span></span><br><span class="line">    dyld_register_image_state_change_handler(<span class="keyword">enum</span> dyld_image_states state, <span class="keyword">bool</span> batch, dyld_image_state_change_handler handler);</span><br><span class="line">    <span class="comment">// 参阅 http://www.opensource.apple.com/source/dyld/dyld-97.1/include/mach-o/dyld_priv.h</span></span><br><span class="line">     </span><br><span class="line">    </span><br><span class="line">    dyld_register_image_state_change_handler(dyld_image_state_bound,</span><br><span class="line">                                             <span class="number">1</span><span class="comment">/*batch*/</span>, &amp;map_images);</span><br><span class="line">    </span><br><span class="line">    <span class="comment">// 调用类的[+load]方法</span></span><br><span class="line">    dyld_register_image_state_change_handler(dyld_image_state_dependents_initialized, <span class="number">0</span><span class="comment">/*not batch*/</span>, &amp;load_images);</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+
+<ul>
+<li><code>environ_init()</code>：检查scheme中环境变量设置情况，以便在控制台输出相应的内容。所有环境变量的宏定义在<code>/runtime/objc-evn.h</code>中<br><br>主要的几个变量及其含义如下：<br><br>OBJC_PRINT_IMAGES：打印加载的映像和库<br><br>OBJC_PRINT_CLASS_SETUP：打印类和分类的处理过程<br><br>具体操作步骤：首先Perduct-&gt;Scheme-&gt;Edit Scheme</li>
+</ul>
+<img src="/2015-06-29-150629-oc-source-code-overview/150629-oc-source-code-overview-03.png" title="编辑Scheme">
+
+<p>点击 + 号添加环境变量：</p>
+<img src="/2015-06-29-150629-oc-source-code-overview/150629-oc-source-code-overview-04.png" title="输入环境变量">
+
+<p>最后输入上面的环境变量，值设为YES</p>
+<img src="/2015-06-29-150629-oc-source-code-overview/150629-oc-source-code-overview-05.png" title="勾选环境变量">
+
+<p>运行程序在控制台就会输出环境变量相对应的内容：</p>
+<img src="/2015-06-29-150629-oc-source-code-overview/150629-oc-source-code-overview-06.png" title="控制台输出">
+
+<ul>
+<li><code>tls_init()</code>：创建线程共享。<br></li>
+</ul>
+<figure class="highlight dockerfile"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br></pre></td><td class="code"><pre><span class="line">typedef pthread_key_t tls_key_t;</span><br><span class="line">/**</span><br><span class="line"> 线程存储(Thread Specific Data)：</span><br><span class="line"> 在多线程程序中,所有线程共享程序中的变量.现在有一全局变量,所有线程都可以使用它,改变它的值.</span><br><span class="line"> 而如果每个线程希望能单独拥有它,那么就需要使用线程存储了.</span><br><span class="line"> 表面上看起来这是一个全局变量,所有线程都可以使用它,而它的值在每一个线程中又是单独存储的.</span><br><span class="line"> 这就是线程存储的意义.</span><br><span class="line"> 最后说一下线程的本质.</span><br><span class="line"> 其实在Linux中,新建的线程并不是在原先的进程中,而是系统通过一个系统调用clone().</span><br><span class="line"> 该系统<span class="keyword">copy</span><span class="bash">了一个和原先进程完全一样的进程,并在这个进程中执行线程函数.</span></span><br><span class="line"><span class="bash"> 不过这个copy过程和fork不一样.</span></span><br><span class="line"><span class="bash"> copy后的进程和原先的进程共享了所有的变量,运行环境(<span class="built_in">clone</span>的实现是可以指定新进程与老进程之间的共享关系，100%共享就表示创建了一个线程).</span></span><br><span class="line"><span class="bash"> 这样,原先进程中的变量变动在copy后的进程中便能体现出来.</span></span><br><span class="line"><span class="bash"> */</span></span><br><span class="line"><span class="bash">static inline tls_key_t tls_create(void (*dtor)(void*)) &#123; </span></span><br><span class="line"><span class="bash">    tls_key_t k;</span></span><br><span class="line"><span class="bash">    pthread_key_create(&amp;k, dtor); </span></span><br><span class="line"><span class="bash">    <span class="built_in">return</span> k;</span></span><br><span class="line"><span class="bash">&#125;</span></span><br></pre></td></tr></table></figure>
+
+<ul>
+<li><code>lock_init()</code>：初始化一个读-写锁和递归互斥锁，由于在初始化过程中好多地方都要注意数据竞争，需要用到锁来处理。</li>
+<li><code>exception_init()</code>：初始化libobjc的异常处理系统。</li>
+<li><code>map_images()</code>：将类映射到内存中。具体内容下节见。</li>
+<li><code>load_images()</code>：调用类的<code>[+ load]</code>方法。具体内容写完<code>map_images()</code>再说。</li>
+</ul>
+<h3 id="map-images"><a href="#map-images" class="headerlink" title="map_images()"></a>map_images()</h3><p>我们看看<code>map_images()</code>做了那些处理，跟进代码我们看到最终来到了<code>map_images_nolock()</code>这个函数中，代码如下：</p>
+<figure class="highlight cpp"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br><span class="line">25</span><br><span class="line">26</span><br><span class="line">27</span><br><span class="line">28</span><br><span class="line">29</span><br><span class="line">30</span><br><span class="line">31</span><br><span class="line">32</span><br><span class="line">33</span><br><span class="line">34</span><br><span class="line">35</span><br><span class="line">36</span><br><span class="line">37</span><br><span class="line">38</span><br><span class="line">39</span><br><span class="line">40</span><br><span class="line">41</span><br><span class="line">42</span><br><span class="line">43</span><br><span class="line">44</span><br><span class="line">45</span><br><span class="line">46</span><br><span class="line">47</span><br><span class="line">48</span><br><span class="line">49</span><br><span class="line">50</span><br><span class="line">51</span><br><span class="line">52</span><br><span class="line">53</span><br><span class="line">54</span><br><span class="line">55</span><br><span class="line">56</span><br><span class="line">57</span><br><span class="line">58</span><br><span class="line">59</span><br><span class="line">60</span><br><span class="line">61</span><br><span class="line">62</span><br><span class="line">63</span><br><span class="line">64</span><br><span class="line">65</span><br><span class="line">66</span><br><span class="line">67</span><br><span class="line">68</span><br><span class="line">69</span><br><span class="line">70</span><br><span class="line">71</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">const</span> <span class="keyword">char</span> *</span><br><span class="line">map_images_nolock(<span class="keyword">enum</span> dyld_image_states state, <span class="keyword">uint32_t</span> infoCount,</span><br><span class="line">                  <span class="keyword">const</span> struct dyld_image_info infoList[])</span><br><span class="line">&#123;</span><br><span class="line">    <span class="keyword">static</span> BOOL firstTime = YES;</span><br><span class="line">    <span class="keyword">uint32_t</span> i;</span><br><span class="line">    header_info *hi;</span><br><span class="line">    header_info *hList[infoCount];</span><br><span class="line">    <span class="keyword">uint32_t</span> hCount;</span><br><span class="line">    <span class="keyword">size_t</span> selrefCount = <span class="number">0</span>;</span><br><span class="line"></span><br><span class="line">    ……</span><br><span class="line">    <span class="comment">// Find all images with Objective-C metadata.</span></span><br><span class="line">    hCount = <span class="number">0</span>;</span><br><span class="line">    i = infoCount;</span><br><span class="line">    <span class="keyword">while</span> (i--) &#123;</span><br><span class="line">        <span class="keyword">const</span> headerType *mhdr = (headerType *)infoList[i].imageLoadAddress;</span><br><span class="line"></span><br><span class="line">        <span class="comment">// 将mhdr通过appendHeader函数添加到链表中 由FirstHeader,LastHeader和HeaderCount维护</span></span><br><span class="line">        hi = addHeader(mhdr);</span><br><span class="line">        <span class="keyword">if</span> (!hi) &#123;</span><br><span class="line">            <span class="comment">// no objc data in this entry</span></span><br><span class="line">            <span class="keyword">continue</span>;</span><br><span class="line">        &#125;</span><br><span class="line">        <span class="keyword">if</span> (mhdr-&gt;filetype == MH_EXECUTE) &#123;</span><br><span class="line">            <span class="comment">// Record main executable's build SDK version</span></span><br><span class="line">            AppSDKVersion = getSDKVersion(hi);</span><br><span class="line"></span><br><span class="line">            <span class="comment">// Size some data structures based on main executable's size</span></span><br><span class="line"><span class="meta">#<span class="meta-keyword">if</span> __OBJC2__</span></span><br><span class="line">            <span class="keyword">size_t</span> count;</span><br><span class="line">            _getObjc2SelectorRefs(hi, &amp;count);</span><br><span class="line">            selrefCount += count;</span><br><span class="line">            _getObjc2MessageRefs(hi, &amp;count);</span><br><span class="line">            selrefCount += count;</span><br><span class="line"><span class="meta">#<span class="meta-keyword">else</span></span></span><br><span class="line">            _getObjcSelectorRefs(hi, &amp;selrefCount);</span><br><span class="line"><span class="meta">#<span class="meta-keyword">endif</span></span></span><br><span class="line">        &#125;</span><br><span class="line"></span><br><span class="line">        hList[hCount++] = hi;</span><br><span class="line">        </span><br><span class="line"></span><br><span class="line">        <span class="keyword">if</span> (PrintImages) &#123;</span><br><span class="line">            _objc_inform(<span class="string">"IMAGES: loading image for %s%s%s%s%s\n"</span>, </span><br><span class="line">                         hi-&gt;fname, </span><br><span class="line">                         mhdr-&gt;filetype == MH_BUNDLE ? <span class="string">" (bundle)"</span> : <span class="string">""</span>, </span><br><span class="line">                         _objcHeaderIsReplacement(hi) ? <span class="string">" (replacement)"</span> : <span class="string">""</span>,</span><br><span class="line">                         _objcHeaderOptimizedByDyld(hi)?<span class="string">" (preoptimized)"</span> : <span class="string">""</span>,</span><br><span class="line">                         _gcForHInfo2(hi));</span><br><span class="line">        &#125;</span><br><span class="line">    &#125;</span><br><span class="line">	....</span><br><span class="line"></span><br><span class="line">    <span class="keyword">if</span> (firstTime) &#123;</span><br><span class="line">        <span class="comment">// 将子类selector数量存到静态变量SelrefCount中;</span></span><br><span class="line">        <span class="comment">// 将基类的selector添加到静态结构_objc_selectors中</span></span><br><span class="line">        sel_init(wantsGC, selrefCount);</span><br><span class="line">        </span><br><span class="line">        <span class="comment">// 初始化AutoreleasePoolPage用于autorelease机制</span></span><br><span class="line">        <span class="comment">// 初始化SideTable用于__weak变量引用管理</span></span><br><span class="line">        arr_init();</span><br><span class="line">    &#125;</span><br><span class="line">    </span><br><span class="line">    <span class="comment">// 根据设置环境变量的输出走的是objc-runtime-new.mm中的_read_images方法</span></span><br><span class="line">    _read_images(hList, hCount);</span><br><span class="line"></span><br><span class="line">    firstTime = NO;</span><br><span class="line"></span><br><span class="line">    <span class="keyword">return</span> <span class="literal">NULL</span>;</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+
+<ul>
+<li><code>addHeader()</code>最终会调用<code>appendHeader()</code>，它会将mhdr通过<code>appendHeader()</code>函数添加到链表中，并由<code>FirstHeader</code>,<code>LastHeader</code>和<code>HeaderCount</code>去维护。</li>
+</ul>
+<figure class="highlight xl"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br></pre></td><td class="code"><pre><span class="line">void appendHeader(header_info *hi)</span><br><span class="line">&#123;</span><br><span class="line">    <span class="comment">// Add the header to the header list. </span></span><br><span class="line">    <span class="comment">// The header is appended to the list, to preserve the bottom-up order.</span></span><br><span class="line">    HeaderCount++;</span><br><span class="line">    <span class="function"><span class="title">hi</span>-&gt;</span>next = NULL;</span><br><span class="line">    <span class="keyword">if</span> (!FirstHeader) &#123;</span><br><span class="line">        <span class="comment">// list is empty</span></span><br><span class="line">        FirstHeader = LastHeader = hi;</span><br><span class="line">    &#125; <span class="keyword">else</span> &#123;</span><br><span class="line">        <span class="keyword">if</span> (!LastHeader) &#123;</span><br><span class="line">            <span class="comment">// list is not empty, but LastHeader is invalid - recompute it</span></span><br><span class="line">            LastHeader = FirstHeader;</span><br><span class="line">            <span class="function"><span class="title">while</span> (LastHeader-&gt;</span><span class="function"><span class="title">next</span>) LastHeader = LastHeader-&gt;</span>next;</span><br><span class="line">        &#125;</span><br><span class="line">        <span class="comment">// LastHeader is now valid</span></span><br><span class="line">        L<span class="function"><span class="title">astHeader</span>-&gt;</span>next = hi;</span><br><span class="line">        LastHeader = hi;</span><br><span class="line">    &#125;</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+
+<ul>
+<li><code>_getObjcSelectorRefs()</code>会获取<code>__OBJC</code> segment下section名称为<code>__message_refs</code>的数据，并从中得出selector的数量：</li>
+</ul>
+<figure class="highlight armasm"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">SEL </span>*__getObjcSelectorRefs(const header_ *hi, size_t *outCount)</span><br><span class="line">&#123;</span><br><span class="line">    unsigned long <span class="keyword">byteCount </span>= <span class="number">0</span><span class="comment">;</span></span><br><span class="line">    <span class="keyword">SEL </span>*<span class="meta">data</span> = (<span class="keyword">SEL </span>*)getsectiondata(hi-&gt;mhdr, SEG_OBJC, <span class="string">"__message_refs"</span>, &amp;<span class="keyword">byteCount);</span></span><br><span class="line"><span class="keyword"> </span>   *outCount = <span class="keyword">byteCount </span>/ sizeof(<span class="keyword">SEL);</span></span><br><span class="line"><span class="keyword"> </span>   return <span class="meta">data</span><span class="comment">;</span></span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+
+<ul>
+<li><code>sel_init()</code>：记录selctor数量存储在<code>SelrefCount</code>中；初始化selector列表(NSObject的基类方法)并使用__sel_registerName()方法注册selectors</li>
+<li><code>arr_init()</code>：初始化AutoreleasePoolPage类实现autorelease机制；初始化SizeTable类，用于对<code>__weak</code>对象的维护。<br><br>AutoreleasePoolPage是实现autorelease的类，具体的autorelease在什么时候去release对象以及何时去release等问题，请看<a href="http://www.devstore.cn/new/newInfo/888.html" target="_blank" rel="noopener">这篇文章</a><br></li>
+<li><code>_read_images()</code>：这里根据设置环境变量的输出，走的是<code>/runtime/objc-runtime-new.mm</code>中的<code>_read_images()</code>方法，具体详情下一节见。</li>
+</ul>
+<h3 id="read-images"><a href="#read-images" class="headerlink" title="read_images()"></a>read_images()</h3><p><code>/runtime/objc-runtime-new.mm</code>中的<code>_read_images()</code>方法的代码为：</p>
+<figure class="highlight xl"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br><span class="line">25</span><br><span class="line">26</span><br><span class="line">27</span><br><span class="line">28</span><br><span class="line">29</span><br><span class="line">30</span><br><span class="line">31</span><br><span class="line">32</span><br><span class="line">33</span><br><span class="line">34</span><br><span class="line">35</span><br><span class="line">36</span><br><span class="line">37</span><br><span class="line">38</span><br><span class="line">39</span><br><span class="line">40</span><br><span class="line">41</span><br><span class="line">42</span><br><span class="line">43</span><br><span class="line">44</span><br><span class="line">45</span><br><span class="line">46</span><br><span class="line">47</span><br><span class="line">48</span><br><span class="line">49</span><br><span class="line">50</span><br><span class="line">51</span><br><span class="line">52</span><br><span class="line">53</span><br><span class="line">54</span><br><span class="line">55</span><br><span class="line">56</span><br><span class="line">57</span><br><span class="line">58</span><br><span class="line">59</span><br><span class="line">60</span><br><span class="line">61</span><br><span class="line">62</span><br><span class="line">63</span><br><span class="line">64</span><br><span class="line">65</span><br><span class="line">66</span><br><span class="line">67</span><br><span class="line">68</span><br><span class="line">69</span><br><span class="line">70</span><br><span class="line">71</span><br><span class="line">72</span><br><span class="line">73</span><br><span class="line">74</span><br><span class="line">75</span><br><span class="line">76</span><br><span class="line">77</span><br><span class="line">78</span><br><span class="line">79</span><br><span class="line">80</span><br><span class="line">81</span><br><span class="line">82</span><br><span class="line">83</span><br><span class="line">84</span><br><span class="line">85</span><br><span class="line">86</span><br><span class="line">87</span><br><span class="line">88</span><br><span class="line">89</span><br><span class="line">90</span><br><span class="line">91</span><br><span class="line">92</span><br><span class="line">93</span><br><span class="line">94</span><br><span class="line">95</span><br><span class="line">96</span><br><span class="line">97</span><br><span class="line">98</span><br><span class="line">99</span><br><span class="line">100</span><br><span class="line">101</span><br><span class="line">102</span><br><span class="line">103</span><br><span class="line">104</span><br><span class="line">105</span><br><span class="line">106</span><br><span class="line">107</span><br><span class="line">108</span><br><span class="line">109</span><br><span class="line">110</span><br><span class="line">111</span><br><span class="line">112</span><br><span class="line">113</span><br><span class="line">114</span><br><span class="line">115</span><br><span class="line">116</span><br><span class="line">117</span><br><span class="line">118</span><br><span class="line">119</span><br><span class="line">120</span><br><span class="line">121</span><br><span class="line">122</span><br><span class="line">123</span><br><span class="line">124</span><br><span class="line">125</span><br><span class="line">126</span><br><span class="line">127</span><br><span class="line">128</span><br><span class="line">129</span><br><span class="line">130</span><br><span class="line">131</span><br><span class="line">132</span><br><span class="line">133</span><br><span class="line">134</span><br><span class="line">135</span><br><span class="line">136</span><br><span class="line">137</span><br><span class="line">138</span><br><span class="line">139</span><br><span class="line">140</span><br><span class="line">141</span><br><span class="line">142</span><br><span class="line">143</span><br><span class="line">144</span><br><span class="line">145</span><br><span class="line">146</span><br><span class="line">147</span><br><span class="line">148</span><br><span class="line">149</span><br><span class="line">150</span><br><span class="line">151</span><br><span class="line">152</span><br><span class="line">153</span><br><span class="line">154</span><br><span class="line">155</span><br><span class="line">156</span><br><span class="line">157</span><br><span class="line">158</span><br><span class="line">159</span><br><span class="line">160</span><br><span class="line">161</span><br><span class="line">162</span><br><span class="line">163</span><br><span class="line">164</span><br><span class="line">165</span><br><span class="line">166</span><br><span class="line">167</span><br><span class="line">168</span><br><span class="line">169</span><br><span class="line">170</span><br><span class="line">171</span><br><span class="line">172</span><br><span class="line">173</span><br><span class="line">174</span><br><span class="line">175</span><br><span class="line">176</span><br><span class="line">177</span><br><span class="line">178</span><br><span class="line">179</span><br><span class="line">180</span><br><span class="line">181</span><br><span class="line">182</span><br><span class="line">183</span><br><span class="line">184</span><br><span class="line">185</span><br><span class="line">186</span><br><span class="line">187</span><br><span class="line">188</span><br><span class="line">189</span><br><span class="line">190</span><br><span class="line">191</span><br><span class="line">192</span><br><span class="line">193</span><br><span class="line">194</span><br><span class="line">195</span><br><span class="line">196</span><br><span class="line">197</span><br><span class="line">198</span><br></pre></td><td class="code"><pre><span class="line"><span class="comment">/***********************************************************************</span></span><br><span class="line"><span class="comment">* _read_images</span></span><br><span class="line"><span class="comment">* 对链接列表的headers进行初始化处理</span></span><br><span class="line"><span class="comment">* hList指向由hCount个header_info结构组成数组</span></span><br><span class="line"><span class="comment">* 根据环境变量输出一些信息 涉及到future class</span></span><br><span class="line"><span class="comment">**********************************************************************/</span></span><br><span class="line">void _read_images(header_info **hList, uint32_t hCount)</span><br><span class="line">&#123;</span><br><span class="line">    header_info *hi;</span><br><span class="line">    uint32_t hIndex;</span><br><span class="line">    size_t count;</span><br><span class="line">    size_t i;</span><br><span class="line">    Class *resolvedFutureClasses = <span class="literal">nil</span>;</span><br><span class="line">    size_t resolvedFutureClassCount = <span class="number">0</span>;</span><br><span class="line">    static BOOL doneOnce;</span><br><span class="line"></span><br><span class="line">    rwlock_assert_writing(&amp;runtimeLock);</span><br><span class="line"></span><br><span class="line">#define EACH_HEADER \</span><br><span class="line">    hIndex = <span class="number">0</span>;         \</span><br><span class="line">    crashlog_header_name(<span class="literal">nil</span>) &amp;&amp; hIndex &lt; hCount &amp;&amp; (hi = hList[hIndex]) &amp;&amp; crashlog_header_name(hi); \</span><br><span class="line">    hIndex++</span><br><span class="line"></span><br><span class="line">    <span class="keyword">if</span> (!doneOnce) &#123;</span><br><span class="line">        doneOnce = YES;</span><br><span class="line"></span><br><span class="line">	……</span><br><span class="line"></span><br><span class="line">        <span class="comment">// simple view application total = 3305 contant realizing/methodizing calss and category of class</span></span><br><span class="line">        <span class="keyword">if</span> (PrintConnecting) &#123;</span><br><span class="line">            _objc_inform(<span class="string">"CLASS: found %d classes during launch"</span>, total);</span><br><span class="line">        &#125;</span><br><span class="line"></span><br><span class="line">        <span class="comment">// namedClasses (NOT realizedClasses)</span></span><br><span class="line">        <span class="comment">// Preoptimized classes don't go in this table.</span></span><br><span class="line">        <span class="comment">// 4/3 is NXMapTable's load factor</span></span><br><span class="line">        <span class="comment">// 4/3 是NSMapTable(hash table)的负载因子</span></span><br><span class="line">        int namedClassesSize = </span><br><span class="line">            (isPreoptimized() ? unoptimizedTotal : total) * <span class="number">4</span> / <span class="number">3</span>;</span><br><span class="line">        gdb_objc_realized_classes =</span><br><span class="line">            NXCreateMapTableFromZone(NXStrValueMapPrototype, namedClassesSize, </span><br><span class="line">                                     _objc_internal_zone());</span><br><span class="line">        </span><br><span class="line">        <span class="comment">// realizedClasses and realizedMetaclasses - less than the full total</span></span><br><span class="line">        <span class="comment">// 类实现 和 元类实现</span></span><br><span class="line">        realized_class_hash = </span><br><span class="line">            NXCreateHashTableFromZone(NXPtrPrototype, total / <span class="number">8</span>, <span class="literal">nil</span>, </span><br><span class="line">                                      _objc_internal_zone());</span><br><span class="line">        realized_metaclass_hash = </span><br><span class="line">            NXCreateHashTableFromZone(NXPtrPrototype, total / <span class="number">8</span>, <span class="literal">nil</span>, </span><br><span class="line">                                      _objc_internal_zone());</span><br><span class="line">    &#125;</span><br><span class="line"></span><br><span class="line"></span><br><span class="line">   ……</span><br><span class="line"></span><br><span class="line">    <span class="comment">// Discover protocols. Fix up protocol refs.</span></span><br><span class="line">    <span class="keyword">for</span> (EACH_HEADER) &#123;</span><br><span class="line">        extern objc_class OBJC_CLASS_$_Protocol;</span><br><span class="line">        Class cls = (Class)&amp;OBJC_CLASS_$_Protocol;</span><br><span class="line">        assert(cls);</span><br><span class="line">        protocol_t **protolist = _getObjc2ProtocolList(hi, &amp;count);</span><br><span class="line">        NXMapTable *protocol_map = protocols();</span><br><span class="line">        <span class="comment">// fixme duplicate protocols from unloadable bundle</span></span><br><span class="line">        <span class="keyword">for</span> (i = <span class="number">0</span>; i &lt; count; i++) &#123;</span><br><span class="line">            protocol_t *oldproto = (protocol_t *)</span><br><span class="line">                <span class="function"><span class="title">getProtocol</span>(protolist[i]-&gt;</span>mangledName);</span><br><span class="line">            <span class="keyword">if</span> (!oldproto) &#123;</span><br><span class="line">                size_t size = max(sizeof(protocol_t), </span><br><span class="line">                                  (<span class="function"><span class="title">size_t</span>)protolist[i]-&gt;</span>size);</span><br><span class="line">                protocol_t *newproto = (protocol_t *)_calloc_internal(size, <span class="number">1</span>);</span><br><span class="line">                <span class="function"><span class="title">memcpy</span>(newproto, protolist[i], protolist[i]-&gt;</span>size);</span><br><span class="line">                <span class="function"><span class="title">newproto</span>-&gt;</span><span class="function"><span class="title">size</span> = (typeof(newproto-&gt;</span>size))size;</span><br><span class="line"></span><br><span class="line">                <span class="function"><span class="title">newproto</span>-&gt;</span>initIsa(cls);  <span class="comment">// fixme pinned</span></span><br><span class="line">                NXMapKeyCopyingInsert(protocol_map, </span><br><span class="line">                                      <span class="function"><span class="title">newproto</span>-&gt;</span>mangledName, newproto);</span><br><span class="line">                <span class="keyword">if</span> (PrintProtocols) &#123;</span><br><span class="line">                    _objc_inform(<span class="string">"PROTOCOLS: protocol at %p is %s"</span>,</span><br><span class="line">                                 <span class="function"><span class="title">newproto</span>, newproto-&gt;</span>nameForLogging());</span><br><span class="line">                &#125;</span><br><span class="line">            &#125; <span class="keyword">else</span> &#123;</span><br><span class="line">                <span class="keyword">if</span> (PrintProtocols) &#123;</span><br><span class="line">                    _objc_inform(<span class="string">"PROTOCOLS: protocol at %p is %s (duplicate)"</span>,</span><br><span class="line">                                 <span class="function"><span class="title">protolist</span>[i], oldproto-&gt;</span>nameForLogging());</span><br><span class="line">                &#125;</span><br><span class="line">            &#125;</span><br><span class="line">        &#125;</span><br><span class="line">    &#125;</span><br><span class="line">    <span class="keyword">for</span> (EACH_HEADER) &#123;</span><br><span class="line">        protocol_t **protolist;</span><br><span class="line">        protolist = _getObjc2ProtocolRefs(hi, &amp;count);</span><br><span class="line">        <span class="keyword">for</span> (i = <span class="number">0</span>; i &lt; count; i++) &#123;</span><br><span class="line">            remapProtocolRef(&amp;protolist[i]);</span><br><span class="line">        &#125;</span><br><span class="line">    &#125;</span><br><span class="line"></span><br><span class="line">    <span class="comment">// Realize non-lazy classes (for +load methods and static instances)</span></span><br><span class="line">    <span class="keyword">for</span> (EACH_HEADER) &#123;</span><br><span class="line">        classref_t *classlist = </span><br><span class="line">            _getObjc2NonlazyClassList(hi, &amp;count);</span><br><span class="line">        <span class="keyword">for</span> (i = <span class="number">0</span>; i &lt; count; i++) &#123;</span><br><span class="line">            Class cls = remapClass(classlist[i]);</span><br><span class="line">            <span class="keyword">if</span> (!cls) continue;</span><br><span class="line"></span><br><span class="line">            <span class="comment">// hack for class __ARCLite__, which didn't get this above</span></span><br><span class="line">#<span class="keyword">if</span> TARGET_IPHONE_SIMULATOR</span><br><span class="line">            <span class="function"><span class="title">if</span> (cls-&gt;</span>cache._buckets == (void*)&amp;_objc_empty_cache  &amp;&amp;  </span><br><span class="line">                (<span class="function"><span class="title">cls</span>-&gt;</span><span class="function"><span class="title">cache</span>._mask  ||  cls-&gt;</span>cache._occupied)) </span><br><span class="line">            &#123;</span><br><span class="line">                <span class="function"><span class="title">cls</span>-&gt;</span>cache._mask = <span class="number">0</span>;</span><br><span class="line">                <span class="function"><span class="title">cls</span>-&gt;</span>cache._occupied = <span class="number">0</span>;</span><br><span class="line">            &#125;</span><br><span class="line">            <span class="function"><span class="title">if</span> (cls-&gt;</span>ISA()-&gt;cache._buckets == (void*)&amp;_objc_empty_cache  &amp;&amp;  </span><br><span class="line">                (<span class="function"><span class="title">cls</span>-&gt;</span>ISA()-&gt;<span class="function"><span class="title">cache</span>._mask  ||  cls-&gt;</span>ISA()-&gt;cache._occupied)) </span><br><span class="line">            &#123;</span><br><span class="line">                <span class="function"><span class="title">cls</span>-&gt;</span>ISA()-&gt;cache._mask = <span class="number">0</span>;</span><br><span class="line">                <span class="function"><span class="title">cls</span>-&gt;</span>ISA()-&gt;cache._occupied = <span class="number">0</span>;</span><br><span class="line">            &#125;</span><br><span class="line">#endif</span><br><span class="line"></span><br><span class="line">            realizeClass(cls);</span><br><span class="line">        &#125;</span><br><span class="line">    &#125;    </span><br><span class="line"></span><br><span class="line">    ……</span><br><span class="line"></span><br><span class="line">    <span class="comment">// Discover categories. </span></span><br><span class="line">    <span class="keyword">for</span> (EACH_HEADER) &#123;</span><br><span class="line">        category_t **catlist = </span><br><span class="line">            _getObjc2CategoryList(hi, &amp;count);</span><br><span class="line">        <span class="keyword">for</span> (i = <span class="number">0</span>; i &lt; count; i++) &#123;</span><br><span class="line">            category_t *cat = catlist[i];</span><br><span class="line">            C<span class="function"><span class="title">lass</span> cls = remapClass(cat-&gt;</span>cls);</span><br><span class="line"></span><br><span class="line">            <span class="keyword">if</span> (!cls) &#123;</span><br><span class="line">                <span class="comment">// Category's target class is missing (probably weak-linked).</span></span><br><span class="line">                <span class="comment">// Disavow any knowledge of this category.</span></span><br><span class="line">                catlist[i] = <span class="literal">nil</span>;</span><br><span class="line">                <span class="keyword">if</span> (PrintConnecting) &#123;</span><br><span class="line">                    _objc_inform(<span class="string">"CLASS: IGNORING category \?\?\?(%s) %p with "</span></span><br><span class="line">                                 <span class="string">"missing weak-linked target class"</span>, </span><br><span class="line">                                 <span class="function"><span class="title">cat</span>-&gt;</span><span class="keyword">name</span>, cat);</span><br><span class="line">                &#125;</span><br><span class="line">                continue;</span><br><span class="line">            &#125;</span><br><span class="line"></span><br><span class="line">            <span class="comment">// Process this category. </span></span><br><span class="line">            <span class="comment">// First, register the category with its target class. </span></span><br><span class="line">            <span class="comment">// Then, rebuild the class's method lists (etc) if </span></span><br><span class="line">            <span class="comment">// the class is realized.</span></span><br><span class="line">            <span class="comment">// 将category存储到NXMapTable中 等待类被relized的时候(调用realizeClass方法)添加到类的方法列表中</span></span><br><span class="line">            <span class="comment">// 方法的添加顺序是前序添加进类的方法列表中的</span></span><br><span class="line">            <span class="comment">// 即:如果原来类的方法是a,b,c,类别的方法是1,2,3,那么插入之后的方法将会是1,2,3,a,b,c</span></span><br><span class="line">            <span class="comment">// 也就是说,原来类的方法被category的方法覆盖了,但被覆盖的方法确实还在那里</span></span><br><span class="line">            BOOL classExists = NO;</span><br><span class="line">            <span class="function"><span class="title">if</span> (cat-&gt;</span><span class="function"><span class="title">instanceMethods</span> ||  cat-&gt;</span>protocols  </span><br><span class="line">                ||  <span class="function"><span class="title">cat</span>-&gt;</span>instanceProperties) </span><br><span class="line">            &#123;</span><br><span class="line">                addUnattachedCategoryForClass(cat, cls, hi);</span><br><span class="line">                <span class="function"><span class="title">if</span> (cls-&gt;</span>isRealized()) &#123;</span><br><span class="line">                    remethodizeClass(cls);</span><br><span class="line">                    classExists = YES;</span><br><span class="line">                &#125;</span><br><span class="line">                <span class="keyword">if</span> (PrintConnecting) &#123;</span><br><span class="line">                    _objc_inform(<span class="string">"CLASS: found category -%s(%s) %s"</span>, </span><br><span class="line">                                 <span class="function"><span class="title">cls</span>-&gt;</span><span class="function"><span class="title">nameForLogging</span>(), cat-&gt;</span><span class="keyword">name</span>, </span><br><span class="line">                                 classExists ? <span class="string">"on existing class"</span> : <span class="string">""</span>);</span><br><span class="line">                &#125;</span><br><span class="line">            &#125;</span><br><span class="line"></span><br><span class="line">            <span class="function"><span class="title">if</span> (cat-&gt;</span><span class="function"><span class="title">classMethods</span>  ||  cat-&gt;</span>protocols  </span><br><span class="line">                <span class="comment">/* ||  cat-&gt;classProperties */</span>) </span><br><span class="line">            &#123;</span><br><span class="line">                <span class="function"><span class="title">addUnattachedCategoryForClass</span>(cat, cls-&gt;</span>ISA(), hi);</span><br><span class="line">                <span class="function"><span class="title">if</span> (cls-&gt;</span>ISA()-&gt;isRealized()) &#123;</span><br><span class="line">                    <span class="function"><span class="title">remethodizeClass</span>(cls-&gt;</span>ISA());</span><br><span class="line">                &#125;</span><br><span class="line">                <span class="keyword">if</span> (PrintConnecting) &#123;</span><br><span class="line">                    _objc_inform(<span class="string">"CLASS: found category +%s(%s)"</span>, </span><br><span class="line">                                 <span class="function"><span class="title">cls</span>-&gt;</span><span class="function"><span class="title">nameForLogging</span>(), cat-&gt;</span><span class="keyword">name</span>);</span><br><span class="line">                &#125;</span><br><span class="line">            &#125;</span><br><span class="line">        &#125;</span><br><span class="line">    &#125;</span><br><span class="line"></span><br><span class="line">    <span class="comment">// Category discovery MUST BE LAST to avoid potential races </span></span><br><span class="line">    <span class="comment">// when other threads call the new category code before </span></span><br><span class="line">    <span class="comment">// this thread finishes its fixups.</span></span><br><span class="line">    <span class="comment">// category必须最后去输出以避免该线程正在访问时其他线程调用新的category代码</span></span><br><span class="line">    <span class="comment">// +load handled by prepare_load_methods()</span></span><br><span class="line"></span><br><span class="line">    <span class="keyword">if</span> (DebugNonFragileIvars) &#123;</span><br><span class="line">        realizeAllClasses();</span><br><span class="line">    &#125;</span><br><span class="line"></span><br><span class="line">#undef EACH_HEADER</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+
+<ul>
+<li><code>NXMapTable</code>：从上面的代码中可以看出Objcet-C中用于存储类或者协议的结构就是<code>NXMapTable</code>，这是一种hash结构体，有关该结构体的介绍请参阅<a href="http://blog.csdn.net/lpstudy/article/details/22087713" target="_blank" rel="noopener">这篇文章</a>。<code>NSMapTable</code>定义在<code>/runtime/hashtable2.h</code>中。</li>
+<li><code>_getObjc2ProtocolList()</code>：对协议进行处理</li>
+<li><code>relizedClass</code>：实现类</li>
+<li><code>addUnattachedCategoryForClass()</code>：这个方法我们可以着重看一下，它就是Object-C中将分类加到类的方法列表的核心方法，我们看看这个方法都做了什么：</li>
+</ul>
+<figure class="highlight cpp"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br></pre></td><td class="code"><pre><span class="line"><span class="function"><span class="keyword">static</span> <span class="keyword">void</span> <span class="title">addUnattachedCategoryForClass</span><span class="params">(<span class="keyword">category_t</span> *cat, Class cls, </span></span></span><br><span class="line"><span class="function"><span class="params">                                          header_info *catHeader)</span></span></span><br><span class="line"><span class="function"></span>&#123;</span><br><span class="line">    rwlock_assert_writing(&amp;runtimeLock);</span><br><span class="line"></span><br><span class="line">    BOOL catFromBundle = (catHeader-&gt;mhdr-&gt;filetype == MH_BUNDLE) ? YES: NO;</span><br><span class="line"></span><br><span class="line">    <span class="comment">// DO NOT use cat-&gt;cls! cls may be cat-&gt;cls-&gt;isa instead</span></span><br><span class="line">    NXMapTable *cats = unattachedCategories();</span><br><span class="line">    category_list *<span class="built_in">list</span>;</span><br><span class="line"></span><br><span class="line">    <span class="built_in">list</span> = (category_list *)NXMapGet(cats, cls);</span><br><span class="line">    <span class="keyword">if</span> (!<span class="built_in">list</span>) &#123;</span><br><span class="line">        <span class="built_in">list</span> = (category_list *)</span><br><span class="line">            _calloc_internal(<span class="keyword">sizeof</span>(*<span class="built_in">list</span>) + <span class="keyword">sizeof</span>(<span class="built_in">list</span>-&gt;<span class="built_in">list</span>[<span class="number">0</span>]), <span class="number">1</span>);</span><br><span class="line">    &#125; <span class="keyword">else</span> &#123;</span><br><span class="line">        <span class="built_in">list</span> = (category_list *)</span><br><span class="line">            _realloc_internal(<span class="built_in">list</span>, <span class="keyword">sizeof</span>(*<span class="built_in">list</span>) + <span class="keyword">sizeof</span>(<span class="built_in">list</span>-&gt;<span class="built_in">list</span>[<span class="number">0</span>]) * (<span class="built_in">list</span>-&gt;count + <span class="number">1</span>));</span><br><span class="line">    &#125;</span><br><span class="line">    <span class="built_in">list</span>-&gt;<span class="built_in">list</span>[<span class="built_in">list</span>-&gt;count++] = (<span class="keyword">category_pair_t</span>)&#123;cat, catFromBundle&#125;;</span><br><span class="line">    NXMapInsert(cats, cls, <span class="built_in">list</span>);</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+
+<p>从上面代码我们可以看出，它是将从Mach-O文件中读取到的分类方法lsit，插入了一个叫category_map得NXMapTable中，该list对应的key就是分类将要添加到的类的名称，下一步的<code>remethodizeClass()</code>方法最终会读取category_map中的list，并通过<code>attachCategoryMethods</code>-&gt;<code>attachMethodLists</code>将类的分类的转换成类的方法，更详细的添加过程请参阅<a href="http://blog.sunnyxx.com/2014/03/05/objc_category_secret/" target="_blank" rel="noopener">这篇文章</a>。</p>
+<h3 id="load-images"><a href="#load-images" class="headerlink" title="load_images()"></a>load_images()</h3><p>最后我们再看一下<code>load_image()</code>函数都做了些什么：</p>
+<figure class="highlight pf"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br></pre></td><td class="code"><pre><span class="line">const char *</span><br><span class="line">load_images(enum dyld_image_states <span class="keyword">state</span>, uint32_t infoCount,</span><br><span class="line">            const struct dyld_image_info infoList[])</span><br><span class="line">&#123;</span><br><span class="line">    BOOL found;</span><br><span class="line"></span><br><span class="line">    recursive_mutex_lock(&amp;<span class="built_in">load</span>MethodLock);</span><br><span class="line"></span><br><span class="line">    // Discover <span class="built_in">load</span> methods</span><br><span class="line">    // 查找<span class="built_in">load</span>方法</span><br><span class="line">    rwlock_write(&amp;runtimeLock);</span><br><span class="line">    found = load_images_nolock(<span class="keyword">state</span>, infoCount, infoList);</span><br><span class="line">    rwlock_unlock_write(&amp;runtimeLock);</span><br><span class="line"></span><br><span class="line">    // C<span class="literal">all</span> +<span class="built_in">load</span> methods (without runtimeLock - re-entrant)</span><br><span class="line">    // 调用<span class="built_in">load</span>方法</span><br><span class="line">    if (found) &#123;</span><br><span class="line">        call_load_methods();</span><br><span class="line">    &#125;</span><br><span class="line"></span><br><span class="line">    recursive_mutex_unlock(&amp;<span class="built_in">load</span>MethodLock);</span><br><span class="line"></span><br><span class="line">    return nil;</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+
+<p>通过上面的代码我们知道，<code>load_images()</code>围绕的就是调用类或分类中的<code>[+ load]</code>方法。<br><br>由于能力和经验有限，有些地方可能分析的不够深入，更详细的分析以后补充吧！</p>
+
+    </div>
+
+    
+    
+    
+
+    <footer class="post-footer">
+        <div class="post-nav">
+          <div class="post-nav-next post-nav-item">
+              <a href="/2015-06-19-150619-mach-o-file-format.html" rel="next" title="Mach-O文件格式与otool工具的使用">
+                <i class="fa fa-chevron-left"></i> Mach-O文件格式与otool工具的使用
+              </a>
+            
+          </div>
+
+          <span class="post-nav-divider"></span>
+
+          <div class="post-nav-prev post-nav-item">
+              <a href="/2015-07-10-150710-oc-source-code-detail.html" rel="prev" title="OC运行时源码细节">
+                OC运行时源码细节 <i class="fa fa-chevron-right"></i>
+              </a>
+            
+          </div>
+        </div>
+    </footer>
+  </div>
+  
+  
+  
+  </article>
+
+  </div>
+
+
+          </div>
+          
+
+
+        </div>
+          
+  
+  <div class="sidebar-toggle">
+    <div class="sidebar-toggle-line-wrap">
+      <span class="sidebar-toggle-line sidebar-toggle-line-first"></span>
+      <span class="sidebar-toggle-line sidebar-toggle-line-middle"></span>
+      <span class="sidebar-toggle-line sidebar-toggle-line-last"></span>
+    </div>
+  </div>
+
+  <aside id="sidebar" class="sidebar">
+    <div class="sidebar-inner">
+        <ul class="sidebar-nav motion-element">
+          <li class="sidebar-nav-toc sidebar-nav-active" data-target="post-toc-wrap">
+            文章目录
+          </li>
+          <li class="sidebar-nav-overview" data-target="site-overview-wrap">
+            站点概览
+          </li>
+        </ul>
+      
+
+      <div class="site-overview-wrap sidebar-panel">
+        <div class="site-overview">
+
+          <div class="site-author motion-element" itemprop="author" itemscope itemtype="http://schema.org/Person">
+    <img class="site-author-image" itemprop="image"
+      src="/images/avatar.png"
+      alt="Zrongl">
+  <p class="site-author-name" itemprop="name">Zrongl</p>
+  <div class="site-description motion-element" itemprop="description"></div>
+</div>
+  <nav class="site-state motion-element">
+      <div class="site-state-item site-state-posts">
+        
+          <a href="/archives/">
+        
+          <span class="site-state-item-count">23</span>
+          <span class="site-state-item-name">日志</span>
+        </a>
+      </div>
+    
+      
+      
+      <div class="site-state-item site-state-categories">
+        
+          
+            <a href="/categories/">
+          
+        
+        
+        
+          
+        
+          
+        
+          
+        
+        <span class="site-state-item-count">3</span>
+        <span class="site-state-item-name">分类</span>
+        </a>
+      </div>
+    
+  </nav>
+  <div class="links-of-author motion-element">
+      <span class="links-of-author-item">
+      
+      
+        
+      
+      
+        
+      
+        <a href="https://github.com/zrongl" title="GitHub &rarr; https://github.com/zrongl" rel="noopener" target="_blank"><i class="fa fa-fw fa-github"></i>GitHub</a>
+      </span>
+    
+      <span class="links-of-author-item">
+      
+      
+        
+      
+      
+        
+      
+        <a href="mailto:ronglei0324@163.com" title="E-Mail &rarr; mailto:ronglei0324@163.com" rel="noopener" target="_blank"><i class="fa fa-fw fa-envelope"></i>E-Mail</a>
+      </span>
+    
+  </div>
+
+
+
+        </div>
+      </div>
+      <!--noindex-->
+        <div class="post-toc-wrap motion-element sidebar-panel sidebar-panel-active">
+          <div class="post-toc">
+
+            
+            
+            
+            
+
+            
+              <div class="post-toc-content"><ol class="nav"><li class="nav-item nav-level-3"><a class="nav-link" href="#出发准备"><span class="nav-number">1.</span> <span class="nav-text">出发准备</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#开始"><span class="nav-number">2.</span> <span class="nav-text">开始</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#map-images"><span class="nav-number">3.</span> <span class="nav-text">map_images()</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#read-images"><span class="nav-number">4.</span> <span class="nav-text">read_images()</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#load-images"><span class="nav-number">5.</span> <span class="nav-text">load_images()</span></a></li></ol></div>
+            
+
+          </div>
+        </div>
+      <!--/noindex-->
+      
+
+    </div>
+  </aside>
+  <div id="sidebar-dimmer"></div>
+
+
+      </div>
+    </main>
+
+    <footer id="footer" class="footer">
+      <div class="footer-inner">
+        <div class="copyright">&copy; <span itemprop="copyrightYear">2019</span>
+  <span class="with-love" id="animate">
+    <i class="fa fa-user"></i>
+  </span>
+  <span class="author" itemprop="copyrightHolder">Zrongl</span>
+</div>
+<div class="powered-by">
+<i class="fa fa-user-md"></i>
+<span>不争无尤</span>
+</span>
+</div>
+  <span class="post-meta-divider">|</span>
+  <div class="theme-info">主题 – <a href="https://theme-next.org" class="theme-link" rel="noopener" target="_blank">NexT.Mist</a> v7.3.0</div>
+
+        
+
+
+
+
+
+
+
+
+        
+      </div>
+    </footer>
+      <div class="back-to-top">
+        <i class="fa fa-arrow-up"></i>
+          <span id="scrollpercent"><span>0</span>%</span>
+        
+      </div>
+
+    
+
+  </div>
+
+  
+    
+    
+  
+  <script color='0,0,255' opacity='0.5' zIndex='-1' count='99' src="/lib/canvas-nest/canvas-nest-nomobile.min.js"></script>
+  <script src="/lib/jquery/index.js?v=3.4.1"></script>
+  <script src="/lib/velocity/velocity.min.js?v=1.2.1"></script>
+  <script src="/lib/velocity/velocity.ui.min.js?v=1.2.1"></script>
+
+<script src="/js/utils.js?v=7.3.0"></script>
+  <script src="/js/motion.js?v=7.3.0"></script>
+
+
+  <script src="/js/schemes/muse.js?v=7.3.0"></script>
+
+
+
+<script src="/js/next-boot.js?v=7.3.0"></script>
+
+
+
+
+
+
+  
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+  
+
+  
+
+  
+
+  
+
+
+  
+  <script src="/js/scrollspy.js?v=7.3.0"></script>
+<script src="/js/post-details.js?v=7.3.0"></script>
+
+
+  <!-- 页面点击小红心 -->
+  <script type="text/javascript" src="/js/src/love.js"></script>
+
+</body>
+</html>

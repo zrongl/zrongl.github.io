@@ -1,0 +1,635 @@
+<!DOCTYPE html>
+
+
+
+
+
+<html class="theme-next mist use-motion" lang="zh-CN">
+<head>
+  <meta charset="UTF-8">
+<meta name="generator" content="Hexo 3.9.0">
+<meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=2">
+<meta name="theme-color" content="#222">
+<meta http-equiv="X-UA-Compatible" content="IE=edge">
+  <link rel="apple-touch-icon" sizes="180x180" href="/images/apple-touch-icon-next.png?v=7.3.0">
+  <link rel="icon" type="image/png" sizes="32x32" href="/images/favicon-32x32-next.png?v=7.3.0">
+  <link rel="icon" type="image/png" sizes="16x16" href="/images/favicon-16x16-next.png?v=7.3.0">
+  <link rel="mask-icon" href="/images/logo.svg?v=7.3.0" color="#222">
+
+<link rel="stylesheet" href="/css/main.css?v=7.3.0">
+
+<link rel="stylesheet" href="//fonts.googleapis.com/css?family=Monda:300,300italic,400,400italic,700,700italic|Roboto Slab:300,300italic,400,400italic,700,700italic|PT Mono:300,300italic,400,400italic,700,700italic&display=swap&subset=latin,latin-ext">
+<link rel="stylesheet" href="/lib/font-awesome/css/font-awesome.min.css?v=4.7.0">
+  <script src="/lib/pace/pace.min.js?v=1.0.2"></script>
+  <link rel="stylesheet" href="/lib/pace/pace-theme-minimal.min.css?v=1.0.2">
+
+
+<script id="hexo-configurations">
+  var NexT = window.NexT || {};
+  var CONFIG = {
+    root: '/',
+    scheme: 'Mist',
+    version: '7.3.0',
+    sidebar: {"position":"right","display":"post","offset":12,"onmobile":false},
+    back2top: {"enable":true,"sidebar":false,"scrollpercent":true},
+    save_scroll: false,
+    copycode: {"enable":false,"show_result":false,"style":null},
+    fancybox: false,
+    mediumzoom: false,
+    lazyload: false,
+    pangu: false,
+    algolia: {
+      applicationID: '',
+      apiKey: '',
+      indexName: '',
+      hits: {"per_page":10},
+      labels: {"input_placeholder":"Search for Posts","hits_empty":"We didn't find any results for the search: ${query}","hits_stats":"${hits} results found in ${time} ms"}
+    },
+    localsearch: {"enable":false,"trigger":"auto","top_n_per_article":1,"unescape":false,"preload":false},
+    path: '',
+    tabs: true,
+    motion: {"enable":true,"async":false,"transition":{"post_block":"fadeIn","post_header":"slideDownIn","post_body":"slideDownIn","coll_header":"slideLeftIn","sidebar":"slideUpIn"}},
+    translation: {
+      copy_button: '复制',
+      copy_success: '复制成功',
+      copy_failure: '复制失败'
+    }
+  };
+</script>
+
+  <meta name="description" content="从入行开始就对编译器有着一种敬畏之心，虽然c4省去了链接及输出可执行文件过程，但是通过对c4的学习还是能够大体了解到代码是如何被装载如内存再去执行的。">
+<meta property="og:type" content="article">
+<meta property="og:title" content="编译器项目c4的学习">
+<meta property="og:url" content="http://zrongl.github.io/2018-10-25-181025-c4.html">
+<meta property="og:site_name" content="善恶众相">
+<meta property="og:description" content="从入行开始就对编译器有着一种敬畏之心，虽然c4省去了链接及输出可执行文件过程，但是通过对c4的学习还是能够大体了解到代码是如何被装载如内存再去执行的。">
+<meta property="og:locale" content="zh-CN">
+<meta property="og:image" content="http://zrongl.github.io/2018-10-25-181025-c4/181025-c4-00.png">
+<meta property="og:image" content="http://zrongl.github.io/2018-10-25-181025-c4/181025-c4-01.png">
+<meta property="og:image" content="http://zrongl.github.io/2018-10-25-181025-c4/181025-c4-02.png">
+<meta property="og:image" content="http://zrongl.github.io/2018-10-25-181025-c4/181025-c4-03.png">
+<meta property="og:image" content="http://zrongl.github.io/2018-10-25-181025-c4/181025-c4-04.png">
+<meta property="og:updated_time" content="2019-10-18T01:47:38.003Z">
+<meta name="twitter:card" content="summary">
+<meta name="twitter:title" content="编译器项目c4的学习">
+<meta name="twitter:description" content="从入行开始就对编译器有着一种敬畏之心，虽然c4省去了链接及输出可执行文件过程，但是通过对c4的学习还是能够大体了解到代码是如何被装载如内存再去执行的。">
+<meta name="twitter:image" content="http://zrongl.github.io/2018-10-25-181025-c4/181025-c4-00.png">
+  <link rel="canonical" href="http://zrongl.github.io/2018-10-25-181025-c4">
+
+
+<script id="page-configurations">
+  // https://hexo.io/docs/variables.html
+  CONFIG.page = {
+    sidebar: "",
+    isHome: false,
+    isPost: true,
+    isPage: false,
+    isArchive: false
+  };
+</script>
+
+  <title>编译器项目c4的学习 | 善恶众相</title>
+  
+
+
+
+
+
+
+
+
+  <noscript>
+  <style>
+  .use-motion .motion-element,
+  .use-motion .brand,
+  .use-motion .menu-item,
+  .sidebar-inner,
+  .use-motion .post-block,
+  .use-motion .pagination,
+  .use-motion .comments,
+  .use-motion .post-header,
+  .use-motion .post-body,
+  .use-motion .collection-title { opacity: initial; }
+
+  .use-motion .logo,
+  .use-motion .site-title,
+  .use-motion .site-subtitle {
+    opacity: initial;
+    top: initial;
+  }
+
+  .use-motion .logo-line-before i { left: initial; }
+  .use-motion .logo-line-after i { right: initial; }
+  </style>
+</noscript>
+
+</head>
+
+<body itemscope itemtype="http://schema.org/WebPage" lang="zh-CN">
+
+  <div class="container sidebar-position-right">
+    <div class="headband"></div>
+
+<a href="https://github.com/zrongl" class="github-corner" aria-label="View source on GitHub"><svg width="80" height="80" viewBox="0 0 250 250" style="fill:#151513; color:#fff; position: absolute; top: 0; border: 0; right: 0;" aria-hidden="true"><path d="M0,0 L115,115 L130,115 L142,142 L250,250 L250,0 Z"></path><path d="M128.3,109.0 C113.8,99.7 119.0,89.6 119.0,89.6 C122.0,82.7 120.5,78.6 120.5,78.6 C119.2,72.0 123.4,76.3 123.4,76.3 C127.3,80.9 125.5,87.3 125.5,87.3 C122.9,97.6 130.6,101.9 134.4,103.2" fill="currentColor" style="transform-origin: 130px 106px;" class="octo-arm"></path><path d="M115.0,115.0 C114.9,115.1 118.7,116.5 119.8,115.4 L133.7,101.6 C136.9,99.2 139.9,98.4 142.2,98.6 C133.8,88.0 127.5,74.4 143.8,58.0 C148.5,53.4 154.0,51.2 159.7,51.0 C160.3,49.4 163.2,43.6 171.4,40.1 C171.4,40.1 176.1,42.5 178.8,56.2 C183.1,58.6 187.2,61.8 190.9,65.4 C194.5,69.0 197.7,73.2 200.1,77.6 C213.8,80.2 216.3,84.9 216.3,84.9 C212.7,93.1 206.9,96.0 205.4,96.6 C205.1,102.4 203.0,107.8 198.3,112.5 C181.9,128.9 168.3,122.5 157.7,114.1 C157.9,116.9 156.7,120.9 152.7,124.9 L141.0,136.5 C139.8,137.7 141.6,141.9 141.8,141.8 Z" fill="currentColor" class="octo-body"></path></svg></a><style>.github-corner:hover .octo-arm{animation:octocat-wave 560ms ease-in-out}@keyframes octocat-wave{0%,100%{transform:rotate(0)}20%,60%{transform:rotate(-25deg)}40%,80%{transform:rotate(10deg)}}@media (max-width:500px){.github-corner:hover .octo-arm{animation:none}.github-corner .octo-arm{animation:octocat-wave 560ms ease-in-out}}</style>
+
+    <header id="header" class="header" itemscope itemtype="http://schema.org/WPHeader">
+      <div class="header-inner"><div class="site-brand-wrapper">
+  <div class="site-meta">
+
+    <div class="custom-logo-site-title">
+      <a href="/" class="brand" rel="start">
+        <span class="logo-line-before"><i></i></span>
+        <span class="site-title">善恶众相</span>
+        <span class="logo-line-after"><i></i></span>
+      </a>
+    </div>
+  </div>
+
+  <div class="site-nav-toggle">
+    <button aria-label="切换导航栏">
+      <span class="btn-bar"></span>
+      <span class="btn-bar"></span>
+      <span class="btn-bar"></span>
+    </button>
+  </div>
+</div>
+
+
+<nav class="site-nav">
+  
+  <ul id="menu" class="menu">
+      
+      
+      
+        
+        <li class="menu-item menu-item-home">
+      
+    
+
+    <a href="/" rel="section"><i class="menu-item-icon fa fa-fw fa-home"></i> <br>首页</a>
+
+  </li>
+      
+      
+      
+        
+        <li class="menu-item menu-item-categories">
+      
+    
+
+    <a href="/categories/" rel="section"><i class="menu-item-icon fa fa-fw fa-th"></i> <br>分类</a>
+
+  </li>
+      
+      
+      
+        
+        <li class="menu-item menu-item-archives">
+      
+    
+
+    <a href="/archives/" rel="section"><i class="menu-item-icon fa fa-fw fa-archive"></i> <br>归档</a>
+
+  </li>
+  </ul>
+
+    
+
+</nav>
+</div>
+    </header>
+
+    
+
+
+    <main id="main" class="main">
+      <div class="main-inner">
+        <div class="content-wrap">
+          <div id="content" class="content page-post-detail">
+            
+
+  <div id="posts" class="posts-expand">
+    
+
+  <article class="post post-type-categories" itemscope itemtype="http://schema.org/Article">
+  
+  
+  
+  <div class="post-block">
+    <link itemprop="mainEntityOfPage" href="http://zrongl.github.io/2018-10-25-181025-c4.html">
+
+    <span hidden itemprop="author" itemscope itemtype="http://schema.org/Person">
+      <meta itemprop="name" content="Zrongl">
+      <meta itemprop="description" content="">
+      <meta itemprop="image" content="/images/avatar.png">
+    </span>
+
+    <span hidden itemprop="publisher" itemscope itemtype="http://schema.org/Organization">
+      <meta itemprop="name" content="善恶众相">
+    </span>
+      <header class="post-header">
+
+        
+          <h1 class="post-title" itemprop="name headline">编译器项目c4的学习
+
+            
+          </h1>
+        
+
+        <div class="post-meta">
+            <span class="post-meta-item">
+              <span class="post-meta-item-icon">
+                <i class="fa fa-calendar-o"></i>
+              </span>
+              <span class="post-meta-item-text">发表于</span>
+
+              
+                
+              
+
+              <time title="创建时间：2018-10-25 00:00:00" itemprop="dateCreated datePublished" datetime="2018-10-25T00:00:00+08:00">2018-10-25</time>
+            </span>
+          
+            
+
+            
+              <span class="post-meta-item">
+                <span class="post-meta-item-icon">
+                  <i class="fa fa-calendar-check-o"></i>
+                </span>
+                <span class="post-meta-item-text">更新于</span>
+                <time title="修改时间：2019-10-18 09:47:38" itemprop="dateModified" datetime="2019-10-18T09:47:38+08:00">2019-10-18</time>
+              </span>
+            
+          
+            <span class="post-meta-item">
+              <span class="post-meta-item-icon">
+                <i class="fa fa-folder-o"></i>
+              </span>
+              <span class="post-meta-item-text">分类于</span>
+              
+                <span itemprop="about" itemscope itemtype="http://schema.org/Thing"><a href="/categories/Linux/" itemprop="url" rel="index"><span itemprop="name">Linux</span></a></span>
+
+                
+                
+              
+            </span>
+          
+
+          
+            <div class="post-description">从入行开始就对编译器有着一种敬畏之心，虽然c4省去了链接及输出可执行文件过程，但是通过对c4的学习还是能够大体了解到代码是如何被装载如内存再去执行的。</div>
+          
+
+        </div>
+      </header>
+
+    
+    
+    
+    <div class="post-body" itemprop="articleBody">
+
+      
+        <blockquote>
+<p>本文是对开源小项目<a href="https://github.com/rswier/c4" target="_blank" rel="noopener">c4</a>进行学习的笔记，也可以视为对其实现的内存追踪，为的是能够更加深刻的了解程序实现的具体步骤。本项目的亮点在于仅仅通过4个函数就在内存中模拟出了对程序逐字逐句的解析并转换为伪汇编代码，最后在对伪汇编进行解析，输出程序执行结果；当然简洁性的代价就是该编译器仅支持特定语义的解析，并且刚才提到了编译和执行过程都是在内存中去模拟的，并不会生成特定阶段的目标文件比如：<code>.i</code>，<code>.s</code>，<code>.out</code>文件，但是便于我们去阅读和学习，从中我们可以看出编译器最复杂的地方可能在于语义分析的逻辑部分了。</p>
+</blockquote>
+<h3 id="基本结构与函数的理解"><a href="#基本结构与函数的理解" class="headerlink" title="基本结构与函数的理解"></a>基本结构与函数的理解</h3><ul>
+<li>全局变量</li>
+</ul>
+<figure class="highlight stata"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">char</span> *p, *lp,   <span class="comment">// 指向source area的指针，读入的代码会以文本信息的形式读入在该区域</span></span><br><span class="line"><span class="comment">*data;          // data/bss 段指针</span></span><br><span class="line">int *<span class="keyword">e</span>, *le,    <span class="comment">// 指向text area的指针，解析代码后生成相应的伪汇编代码写入该区域</span></span><br><span class="line"><span class="comment">*id,            // 指向当前正在设置或解析的语义关键字结构</span></span><br><span class="line"><span class="comment">*sym,           // 指向symble area的指针，能够解析的关键字、库函数以及函数的参数和局部变量会存储在该区域</span></span><br><span class="line">tk,             <span class="comment">// 当前正在解析的代码的游标</span></span><br><span class="line">ival,           <span class="comment">// 当前解析的数字的值</span></span><br><span class="line"><span class="keyword">ty</span>,             <span class="comment">// 语义关键字结构的类型</span></span><br><span class="line"><span class="keyword">loc</span>,            <span class="comment">// 局部变量偏移量标识</span></span><br><span class="line"><span class="keyword">line</span>,           <span class="comment">// 当前解析的代码行数</span></span><br><span class="line">src,            <span class="comment">// 出书解析的代码和生成的伪汇编代码的标识</span></span><br><span class="line">debug;          <span class="comment">// 输出汇编代码执行结果标识</span></span><br></pre></td></tr></table></figure>
+
+<ul>
+<li>枚举类型</li>
+</ul>
+<figure class="highlight gams"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br></pre></td><td class="code"><pre><span class="line"><span class="comment">// 类型、关键字、操作码标识</span></span><br><span class="line">enum &#123;</span><br><span class="line">    Num = <span class="number">128</span>, Fun, Sys, Glo, Loc, Id,</span><br><span class="line">    Char, <span class="keyword">Else</span>, Enum, <span class="keyword">If</span>, Int, Return, Sizeof, <span class="keyword">While</span>,</span><br><span class="line">    <span class="keyword">Assign</span>, Cond, Lor, Lan, <span class="keyword">Or</span>, <span class="keyword">Xor</span>, <span class="keyword">And</span>, <span class="keyword">Eq</span>, <span class="keyword">Ne</span>, <span class="keyword">Lt</span>, <span class="keyword">Gt</span>, <span class="keyword">Le</span>, <span class="keyword">Ge</span>, Shl, Shr, Add, Sub, Mul, <span class="built-in">Div</span>, <span class="built-in">Mod</span>, Inc, Dec, Brak</span><br><span class="line">&#125;;</span><br><span class="line"></span><br><span class="line"><span class="comment">// 汇编操作码</span></span><br><span class="line">enum &#123; LEA ,IMM ,JMP ,JSR ,BZ  ,BNZ ,ENT ,ADJ ,LEV ,LI  ,LC  ,SI  ,SC  ,PSH ,</span><br><span class="line">    <span class="keyword">OR</span>  ,<span class="keyword">XOR</span> ,<span class="keyword">AND</span> ,<span class="keyword">EQ</span>  ,<span class="keyword">NE</span>  ,<span class="keyword">LT</span>  ,<span class="keyword">GT</span>  ,<span class="keyword">LE</span>  ,<span class="keyword">GE</span>  ,SHL ,SHR ,ADD ,SUB ,MUL ,<span class="built-in">DIV</span> ,<span class="built-in">MOD</span> ,</span><br><span class="line">    OPEN,READ,CLOS,PRTF,MALC,MSET,MCMP,EXIT &#125;;</span><br><span class="line"></span><br><span class="line"><span class="comment">// 数据类型</span></span><br><span class="line">enum &#123; CHAR, INT, PTR &#125;;</span><br><span class="line"></span><br><span class="line"><span class="comment">// 语义关键字结构，方便进行偏移读取</span></span><br><span class="line">enum &#123; Tk, Hash, Name, Class, Type, Val, HClass, HType, HVal, Idsz &#125;;</span><br></pre></td></tr></table></figure>
+
+<ul>
+<li>函数</li>
+</ul>
+<figure class="highlight cpp"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br><span class="line">25</span><br><span class="line">26</span><br></pre></td><td class="code"><pre><span class="line"><span class="comment">/**</span></span><br><span class="line"><span class="comment"> *  从p中读取下一个字符并进行处理</span></span><br><span class="line"><span class="comment"> *  通过tk进行标识</span></span><br><span class="line"><span class="comment"> *  遍历关键字结构体并用id指向该结构首地址</span></span><br><span class="line"><span class="comment"> */</span></span><br><span class="line"><span class="function"><span class="keyword">void</span> <span class="title">next</span><span class="params">()</span></span>;</span><br><span class="line"></span><br><span class="line"><span class="comment">/**</span></span><br><span class="line"><span class="comment"> *  操作符语义解析(如:sizof，&amp;，|，++，--，=，==等等)</span></span><br><span class="line"><span class="comment"> *  生成伪汇编代码，写到text area中</span></span><br><span class="line"><span class="comment"> *  @param lev 操作符标识</span></span><br><span class="line"><span class="comment"> */</span></span><br><span class="line"><span class="function"><span class="keyword">void</span> <span class="title">expr</span><span class="params">(<span class="keyword">int</span> lev)</span></span>;</span><br><span class="line"></span><br><span class="line"><span class="comment">/**</span></span><br><span class="line"><span class="comment"> *  逻辑关键字解析(如：if，while，return等)</span></span><br><span class="line"><span class="comment"> *  生成伪汇编代码，写到text area中</span></span><br><span class="line"><span class="comment"> */</span></span><br><span class="line"><span class="function"><span class="keyword">void</span> <span class="title">stmt</span><span class="params">()</span></span>;</span><br><span class="line"></span><br><span class="line"><span class="comment">/**</span></span><br><span class="line"><span class="comment"> *  读取源代码文件</span></span><br><span class="line"><span class="comment"> *  生成伪汇编代码</span></span><br><span class="line"><span class="comment"> *  执行伪汇编代码</span></span><br><span class="line"><span class="comment"> */</span></span><br><span class="line"><span class="function"><span class="keyword">int</span> <span class="title">main</span><span class="params">(<span class="keyword">int</span> argc, <span class="keyword">char</span> **argv)</span></span></span><br></pre></td></tr></table></figure>
+
+<h3 id="准备阶段"><a href="#准备阶段" class="headerlink" title="准备阶段"></a>准备阶段</h3><p>为了便于调试我利用<code>c4.c</code>建立一个Xcode工程，并且在<code>main</code>函数中给<code>argc``argv</code>进行了赋值：</p>
+<figure class="highlight cpp"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br></pre></td><td class="code"><pre><span class="line"><span class="function"><span class="keyword">int</span> <span class="title">main</span><span class="params">(<span class="keyword">int</span> argc, <span class="keyword">char</span> **argv)</span></span></span><br><span class="line"><span class="function"></span>&#123;</span><br><span class="line">    <span class="keyword">int</span> fd, bt, ty, poolsz, *idmain;</span><br><span class="line">    <span class="keyword">int</span> *pc, *sp, *bp, a, cycle; <span class="comment">// vm registers</span></span><br><span class="line">    <span class="keyword">int</span> i, *t; <span class="comment">// temps</span></span><br><span class="line">    </span><br><span class="line">    <span class="comment">// 为输入参数赋值</span></span><br><span class="line">    argc = <span class="number">3</span>;</span><br><span class="line">    <span class="keyword">char</span> **av = argv;</span><br><span class="line">    ++av;</span><br><span class="line">    *av = <span class="string">"-d"</span>;</span><br><span class="line">    ++av;</span><br><span class="line">    *av = <span class="string">"/Users/ronglei/Documents/Code/c4/add.c"</span>;</span><br><span class="line">    </span><br><span class="line">    --argc; ++argv;</span><br><span class="line">    <span class="keyword">if</span> (argc &gt; <span class="number">0</span> &amp;&amp; **argv == <span class="string">'-'</span> &amp;&amp; (*argv)[<span class="number">1</span>] == <span class="string">'s'</span>) &#123; src = <span class="number">1</span>; --argc; ++argv; &#125;</span><br><span class="line">    <span class="keyword">if</span> (argc &gt; <span class="number">0</span> &amp;&amp; **argv == <span class="string">'-'</span> &amp;&amp; (*argv)[<span class="number">1</span>] == <span class="string">'d'</span>) &#123; debug = <span class="number">1</span>; --argc; ++argv; &#125;</span><br><span class="line">    <span class="keyword">if</span> (argc &lt; <span class="number">1</span>) &#123; <span class="built_in">printf</span>(<span class="string">"usage: c4 [-s] [-d] file ...\n"</span>); <span class="keyword">return</span> <span class="number">-1</span>; &#125;</span><br><span class="line">    </span><br><span class="line">    ...</span><br></pre></td></tr></table></figure>
+
+<p>在此我们以编译一下代码段为例子进行解析：</p>
+<figure class="highlight cpp"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br></pre></td><td class="code"><pre><span class="line"><span class="meta">#<span class="meta-keyword">include</span> <span class="meta-string">&lt;stdio.h&gt;</span></span></span><br><span class="line"></span><br><span class="line"><span class="function"><span class="keyword">int</span> <span class="title">add</span><span class="params">(<span class="keyword">int</span> x, <span class="keyword">int</span> y)</span></span></span><br><span class="line"><span class="function"></span>&#123;</span><br><span class="line">	<span class="keyword">int</span> sum;</span><br><span class="line">	sum = x+y;</span><br><span class="line">	<span class="keyword">return</span> sum;</span><br><span class="line">&#125;</span><br><span class="line"></span><br><span class="line"><span class="function"><span class="keyword">void</span> <span class="title">main</span><span class="params">()</span></span></span><br><span class="line"><span class="function"></span>&#123;</span><br><span class="line">    <span class="keyword">int</span> a, b, c;</span><br><span class="line">    a = <span class="number">1</span>;</span><br><span class="line">	b = <span class="number">2</span>;</span><br><span class="line">    c = add(a, b);</span><br><span class="line">  	<span class="built_in">printf</span>(<span class="string">"%d\n"</span>, c);</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+
+<p>接下来就是为各个区域申请内存空间：</p>
+<figure class="highlight cpp"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br></pre></td><td class="code"><pre><span class="line"><span class="function"><span class="keyword">int</span> <span class="title">main</span><span class="params">(<span class="keyword">int</span> argc, <span class="keyword">char</span> **argv)</span></span></span><br><span class="line"><span class="function"></span>&#123;</span><br><span class="line">    ...</span><br><span class="line">    </span><br><span class="line">    <span class="comment">// 申请内存空间</span></span><br><span class="line">    poolsz = <span class="number">256</span>*<span class="number">1024</span>; <span class="comment">// arbitrary size</span></span><br><span class="line">    <span class="keyword">if</span> (!(sym = <span class="built_in">malloc</span>(poolsz))) &#123; <span class="built_in">printf</span>(<span class="string">"could not malloc(%d) symbol area\n"</span>, poolsz); <span class="keyword">return</span> <span class="number">-1</span>; &#125;</span><br><span class="line">    <span class="keyword">if</span> (!(le = e = <span class="built_in">malloc</span>(poolsz))) &#123; <span class="built_in">printf</span>(<span class="string">"could not malloc(%d) text area\n"</span>, poolsz); <span class="keyword">return</span> <span class="number">-1</span>; &#125;</span><br><span class="line">    <span class="keyword">if</span> (!(data = <span class="built_in">malloc</span>(poolsz))) &#123; <span class="built_in">printf</span>(<span class="string">"could not malloc(%d) data area\n"</span>, poolsz); <span class="keyword">return</span> <span class="number">-1</span>; &#125;</span><br><span class="line">    <span class="keyword">if</span> (!(sp = <span class="built_in">malloc</span>(poolsz))) &#123; <span class="built_in">printf</span>(<span class="string">"could not malloc(%d) stack area\n"</span>, poolsz); <span class="keyword">return</span> <span class="number">-1</span>; &#125;</span><br><span class="line">    </span><br><span class="line">    <span class="built_in">memset</span>(sym,  <span class="number">0</span>, poolsz);</span><br><span class="line">    <span class="built_in">memset</span>(e,    <span class="number">0</span>, poolsz);</span><br><span class="line">    <span class="built_in">memset</span>(data, <span class="number">0</span>, poolsz);</span><br><span class="line">    </span><br><span class="line">    <span class="keyword">if</span> ((fd = open(*argv, <span class="number">0</span>)) &lt; <span class="number">0</span>) &#123; <span class="built_in">printf</span>(<span class="string">"could not open(%s)\n"</span>, *argv); <span class="keyword">return</span> <span class="number">-1</span>; &#125;</span><br><span class="line">    <span class="keyword">if</span> (!(lp = p = <span class="built_in">malloc</span>(poolsz))) &#123; <span class="built_in">printf</span>(<span class="string">"could not malloc(%d) source area\n"</span>, poolsz); <span class="keyword">return</span> <span class="number">-1</span>; &#125;</span><br><span class="line">    <span class="keyword">if</span> ((i = (<span class="keyword">int</span>)read(fd, p, poolsz<span class="number">-1</span>)) &lt;= <span class="number">0</span>) &#123; <span class="built_in">printf</span>(<span class="string">"read() returned %d\n"</span>, i); <span class="keyword">return</span> <span class="number">-1</span>; &#125;</span><br><span class="line">    </span><br><span class="line">    ...</span><br></pre></td></tr></table></figure>
+
+<p>申请完成之后内存布局是这样的：</p>
+<img src="/2018-10-25-181025-c4/181025-c4-00.png" title="申请各区块内存后的内存布局">
+
+<p>在申请完symbol area，text area，data area，stack area这四片区域之后，程序将支持的关键字和库函数转换为特定结构写入到symbol所对应的内存区域中，方便之后解析的时候使用，对应代码：</p>
+<figure class="highlight gradle"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">int</span> main(<span class="keyword">int</span> argc, <span class="keyword">char</span> **argv)</span><br><span class="line">&#123;</span><br><span class="line">    ...</span><br><span class="line">    </span><br><span class="line">    p = <span class="string">"char else enum if int return sizeof while "</span></span><br><span class="line">    <span class="string">"open read close printf malloc memset memcmp exit void main"</span>;</span><br><span class="line">    i = <span class="keyword">Char</span>; <span class="keyword">while</span> (i &lt;= <span class="keyword">While</span>) &#123; <span class="keyword">next</span>(); id[Tk] = i++; &#125; <span class="comment">// add keywords to symbol table</span></span><br><span class="line">    i = OPEN; <span class="keyword">while</span> (i &lt;= EXIT) &#123; <span class="keyword">next</span>(); id[<span class="keyword">Class</span>] = Sys; id[Type] = <span class="keyword">INT</span>; id[Val] = i++; &#125; <span class="comment">// add library to symbol table</span></span><br><span class="line">    <span class="keyword">next</span>(); id[Tk] = <span class="keyword">Char</span>; <span class="comment">// handle void type</span></span><br><span class="line">    <span class="keyword">next</span>(); idmain = id; <span class="comment">// keep track of main</span></span><br><span class="line">    </span><br><span class="line">    ...</span><br></pre></td></tr></table></figure>
+
+<p>执行完成后symbol area内存布局情况如图：</p>
+<img src="/2018-10-25-181025-c4/181025-c4-01.png" title="执行完成后symbol area内存布局">
+
+<p>其中Hash段和Name段是通过关键字或函数名称字符串运算得到到，拿关键字<code>char</code>举例，源码这里存在一些疏漏，我们会在最后说明：</p>
+<figure class="highlight cpp"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br></pre></td><td class="code"><pre><span class="line">Hash字段值为：(c+h+a+r)*<span class="number">147</span>*<span class="number">64</span>+<span class="built_in">strlen</span>(<span class="keyword">char</span>)</span><br><span class="line">Name字段值为：<span class="string">"*(int *)char..."</span></span><br></pre></td></tr></table></figure>
+
+<h3 id="语义解析阶段"><a href="#语义解析阶段" class="headerlink" title="语义解析阶段"></a>语义解析阶段</h3><p>接下来就要进行语义的解析并在text area生成响应的伪汇编代码：</p>
+<figure class="highlight gradle"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br><span class="line">25</span><br><span class="line">26</span><br><span class="line">27</span><br><span class="line">28</span><br><span class="line">29</span><br><span class="line">30</span><br><span class="line">31</span><br><span class="line">32</span><br><span class="line">33</span><br><span class="line">34</span><br><span class="line">35</span><br><span class="line">36</span><br><span class="line">37</span><br><span class="line">38</span><br><span class="line">39</span><br><span class="line">40</span><br><span class="line">41</span><br><span class="line">42</span><br><span class="line">43</span><br><span class="line">44</span><br><span class="line">45</span><br><span class="line">46</span><br><span class="line">47</span><br><span class="line">48</span><br><span class="line">49</span><br><span class="line">50</span><br><span class="line">51</span><br><span class="line">52</span><br><span class="line">53</span><br><span class="line">54</span><br><span class="line">55</span><br><span class="line">56</span><br><span class="line">57</span><br><span class="line">58</span><br><span class="line">59</span><br><span class="line">60</span><br><span class="line">61</span><br><span class="line">62</span><br><span class="line">63</span><br><span class="line">64</span><br><span class="line">65</span><br><span class="line">66</span><br><span class="line">67</span><br><span class="line">68</span><br><span class="line">69</span><br><span class="line">70</span><br><span class="line">71</span><br><span class="line">72</span><br><span class="line">73</span><br><span class="line">74</span><br><span class="line">75</span><br><span class="line">76</span><br><span class="line">77</span><br><span class="line">78</span><br><span class="line">79</span><br><span class="line">80</span><br><span class="line">81</span><br><span class="line">82</span><br><span class="line">83</span><br><span class="line">84</span><br><span class="line">85</span><br><span class="line">86</span><br><span class="line">87</span><br><span class="line">88</span><br><span class="line">89</span><br><span class="line">90</span><br><span class="line">91</span><br><span class="line">92</span><br><span class="line">93</span><br><span class="line">94</span><br><span class="line">95</span><br><span class="line">96</span><br><span class="line">97</span><br><span class="line">98</span><br><span class="line">99</span><br><span class="line">100</span><br><span class="line">101</span><br><span class="line">102</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">int</span> main(<span class="keyword">int</span> argc, <span class="keyword">char</span> **argv)</span><br><span class="line">&#123;</span><br><span class="line">	...</span><br><span class="line">	</span><br><span class="line">	<span class="comment">// parse declarations</span></span><br><span class="line">    line = <span class="number">1</span>;</span><br><span class="line">    <span class="keyword">next</span>();</span><br><span class="line">    <span class="comment">// 检测到 int add(...)</span></span><br><span class="line">    <span class="keyword">while</span> (tk) &#123;</span><br><span class="line">        bt = <span class="keyword">INT</span>; <span class="comment">// basetype</span></span><br><span class="line">        <span class="keyword">if</span> (tk == <span class="keyword">Int</span>) <span class="keyword">next</span>(); <span class="comment">// 接下来处理add函数 id指向add所构建的结构体 tk=Id</span></span><br><span class="line">        <span class="keyword">else</span> <span class="keyword">if</span> (tk == <span class="keyword">Char</span>) &#123; <span class="keyword">next</span>(); bt = <span class="keyword">CHAR</span>; &#125;</span><br><span class="line">        <span class="keyword">else</span> <span class="keyword">if</span> (tk == Enum) &#123;</span><br><span class="line">            <span class="keyword">next</span>();</span><br><span class="line">            <span class="keyword">if</span> (tk != <span class="string">'&#123;'</span>) <span class="keyword">next</span>();</span><br><span class="line">            <span class="keyword">if</span> (tk == <span class="string">'&#123;'</span>) &#123;</span><br><span class="line">                <span class="keyword">next</span>();</span><br><span class="line">                i = <span class="number">0</span>;</span><br><span class="line">                <span class="keyword">while</span> (tk != <span class="string">'&#125;'</span>) &#123;</span><br><span class="line">                    <span class="keyword">if</span> (tk != Id) &#123; printf(<span class="string">"%d: bad enum identifier %d\n"</span>, line, tk); <span class="keyword">return</span> -<span class="number">1</span>; &#125;</span><br><span class="line">                    <span class="keyword">next</span>();</span><br><span class="line">                    <span class="keyword">if</span> (tk == Assign) &#123;</span><br><span class="line">                        <span class="keyword">next</span>();</span><br><span class="line">                        <span class="keyword">if</span> (tk != Num) &#123; printf(<span class="string">"%d: bad enum initializer\n"</span>, line); <span class="keyword">return</span> -<span class="number">1</span>; &#125;</span><br><span class="line">                        i = ival;</span><br><span class="line">                        <span class="keyword">next</span>();</span><br><span class="line">                    &#125;</span><br><span class="line">                    id[<span class="keyword">Class</span>] = Num; id[Type] = <span class="keyword">INT</span>; id[Val] = i++;</span><br><span class="line">                    <span class="keyword">if</span> (tk == <span class="string">','</span>) <span class="keyword">next</span>();</span><br><span class="line">                &#125;</span><br><span class="line">                <span class="keyword">next</span>();</span><br><span class="line">            &#125;</span><br><span class="line">        &#125;</span><br><span class="line">        <span class="keyword">while</span> (tk != <span class="string">';'</span> &amp;&amp; tk != <span class="string">'&#125;'</span>) &#123;</span><br><span class="line">            ty = bt;</span><br><span class="line">            <span class="keyword">while</span> (tk == Mul) &#123; <span class="keyword">next</span>(); ty = ty + PTR; &#125;</span><br><span class="line">            <span class="keyword">if</span> (tk != Id) &#123; printf(<span class="string">"%d: bad global declaration\n"</span>, line); <span class="keyword">return</span> -<span class="number">1</span>; &#125;</span><br><span class="line">            <span class="keyword">if</span> (id[<span class="keyword">Class</span>]) &#123; printf(<span class="string">"%d: duplicate global definition\n"</span>, line); <span class="keyword">return</span> -<span class="number">1</span>; &#125;</span><br><span class="line">            <span class="keyword">next</span>(); <span class="comment">// 过滤掉'('</span></span><br><span class="line">            id[Type] = ty;</span><br><span class="line">            <span class="keyword">if</span> (tk == <span class="string">'('</span>) &#123; <span class="comment">// function</span></span><br><span class="line">                id[<span class="keyword">Class</span>] = Fun;</span><br><span class="line"><span class="comment">//                id[Val] = (int)(e + 1);</span></span><br><span class="line">                id[Val] = (<span class="keyword">long</span>)(e + <span class="number">1</span>);</span><br><span class="line">                <span class="keyword">next</span>(); i = <span class="number">0</span>;</span><br><span class="line">                <span class="keyword">while</span> (tk != <span class="string">')'</span>) &#123; <span class="comment">// 处理add函数的参数列表</span></span><br><span class="line">                    ty = <span class="keyword">INT</span>;</span><br><span class="line">                    <span class="keyword">if</span> (tk == <span class="keyword">Int</span>) <span class="keyword">next</span>();</span><br><span class="line">                    <span class="keyword">else</span> <span class="keyword">if</span> (tk == <span class="keyword">Char</span>) &#123; <span class="keyword">next</span>(); ty = <span class="keyword">CHAR</span>; &#125;</span><br><span class="line">                    <span class="keyword">while</span> (tk == Mul) &#123; <span class="keyword">next</span>(); ty = ty + PTR; &#125;</span><br><span class="line">                    <span class="keyword">if</span> (tk != Id) &#123; printf(<span class="string">"%d: bad parameter declaration\n"</span>, line); <span class="keyword">return</span> -<span class="number">1</span>; &#125;</span><br><span class="line">                    <span class="keyword">if</span> (id[<span class="keyword">Class</span>] == Loc) &#123; printf(<span class="string">"%d: duplicate parameter definition\n"</span>, line); <span class="keyword">return</span> -<span class="number">1</span>; &#125;</span><br><span class="line">                    id[HClass] = id[<span class="keyword">Class</span>]; id[<span class="keyword">Class</span>] = Loc;</span><br><span class="line">                    id[HType]  = id[Type];  id[Type] = ty;</span><br><span class="line">                    id[HVal]   = id[Val];   id[Val] = i++;</span><br><span class="line">                    <span class="keyword">next</span>();</span><br><span class="line">                    <span class="keyword">if</span> (tk == <span class="string">','</span>) <span class="keyword">next</span>();</span><br><span class="line">                &#125;</span><br><span class="line">                <span class="keyword">next</span>(); <span class="comment">// add函数参数解析完成</span></span><br><span class="line">                <span class="keyword">if</span> (tk != <span class="string">'&#123;'</span>) &#123; printf(<span class="string">"%d: bad function definition\n"</span>, line); <span class="keyword">return</span> -<span class="number">1</span>; &#125;</span><br><span class="line">                loc = ++i;</span><br><span class="line">                <span class="keyword">next</span>();</span><br><span class="line">                <span class="keyword">while</span> (tk == <span class="keyword">Int</span> || tk == <span class="keyword">Char</span>) &#123; <span class="comment">// 处理函数内的局部变量</span></span><br><span class="line">                    bt = (tk == <span class="keyword">Int</span>) ? <span class="keyword">INT</span> : <span class="keyword">CHAR</span>;</span><br><span class="line">                    <span class="keyword">next</span>();</span><br><span class="line">                    <span class="keyword">while</span> (tk != <span class="string">';'</span>) &#123;</span><br><span class="line">                        ty = bt;</span><br><span class="line">                        <span class="keyword">while</span> (tk == Mul) &#123; <span class="keyword">next</span>(); ty = ty + PTR; &#125;</span><br><span class="line">                        <span class="keyword">if</span> (tk != Id) &#123; printf(<span class="string">"%d: bad local declaration\n"</span>, line); <span class="keyword">return</span> -<span class="number">1</span>; &#125;</span><br><span class="line">                        <span class="keyword">if</span> (id[<span class="keyword">Class</span>] == Loc) &#123; printf(<span class="string">"%d: duplicate local definition\n"</span>, line); <span class="keyword">return</span> -<span class="number">1</span>; &#125;</span><br><span class="line">                        id[HClass] = id[<span class="keyword">Class</span>]; id[<span class="keyword">Class</span>] = Loc;</span><br><span class="line">                        id[HType]  = id[Type];  id[Type] = ty;</span><br><span class="line">                        id[HVal]   = id[Val];   id[Val] = ++i;</span><br><span class="line">                        <span class="keyword">next</span>();</span><br><span class="line">                        <span class="keyword">if</span> (tk == <span class="string">','</span>) <span class="keyword">next</span>();</span><br><span class="line">                    &#125;</span><br><span class="line">                    <span class="keyword">next</span>();</span><br><span class="line">                &#125;</span><br><span class="line">                *++e = ENT; *++e = i - loc; <span class="comment">// 文本段 ENT入口 (i-loc)局部变量个数</span></span><br><span class="line">                <span class="keyword">while</span> (tk != <span class="string">'&#125;'</span>) stmt(); <span class="comment">// 处理函数内部的操作</span></span><br><span class="line">                *++e = LEV;</span><br><span class="line">                id = sym; <span class="comment">// 将函数内部的局部变量的Class Type Val清空</span></span><br><span class="line">                <span class="keyword">while</span> (id[Tk]) &#123;</span><br><span class="line">                    <span class="keyword">if</span> (id[<span class="keyword">Class</span>] == Loc) &#123;</span><br><span class="line">                        id[<span class="keyword">Class</span>] = id[HClass];</span><br><span class="line">                        id[Type] = id[HType];</span><br><span class="line">                        id[Val] = id[HVal];</span><br><span class="line">                    &#125;</span><br><span class="line">                    id = id + Idsz;</span><br><span class="line">                &#125;</span><br><span class="line">            &#125;</span><br><span class="line">            <span class="keyword">else</span> &#123;</span><br><span class="line">                id[<span class="keyword">Class</span>] = Glo;</span><br><span class="line">                id[Val] = (<span class="keyword">int</span>)data;</span><br><span class="line">                data = data + sizeof(<span class="keyword">int</span>);</span><br><span class="line">            &#125;</span><br><span class="line">            <span class="keyword">if</span> (tk == <span class="string">','</span>) <span class="keyword">next</span>();</span><br><span class="line">        &#125;</span><br><span class="line">        <span class="keyword">next</span>();</span><br><span class="line">    &#125;</span><br><span class="line">    </span><br><span class="line">    ...</span><br></pre></td></tr></table></figure>
+
+<p>再此过程中，会为曾将解析过的函数、函数的参数以及函数作用于内声明的变量，在symbol area内生成相应的结构来对他们进行标识和记录，最后在对它们的特定字段进行清理，如图：</p>
+<img src="/2018-10-25-181025-c4/181025-c4-02.png" title="清理后的内存布局">
+
+<p>在text area生成的伪汇编代码后的内存布局情况如图：</p>
+<img src="/2018-10-25-181025-c4/181025-c4-03.png" title="text段生成伪汇编代码后的内存布">
+
+<h3 id="汇编执行阶段"><a href="#汇编执行阶段" class="headerlink" title="汇编执行阶段"></a>汇编执行阶段</h3><p>最后就是对text area生成的汇编代码进行解析和执行，代码如下：</p>
+<figure class="highlight nix"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br><span class="line">25</span><br><span class="line">26</span><br><span class="line">27</span><br><span class="line">28</span><br><span class="line">29</span><br><span class="line">30</span><br><span class="line">31</span><br><span class="line">32</span><br><span class="line">33</span><br><span class="line">34</span><br><span class="line">35</span><br><span class="line">36</span><br><span class="line">37</span><br><span class="line">38</span><br><span class="line">39</span><br><span class="line">40</span><br><span class="line">41</span><br><span class="line">42</span><br><span class="line">43</span><br><span class="line">44</span><br><span class="line">45</span><br><span class="line">46</span><br><span class="line">47</span><br><span class="line">48</span><br><span class="line">49</span><br><span class="line">50</span><br><span class="line">51</span><br><span class="line">52</span><br><span class="line">53</span><br><span class="line">54</span><br><span class="line">55</span><br><span class="line">56</span><br><span class="line">57</span><br><span class="line">58</span><br><span class="line">59</span><br><span class="line">60</span><br><span class="line">61</span><br><span class="line">62</span><br><span class="line">63</span><br><span class="line">64</span><br><span class="line">65</span><br><span class="line">66</span><br><span class="line">67</span><br><span class="line">68</span><br><span class="line">69</span><br><span class="line">70</span><br></pre></td><td class="code"><pre><span class="line">int main(int argc, char **argv)</span><br><span class="line">&#123;</span><br><span class="line">	...</span><br><span class="line">	</span><br><span class="line">    // 获取main函数入口地址赋值给pc</span><br><span class="line">    <span class="keyword">if</span> (!(<span class="attr">pc</span> = *(long *)(idmain+Val))) &#123; printf(<span class="string">"main() not defined\n"</span>); return -<span class="number">1</span>; &#125; </span><br><span class="line">    </span><br><span class="line">    <span class="keyword">if</span> (src) return <span class="number">0</span>;</span><br><span class="line">    // 设置栈区域，栈是从高位地址向低位地址扩展的</span><br><span class="line">    <span class="attr">sp</span> = (int *)((char *)sp + poolsz);</span><br><span class="line">    *<span class="attr">--sp</span> = EXIT; // call exit <span class="keyword">if</span> main returns</span><br><span class="line">    *<span class="attr">--sp</span> = PSH; <span class="attr">t</span> = sp;</span><br><span class="line">    *<span class="attr">--sp</span> = argc;</span><br><span class="line">    *<span class="attr">--sp</span> = (int)argv;</span><br><span class="line">    *<span class="attr">--sp</span> = (int)t;</span><br><span class="line">    </span><br><span class="line">    // run...</span><br><span class="line">    <span class="attr">cycle</span> = <span class="number">0</span>;</span><br><span class="line">    while (<span class="number">1</span>) &#123;</span><br><span class="line">        <span class="attr">i</span> = *pc++; ++cycle;</span><br><span class="line">        <span class="keyword">if</span> (debug) &#123;</span><br><span class="line">            printf(<span class="string">"%d&gt; %.4s"</span>, cycle,</span><br><span class="line">                   &amp;<span class="string">"LEA ,IMM ,JMP ,JSR ,BZ  ,BNZ ,ENT ,ADJ ,LEV ,LI  ,LC  ,SI  ,SC  ,PSH ,"</span></span><br><span class="line">                   <span class="string">"OR  ,XOR ,AND ,EQ  ,NE  ,LT  ,GT  ,LE  ,GE  ,SHL ,SHR ,ADD ,SUB ,MUL ,DIV ,MOD ,"</span></span><br><span class="line">                   <span class="string">"OPEN,READ,CLOS,PRTF,MALC,MSET,MCMP,EXIT,"</span>[i * <span class="number">5</span>]);</span><br><span class="line">            <span class="keyword">if</span> (i &lt;= ADJ) printf(<span class="string">" %d\n"</span>, *pc); <span class="keyword">else</span> printf(<span class="string">"\n"</span>);</span><br><span class="line">        &#125;</span><br><span class="line">        <span class="keyword">if</span>      (<span class="attr">i</span> == LEA) <span class="attr">a</span> = (int)(bp + *pc++);                             // load local address</span><br><span class="line">        <span class="keyword">else</span> <span class="keyword">if</span> (<span class="attr">i</span> == IMM) <span class="attr">a</span> = *pc++;                                         // load global address <span class="literal">or</span> immediate</span><br><span class="line">        <span class="keyword">else</span> <span class="keyword">if</span> (<span class="attr">i</span> == JMP) <span class="attr">pc</span> = (int *)*pc;                                   // jump</span><br><span class="line">        <span class="keyword">else</span> <span class="keyword">if</span> (<span class="attr">i</span> == JSR) &#123; *<span class="attr">--sp</span> = (int)(pc + <span class="number">1</span>); <span class="attr">pc</span> = (int *)*pc; &#125;        // jump to subroutine</span><br><span class="line">        <span class="keyword">else</span> <span class="keyword">if</span> (<span class="attr">i</span> == BZ)  <span class="attr">pc</span> = a ? pc + <span class="number">1</span> : (int *)*pc;                      // branch <span class="keyword">if</span> zero</span><br><span class="line">        <span class="keyword">else</span> <span class="keyword">if</span> (<span class="attr">i</span> == BNZ) <span class="attr">pc</span> = a ? (int *)*pc : pc + <span class="number">1</span>;                      // branch <span class="keyword">if</span> not zero</span><br><span class="line">        <span class="keyword">else</span> <span class="keyword">if</span> (<span class="attr">i</span> == ENT) &#123; *<span class="attr">--sp</span> = (int)bp; <span class="attr">bp</span> = sp; <span class="attr">sp</span> = sp - *pc++; &#125;     // enter subroutine</span><br><span class="line">        <span class="keyword">else</span> <span class="keyword">if</span> (<span class="attr">i</span> == ADJ) <span class="attr">sp</span> = sp + *pc++;                                   // stack adjust</span><br><span class="line">        <span class="keyword">else</span> <span class="keyword">if</span> (<span class="attr">i</span> == LEV) &#123; <span class="attr">sp</span> = bp; <span class="attr">bp</span> = (int *)*sp++; <span class="attr">pc</span> = (int *)*sp++; &#125; // leave subroutine</span><br><span class="line">        <span class="keyword">else</span> <span class="keyword">if</span> (<span class="attr">i</span> == LI)  <span class="attr">a</span> = *(int *)a;                                     // load int</span><br><span class="line">        <span class="keyword">else</span> <span class="keyword">if</span> (<span class="attr">i</span> == LC)  <span class="attr">a</span> = *(char *)a;                                    // load char</span><br><span class="line">        <span class="keyword">else</span> <span class="keyword">if</span> (<span class="attr">i</span> == SI)  *(int *)*sp++ = a;                                 // store int</span><br><span class="line">        <span class="keyword">else</span> <span class="keyword">if</span> (<span class="attr">i</span> == SC)  <span class="attr">a</span> = *(char *)*sp++ = a;                            // store char</span><br><span class="line">        <span class="keyword">else</span> <span class="keyword">if</span> (<span class="attr">i</span> == PSH) *<span class="attr">--sp</span> = a;                                         // push</span><br><span class="line">        </span><br><span class="line">        <span class="keyword">else</span> <span class="keyword">if</span> (<span class="attr">i</span> == OR)  <span class="attr">a</span> = *sp++ |  a;</span><br><span class="line">        <span class="keyword">else</span> <span class="keyword">if</span> (<span class="attr">i</span> == XOR) <span class="attr">a</span> = *sp++ ^  a;</span><br><span class="line">        <span class="keyword">else</span> <span class="keyword">if</span> (<span class="attr">i</span> == AND) <span class="attr">a</span> = *sp++ &amp;  a;</span><br><span class="line">        <span class="keyword">else</span> <span class="keyword">if</span> (<span class="attr">i</span> == EQ)  <span class="attr">a</span> = *sp++ == a;</span><br><span class="line">        <span class="keyword">else</span> <span class="keyword">if</span> (<span class="attr">i</span> == NE)  <span class="attr">a</span> = *sp++ != a;</span><br><span class="line">        <span class="keyword">else</span> <span class="keyword">if</span> (<span class="attr">i</span> == LT)  <span class="attr">a</span> = *sp++ &lt;  a;</span><br><span class="line">        <span class="keyword">else</span> <span class="keyword">if</span> (<span class="attr">i</span> == GT)  <span class="attr">a</span> = *sp++ &gt;  a;</span><br><span class="line">        <span class="keyword">else</span> <span class="keyword">if</span> (<span class="attr">i</span> == LE)  <span class="attr">a</span> = *sp++ &lt;= a;</span><br><span class="line">        <span class="keyword">else</span> <span class="keyword">if</span> (<span class="attr">i</span> == GE)  <span class="attr">a</span> = *sp++ &gt;= a;</span><br><span class="line">        <span class="keyword">else</span> <span class="keyword">if</span> (<span class="attr">i</span> == SHL) <span class="attr">a</span> = *sp++ &lt;&lt; a;</span><br><span class="line">        <span class="keyword">else</span> <span class="keyword">if</span> (<span class="attr">i</span> == SHR) <span class="attr">a</span> = *sp++ &gt;&gt; a;</span><br><span class="line">        <span class="keyword">else</span> <span class="keyword">if</span> (<span class="attr">i</span> == ADD) <span class="attr">a</span> = *sp++ +  a;</span><br><span class="line">        <span class="keyword">else</span> <span class="keyword">if</span> (<span class="attr">i</span> == SUB) <span class="attr">a</span> = *sp++ -  a;</span><br><span class="line">        <span class="keyword">else</span> <span class="keyword">if</span> (<span class="attr">i</span> == MUL) <span class="attr">a</span> = *sp++ *  a;</span><br><span class="line">        <span class="keyword">else</span> <span class="keyword">if</span> (<span class="attr">i</span> == DIV) <span class="attr">a</span> = *sp++ /  a;</span><br><span class="line">        <span class="keyword">else</span> <span class="keyword">if</span> (<span class="attr">i</span> == MOD) <span class="attr">a</span> = *sp++ %  a;</span><br><span class="line">        </span><br><span class="line">        <span class="keyword">else</span> <span class="keyword">if</span> (<span class="attr">i</span> == OPEN) <span class="attr">a</span> = open((char *)sp[<span class="number">1</span>], *sp);</span><br><span class="line">        <span class="keyword">else</span> <span class="keyword">if</span> (<span class="attr">i</span> == READ) <span class="attr">a</span> = read(sp[<span class="number">2</span>], (char *)sp[<span class="number">1</span>], *sp);</span><br><span class="line">        <span class="keyword">else</span> <span class="keyword">if</span> (<span class="attr">i</span> == CLOS) <span class="attr">a</span> = close(*sp);</span><br><span class="line">        <span class="keyword">else</span> <span class="keyword">if</span> (<span class="attr">i</span> == PRTF) &#123; <span class="attr">t</span> = sp + pc[<span class="number">1</span>]; <span class="attr">a</span> = printf((char *)t[-<span class="number">1</span>], t[-<span class="number">2</span>], t[-<span class="number">3</span>], t[-<span class="number">4</span>], t[-<span class="number">5</span>], t[-<span class="number">6</span>]); &#125;</span><br><span class="line">        <span class="keyword">else</span> <span class="keyword">if</span> (<span class="attr">i</span> == MALC) <span class="attr">a</span> = (int)malloc(*sp);</span><br><span class="line">        <span class="keyword">else</span> <span class="keyword">if</span> (<span class="attr">i</span> == MSET) <span class="attr">a</span> = (int)memset((char *)sp[<span class="number">2</span>], sp[<span class="number">1</span>], *sp);</span><br><span class="line">        <span class="keyword">else</span> <span class="keyword">if</span> (<span class="attr">i</span> == MCMP) <span class="attr">a</span> = memcmp((char *)sp[<span class="number">2</span>], (char *)sp[<span class="number">1</span>], *sp);</span><br><span class="line">        <span class="keyword">else</span> <span class="keyword">if</span> (<span class="attr">i</span> == EXIT) &#123; printf(<span class="string">"exit(%d) cycle = %d\n"</span>, *sp, cycle); return *sp; &#125;</span><br><span class="line">        <span class="keyword">else</span> &#123; printf(<span class="string">"unknown instruction = %d! cycle = %d\n"</span>, i, cycle); return -<span class="number">1</span>; &#125;</span><br><span class="line">    &#125;</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+
+<p>这个阶段利用pc读取text area生成的伪汇编代码，然后利用指向stack area的指针sp模拟执行，示意图如下：</p>
+<img src="/2018-10-25-181025-c4/181025-c4-04.png" title="执行代码的内存情况">
+
+<h3 id="纠错"><a href="#纠错" class="headerlink" title="纠错"></a>纠错</h3><ul>
+<li><p>查找支持的关键字或库函数过程中，在<code>next()</code>函数以下代码段中：</p>
+<figure class="highlight objectivec"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">void</span> next()</span><br><span class="line">&#123;</span><br><span class="line">...</span><br><span class="line">  <span class="keyword">else</span> <span class="keyword">if</span> ((tk &gt;= <span class="string">'a'</span> &amp;&amp; tk &lt;= <span class="string">'z'</span>) || (tk &gt;= <span class="string">'A'</span> &amp;&amp; tk &lt;= <span class="string">'Z'</span>) || tk == <span class="string">'_'</span>) &#123;</span><br><span class="line">    pp = p - <span class="number">1</span>;</span><br><span class="line">    <span class="keyword">while</span> ((*p &gt;= <span class="string">'a'</span> &amp;&amp; *p &lt;= <span class="string">'z'</span>) || (*p &gt;= <span class="string">'A'</span> &amp;&amp; *p &lt;= <span class="string">'Z'</span>) || (*p &gt;= <span class="string">'0'</span> &amp;&amp; *p &lt;= <span class="string">'9'</span>) || *p == <span class="string">'_'</span>)</span><br><span class="line">      tk = tk * <span class="number">147</span> + *p++;</span><br><span class="line">    tk = (tk &lt;&lt; <span class="number">6</span>) + (p - pp);</span><br><span class="line">    <span class="keyword">id</span> = sym;</span><br><span class="line">    <span class="keyword">while</span> (<span class="keyword">id</span>[Tk]) &#123;</span><br><span class="line">      <span class="keyword">if</span> (tk == <span class="keyword">id</span>[Hash] &amp;&amp; !memcmp((<span class="keyword">char</span> *)<span class="keyword">id</span>[Name], pp, p - pp)) &#123; tk = <span class="keyword">id</span>[Tk]; <span class="keyword">return</span>; &#125;</span><br><span class="line">      <span class="keyword">id</span> = <span class="keyword">id</span> + Idsz;</span><br><span class="line">    &#125;</span><br><span class="line">    <span class="keyword">id</span>[Name] = (<span class="keyword">int</span>)pp;</span><br><span class="line">    <span class="keyword">id</span>[Hash] = tk;</span><br><span class="line">    tk = <span class="keyword">id</span>[Tk] = Id;</span><br><span class="line">    <span class="keyword">return</span>;</span><br><span class="line">  &#125;</span><br><span class="line">...</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+
+</li>
+</ul>
+<figure class="highlight delphi"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br></pre></td><td class="code"><pre><span class="line"></span><br><span class="line">从代码中我们可以看出，在对之前添加的关键字或函数进行匹配时，是通过对Hash段和<span class="keyword">Name</span>段进行比较得出的，条件表达式为即：</span><br></pre></td></tr></table></figure>
+
+<p>// 这条语句在编译的时候编译器会报错<br>tk == id[Hash] &amp;&amp; !memcmp((char *)id[Name], pp, p - pp)<br>// 正确的写法<br>tk == id[Hash] &amp;&amp; !memcmp((char *)(id+Name), pp, p - pp)</p>
+<figure class="highlight fortran"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">当我们对<span class="keyword">Name</span>进行存储的时候是将字符串指针强转为<span class="built_in">int</span>型去存储的，即：</span><br></pre></td></tr></table></figure>
+
+<p>id[Name] = (int)pp;</p>
+<figure class="highlight delphi"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br></pre></td><td class="code"><pre><span class="line"></span><br><span class="line">这里面作者想表达的意图是，将字符串指针强转为整形指针存入到<span class="keyword">Name</span>字段中，所以对<span class="keyword">Name</span>字段进行存储是应该做如下修改：</span><br></pre></td></tr></table></figure>
+
+<p>id[Name] = *(int *)pp;</p>
+<figure class="highlight clean"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br></pre></td><td class="code"><pre><span class="line"></span><br><span class="line">注意由于`char`类型占<span class="number">1</span>个字节，`int`类型占<span class="number">4</span>个字节，所以此时Name段记录的字符为pp所指向字符的前<span class="number">4</span>个字节：</span><br><span class="line">如果`pp = <span class="string">"char else..."</span>`，则Name字段内容转换为字符串为`<span class="string">"char"</span>`；</span><br><span class="line">如果`pp = <span class="string">"if else"</span>`，则Name字段内容转换为字符串为`<span class="string">"if e"</span>`；</span><br><span class="line">如果`pp = <span class="string">"return else"</span>`，则Name字段内容转换为字符串为`<span class="string">"retu"</span>`；</span><br><span class="line">因此在对该字段内容进行比较时，对比较的长度的要求就比较特殊，上面条件判断就应该改为：</span><br></pre></td></tr></table></figure>
+
+<p>// 如果比较的字符串长度小于4个字节，比较长度就取该长度；<br>// 如果比较的字符串长度大于4个字节，比较长度就取4个字节长度进行比较，因为在存储的之后我们只记录了字符串的前4个字节；<br>int cmp_len = (p - pp) &gt; 4 ? 4 : (p - pp);<br>if (tk == id[Hash] &amp;&amp; !memcmp((char *)(id+Name), pp, cmp_len))<br>{<br>    tk = id[Tk];<br>    return;<br>}</p>
+<figure class="highlight asciidoc"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br></pre></td><td class="code"><pre><span class="line"></span><br><span class="line"><span class="bullet">* </span>在对生成的汇编代码进行模拟运行的时候，需要获取之前存储的main函数以及自定义函数的地址进行跳转，而当时存储的时候代码如下：</span><br></pre></td></tr></table></figure>
+
+<p>id[Val] = (int)(e + 1);</p>
+<figure class="highlight lsl"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br></pre></td><td class="code"><pre><span class="line"></span><br><span class="line">我们看到是将地址值强转成int型去存储的，对于<span class="number">32</span>位机器来说，地址是通过<span class="number">8</span>位<span class="number">16</span>进制数去表示的，地址的长度正好是int型的长度<span class="number">4</span>个字节；但在<span class="number">64</span>位机器上，地址是通过<span class="number">16</span>位<span class="number">16</span>进制数表示，地址长度为<span class="number">8</span>个字节，此处如果想用int型去存储地址的话，高<span class="number">4</span>位地址会被截取，存储的只是低<span class="number">4</span>位地址的内容，在跳转的时候就会出问题。</span><br></pre></td></tr></table></figure>
+    </div>
+
+    
+    
+    
+
+    <footer class="post-footer">
+        <div class="post-nav">
+          <div class="post-nav-next post-nav-item">
+              <a href="/2018-10-10-151010-thread-semaphore-practise.html" rel="next" title="利用线程和信号量模拟冰淇淋商店运营情况">
+                <i class="fa fa-chevron-left"></i> 利用线程和信号量模拟冰淇淋商店运营情况
+              </a>
+            
+          </div>
+
+          <span class="post-nav-divider"></span>
+
+          <div class="post-nav-prev post-nav-item">
+              <a href="/2019-05-29-151229-aticle-share.html" rel="prev" title="文章分享">
+                文章分享 <i class="fa fa-chevron-right"></i>
+              </a>
+            
+          </div>
+        </div>
+    </footer>
+  </div>
+  
+  
+  
+  </article>
+
+  </div>
+
+
+          </div>
+          
+
+
+        </div>
+          
+  
+  <div class="sidebar-toggle">
+    <div class="sidebar-toggle-line-wrap">
+      <span class="sidebar-toggle-line sidebar-toggle-line-first"></span>
+      <span class="sidebar-toggle-line sidebar-toggle-line-middle"></span>
+      <span class="sidebar-toggle-line sidebar-toggle-line-last"></span>
+    </div>
+  </div>
+
+  <aside id="sidebar" class="sidebar">
+    <div class="sidebar-inner">
+        <ul class="sidebar-nav motion-element">
+          <li class="sidebar-nav-toc sidebar-nav-active" data-target="post-toc-wrap">
+            文章目录
+          </li>
+          <li class="sidebar-nav-overview" data-target="site-overview-wrap">
+            站点概览
+          </li>
+        </ul>
+      
+
+      <div class="site-overview-wrap sidebar-panel">
+        <div class="site-overview">
+
+          <div class="site-author motion-element" itemprop="author" itemscope itemtype="http://schema.org/Person">
+    <img class="site-author-image" itemprop="image"
+      src="/images/avatar.png"
+      alt="Zrongl">
+  <p class="site-author-name" itemprop="name">Zrongl</p>
+  <div class="site-description motion-element" itemprop="description"></div>
+</div>
+  <nav class="site-state motion-element">
+      <div class="site-state-item site-state-posts">
+        
+          <a href="/archives/">
+        
+          <span class="site-state-item-count">23</span>
+          <span class="site-state-item-name">日志</span>
+        </a>
+      </div>
+    
+      
+      
+      <div class="site-state-item site-state-categories">
+        
+          
+            <a href="/categories/">
+          
+        
+        
+        
+          
+        
+          
+        
+          
+        
+        <span class="site-state-item-count">3</span>
+        <span class="site-state-item-name">分类</span>
+        </a>
+      </div>
+    
+  </nav>
+  <div class="links-of-author motion-element">
+      <span class="links-of-author-item">
+      
+      
+        
+      
+      
+        
+      
+        <a href="https://github.com/zrongl" title="GitHub &rarr; https://github.com/zrongl" rel="noopener" target="_blank"><i class="fa fa-fw fa-github"></i>GitHub</a>
+      </span>
+    
+      <span class="links-of-author-item">
+      
+      
+        
+      
+      
+        
+      
+        <a href="mailto:ronglei0324@163.com" title="E-Mail &rarr; mailto:ronglei0324@163.com" rel="noopener" target="_blank"><i class="fa fa-fw fa-envelope"></i>E-Mail</a>
+      </span>
+    
+  </div>
+
+
+
+        </div>
+      </div>
+      <!--noindex-->
+        <div class="post-toc-wrap motion-element sidebar-panel sidebar-panel-active">
+          <div class="post-toc">
+
+            
+            
+            
+            
+
+            
+              <div class="post-toc-content"><ol class="nav"><li class="nav-item nav-level-3"><a class="nav-link" href="#基本结构与函数的理解"><span class="nav-number">1.</span> <span class="nav-text">基本结构与函数的理解</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#准备阶段"><span class="nav-number">2.</span> <span class="nav-text">准备阶段</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#语义解析阶段"><span class="nav-number">3.</span> <span class="nav-text">语义解析阶段</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#汇编执行阶段"><span class="nav-number">4.</span> <span class="nav-text">汇编执行阶段</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#纠错"><span class="nav-number">5.</span> <span class="nav-text">纠错</span></a></li></ol></div>
+            
+
+          </div>
+        </div>
+      <!--/noindex-->
+      
+
+    </div>
+  </aside>
+  <div id="sidebar-dimmer"></div>
+
+
+      </div>
+    </main>
+
+    <footer id="footer" class="footer">
+      <div class="footer-inner">
+        <div class="copyright">&copy; <span itemprop="copyrightYear">2019</span>
+  <span class="with-love" id="animate">
+    <i class="fa fa-user"></i>
+  </span>
+  <span class="author" itemprop="copyrightHolder">Zrongl</span>
+</div>
+<div class="powered-by">
+<i class="fa fa-user-md"></i>
+<span>不争无尤</span>
+</span>
+</div>
+  <span class="post-meta-divider">|</span>
+  <div class="theme-info">主题 – <a href="https://theme-next.org" class="theme-link" rel="noopener" target="_blank">NexT.Mist</a> v7.3.0</div>
+
+        
+
+
+
+
+
+
+
+
+        
+      </div>
+    </footer>
+      <div class="back-to-top">
+        <i class="fa fa-arrow-up"></i>
+          <span id="scrollpercent"><span>0</span>%</span>
+        
+      </div>
+
+    
+
+  </div>
+
+  
+    
+    
+  
+  <script color='0,0,255' opacity='0.5' zIndex='-1' count='99' src="/lib/canvas-nest/canvas-nest-nomobile.min.js"></script>
+  <script src="/lib/jquery/index.js?v=3.4.1"></script>
+  <script src="/lib/velocity/velocity.min.js?v=1.2.1"></script>
+  <script src="/lib/velocity/velocity.ui.min.js?v=1.2.1"></script>
+
+<script src="/js/utils.js?v=7.3.0"></script>
+  <script src="/js/motion.js?v=7.3.0"></script>
+
+
+  <script src="/js/schemes/muse.js?v=7.3.0"></script>
+
+
+
+<script src="/js/next-boot.js?v=7.3.0"></script>
+
+
+
+
+
+
+  
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+  
+
+  
+
+  
+
+  
+
+
+  
+  <script src="/js/scrollspy.js?v=7.3.0"></script>
+<script src="/js/post-details.js?v=7.3.0"></script>
+
+
+  <!-- 页面点击小红心 -->
+  <script type="text/javascript" src="/js/src/love.js"></script>
+
+</body>
+</html>
